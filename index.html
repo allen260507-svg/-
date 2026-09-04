@@ -47,7 +47,9 @@
 <body class="h-screen w-screen overflow-hidden flex flex-col antialiased select-none bright-kids-bg bright-grid">
   <div id="app" class="h-full flex flex-col flex-1 overflow-hidden">
 
-    <!-- ================= 场景一：明亮研学首屏 ================= -->
+    <!-- ========================================================================= -->
+    <!-- 场景一：明亮研学首屏 (经典 5 卡片矩阵，极简稳定) -->
+    <!-- ========================================================================= -->
     <div v-if="!currentLoggedInUser" class="h-full w-full flex flex-col items-center justify-between p-6 md:p-10 relative overflow-hidden">
       <div class="absolute top-12 left-16 text-4xl opacity-75 float-item-1 pointer-events-none">☀️</div>
       <div class="absolute top-16 right-24 text-4xl opacity-75 float-item-2 pointer-events-none">🌈</div>
@@ -61,7 +63,7 @@
           </div>
           <div>
             <h1 class="text-xl font-black tracking-wider text-slate-800">STUDY OS · 家庭研学中枢</h1>
-            <p class="text-[11px] text-indigo-600 font-bold tracking-widest">每日自律规划 · 探索无限可能</p>
+            <p class="text-[11px] text-indigo-600 font-bold tracking-widest">每日自律规划 · 探索真实世界</p>
           </div>
         </div>
 
@@ -76,7 +78,7 @@
             开启今日研学空间
           </h2>
           <p class="text-sm md:text-base text-slate-600 mt-2 font-bold tracking-wide">
-            四人独立档案 · 真实时事探索 · 智能打卡复盘 · 错题复仇
+            四人独立档案 · 真实军事/科技新闻 · 严谨打卡月历 · 特权商城自主管理
           </p>
         </div>
 
@@ -103,6 +105,7 @@
             </div>
           </div>
 
+          <!-- 家长总控卡片 -->
           <div 
             @click="openPinModal(parentProfile)"
             class="profile-card bg-gradient-to-b from-indigo-50 to-purple-50 rounded-3xl p-5 flex flex-col items-center justify-between cursor-pointer transition-all duration-300 group border border-indigo-200 shadow-md"
@@ -126,7 +129,10 @@
       </div>
     </div>
 
-    <!-- ================= 场景二：家长总控专属主页 ================= -->
+
+    <!-- ========================================================================= -->
+    <!-- 场景二：家长总控主页 (找回全部功能：密码查看、精准勾叉、任务派发、积分奖惩) -->
+    <!-- ========================================================================= -->
     <div v-else-if="currentLoggedInUser.id === 'parent'" class="h-full flex flex-col flex-1 overflow-hidden p-3 md:p-5 space-y-3 bg-slate-900/10 backdrop-blur-xs">
       <header class="glass-light rounded-2xl px-5 py-3 flex items-center justify-between shadow-sm flex-shrink-0">
         <div class="flex items-center space-x-3">
@@ -138,7 +144,7 @@
               <span class="text-lg font-black text-slate-900">家长督导指挥中心</span>
               <span class="text-xs px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-800 font-black">总控模式</span>
             </div>
-            <p class="text-xs text-slate-500 font-bold mt-0.5">监控诺、威、奕、黛 4 位学生进度、错题、小测，派发带附件的任务与自定义奖惩</p>
+            <p class="text-xs text-slate-500 font-bold mt-0.5">监控诺、威、奕、黛 4 位学生、查看密码、派发带附件的任务、自定义奖惩积分</p>
           </div>
         </div>
 
@@ -158,7 +164,7 @@
         <div 
           v-for="st in students" 
           :key="st.id" 
-          class="glass-light rounded-2xl p-4.5 flex flex-col justify-between shadow-sm border border-slate-200/80 hover:shadow-md transition"
+          class="glass-light rounded-2xl p-4.5 flex flex-col justify-between shadow-sm border border-slate-200/80 hover:shadow-md transition relative overflow-hidden"
         >
           <div class="space-y-3">
             <div class="flex justify-between items-start">
@@ -181,13 +187,16 @@
 
             <!-- 家长端显示密码 -->
             <div class="p-2 rounded-xl bg-indigo-50/80 border border-indigo-200/80 flex justify-between items-center text-xs">
-              <span class="text-indigo-950 font-black">🔑 通行密码：</span>
+              <span class="text-indigo-950 font-black flex items-center space-x-1">
+                <span>🔑</span>
+                <span>通行密码：</span>
+              </span>
               <span class="font-mono font-black text-indigo-700 bg-white px-2.5 py-0.5 rounded-lg border border-indigo-200 tracking-wider text-sm shadow-2xs">
                 {{ st.pin || '1234' }}
               </span>
             </div>
 
-            <!-- 今日进度条 -->
+            <!-- 进度条 -->
             <div class="p-3 rounded-xl bg-slate-50 border border-slate-200/80 space-y-1.5">
               <div class="flex justify-between text-xs font-black">
                 <span class="text-slate-600">今日任务进度</span>
@@ -209,7 +218,7 @@
               </div>
             </div>
 
-            <!-- 打卡记录列表 -->
+            <!-- 今日打卡记录与附件 -->
             <div>
               <div class="text-xs font-black text-slate-700 mb-1.5 flex justify-between items-center">
                 <span>今日打卡记录 ({{ (getStudentCheckinObj(st.id).doneTaskIds || []).length }}条)</span>
@@ -243,8 +252,8 @@
             </div>
           </div>
 
-          <div class="pt-3 border-t border-slate-200 mt-3">
-            <button @click="switchToUser(st)" class="w-full py-2 bg-slate-900 hover:bg-black text-white rounded-xl text-xs font-black transition shadow-xs">
+          <div class="pt-3 border-t border-slate-200 mt-3 flex space-x-2">
+            <button @click="switchToUser(st)" class="flex-1 py-2 bg-slate-900 hover:bg-black text-white rounded-xl text-xs font-black transition shadow-xs">
               进入学生视角
             </button>
           </div>
@@ -252,7 +261,10 @@
       </div>
     </div>
 
-    <!-- ================= 场景三：学生专属研学工作台 ================= -->
+
+    <!-- ========================================================================= -->
+    <!-- 场景三：学生工作台 (包含全部任务交互、打卡月历、错题本、特权商城) -->
+    <!-- ========================================================================= -->
     <div v-else class="h-full flex flex-col flex-1 overflow-hidden p-3 md:p-4 space-y-2.5 bg-slate-900/5 backdrop-blur-xs">
       <header class="glass-light rounded-2xl px-5 py-2.5 flex items-center justify-between shadow-sm flex-shrink-0">
         <div class="flex items-center space-x-3">
@@ -265,7 +277,7 @@
               <select 
                 v-model="currentStudent.grade" 
                 @change="onStudentGradeChange" 
-                class="bg-slate-100 border border-slate-300 text-xs font-black text-slate-800 rounded-lg px-2 py-0.5 outline-none cursor-pointer"
+                class="bg-slate-100 border border-slate-300 text-xs font-black text-slate-800 rounded-lg px-2 py-0.5 outline-none cursor-pointer hover:border-indigo-500 transition"
               >
                 <option v-for="g in gradeList" :key="g" :value="g">{{ g }}</option>
               </select>
@@ -340,11 +352,18 @@
                 isDone(task.id) ? 'bg-emerald-50/90 border-emerald-400/80 shadow-xs' : 'glass-light border-slate-200/80 hover:border-slate-300 hover:shadow-md',
                 task.isCustom ? 'border-indigo-300 bg-indigo-50/70' : '',
                 task.id === 1 && !isHomeworkDone ? 'ring-2 ring-amber-500 border-amber-400' : '',
-                'rounded-2xl border p-3 flex items-center justify-between transition-all'
+                'rounded-2xl border p-3 flex items-center justify-between transition-all duration-150'
               ]"
             >
               <div class="flex items-center space-x-3 min-w-0 flex-1 mr-2.5">
-                <div class="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl flex-shrink-0 bg-slate-100 shadow-2xs">
+                <div 
+                  class="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl flex-shrink-0 transition-transform duration-200 shadow-2xs"
+                  :class="[
+                    isDone(task.id) 
+                      ? 'bg-emerald-100 ring-2 ring-emerald-400/80' 
+                      : (task.isCustom ? 'bg-indigo-100 ring-1 ring-indigo-300' : 'bg-slate-100/90 hover:scale-105')
+                  ]"
+                >
                   {{ task.icon }}
                 </div>
                 
@@ -412,7 +431,7 @@
           </div>
         </div>
 
-        <!-- 【视图 2：打卡月历】 -->
+        <!-- 【视图 2：打卡月历 (精确统计勾叉数量 + 点击下钻)】 -->
         <div v-if="activeTab === 'records'" class="h-full flex flex-col flex-1 glass-light rounded-2xl p-4 overflow-hidden shadow-sm border border-slate-200/80 space-y-3">
           <div class="flex flex-wrap items-center justify-between gap-3 pb-2 border-b border-slate-200/80 flex-shrink-0">
             <div class="flex items-center space-x-2">
@@ -427,6 +446,10 @@
               <button @click="nextCalendarMonth" class="px-2.5 py-1 bg-white hover:bg-slate-100 border border-slate-200 rounded-lg text-xs font-black text-slate-700 transition">
                 下个月 ▶
               </button>
+
+              <select v-model="selectedCalMonth" class="bg-white border border-slate-200 rounded-lg px-2 py-1 text-xs font-black text-slate-700 outline-none cursor-pointer">
+                <option v-for="m in 12" :key="m" :value="m">{{ m }}月</option>
+              </select>
             </div>
 
             <div class="flex items-center space-x-2 text-xs font-black">
@@ -443,7 +466,7 @@
             <div class="text-rose-500">周一</div><div>周二</div><div>周三</div><div>周四</div><div>周五</div><div>周六</div><div class="text-rose-500">周日</div>
           </div>
 
-          <!-- 精确显示勾叉数量 -->
+          <!-- 精装修日历格子：醒目显示 ✓做完数 和 ✕未做数，点击进入当天详细 -->
           <div class="grid grid-cols-7 gap-2 flex-1 overflow-y-auto custom-scrollbar pr-1">
             <div v-for="b in calMonthStartOffset" :key="'blank_'+b" class="h-21 bg-slate-50/40 rounded-xl border border-dashed border-slate-200/50"></div>
             
@@ -451,7 +474,7 @@
               v-for="day in calMonthTotalDays" 
               :key="'day_'+day" 
               @click="openDayDetailModal(selectedCalYear, selectedCalMonth, day)"
-              class="border border-slate-200 rounded-xl p-2 flex flex-col justify-between bg-white hover:border-indigo-400 hover:shadow-md cursor-pointer transition h-21 group"
+              class="border border-slate-200 rounded-xl p-2 flex flex-col justify-between bg-white hover:border-indigo-400 hover:shadow-md cursor-pointer transition h-21 select-none group"
             >
               <div class="flex justify-between items-center">
                 <span class="text-xs font-black text-slate-800 group-hover:text-indigo-600">{{ day }}</span>
@@ -512,7 +535,7 @@
           </div>
         </div>
 
-        <!-- 【视图 4：特权商城】 -->
+        <!-- 【视图 4：特权商城 (支持自由上架与删除商品)】 -->
         <div v-if="activeTab === 'rewards'" class="h-full flex flex-col flex-1 glass-light rounded-2xl p-4 overflow-hidden shadow-sm border border-slate-200/80 space-y-3">
           <div class="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-slate-200/80 flex-shrink-0">
             <div>
@@ -563,7 +586,7 @@
           </div>
         </div>
 
-        <!-- 【视图 5：学生个人中心 (自选真实新闻与图文大屏)】 -->
+        <!-- 【视图 5：学生个人中心 (真实新闻与图文大屏)】 -->
         <div v-if="activeTab === 'profile'" class="h-full flex flex-col flex-1 glass-light rounded-2xl p-4 overflow-hidden shadow-sm border border-slate-200/80 space-y-3">
           <div class="bg-gradient-to-r from-amber-50 via-indigo-50 to-purple-50 border border-indigo-100 rounded-2xl p-3.5 flex-shrink-0 shadow-xs space-y-2">
             <div class="flex flex-wrap items-center justify-between gap-2">
@@ -687,9 +710,11 @@
       </main>
     </div>
 
-    <!-- ================= 核心弹窗系统 ================= -->
-    
-    <!-- 1. 单日任务执行全景明细 (点击日历进入) -->
+    <!-- ========================================================================= -->
+    <!-- 弹窗系统 (全量稳妥绑定，绝对零模板错误) -->
+    <!-- ========================================================================= -->
+
+    <!-- 【弹窗：单日任务执行全景明细 (点击日历进入)】 -->
     <div v-if="showDayDetailModal" class="fixed inset-0 bg-slate-950/75 backdrop-blur-sm flex items-center justify-center p-4 z-50">
       <div class="bg-white rounded-3xl max-w-2xl w-full p-6 space-y-4 shadow-2xl border border-slate-200 max-h-[85vh] flex flex-col">
         <div class="flex justify-between items-center border-b border-slate-100 pb-3 flex-shrink-0">
@@ -736,7 +761,7 @@
       </div>
     </div>
 
-    <!-- 2. 真实新闻深度图文研读大屏 (点击新闻卡片进入) -->
+    <!-- 【弹窗：真实新闻深度图文研读大屏】 -->
     <div v-if="showNewsDetailModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 z-50">
       <div class="bg-white rounded-3xl max-w-2xl w-full p-6 space-y-4 shadow-2xl border border-slate-200 max-h-[85vh] flex flex-col">
         <div class="flex justify-between items-start border-b border-slate-100 pb-3 flex-shrink-0">
@@ -780,7 +805,7 @@
       </div>
     </div>
 
-    <!-- 3. 上架新特权商品 -->
+    <!-- 【弹窗：上架新特权商品】 -->
     <div v-if="showAddShopItemModal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 z-50">
       <div class="bg-white rounded-3xl max-w-sm w-full p-6 space-y-3.5 shadow-2xl border border-slate-200">
         <div class="flex justify-between items-center border-b border-slate-100 pb-2">
@@ -830,7 +855,7 @@
       </div>
     </div>
 
-    <!-- 4. PIN 密码键盘 -->
+    <!-- 【弹窗：PIN 密码键盘】 -->
     <div v-if="showPinModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 z-50">
       <div class="bg-white rounded-3xl max-w-xs w-full p-6 text-center space-y-4 shadow-2xl border border-slate-200">
         <div class="w-16 h-16 rounded-2xl bg-amber-50 flex items-center justify-center text-4xl mx-auto shadow-inner border border-amber-200">
@@ -856,7 +881,7 @@
       </div>
     </div>
 
-    <!-- 5. 作业拍照交卷 -->
+    <!-- 【弹窗：作业拍照上传打卡】 -->
     <div v-if="showHomeworkModal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 z-50">
       <div class="bg-white rounded-3xl max-w-lg w-full p-6 space-y-4 shadow-2xl border border-slate-200">
         <div class="flex justify-between items-center border-b border-slate-100 pb-2">
@@ -888,7 +913,7 @@
       </div>
     </div>
 
-    <!-- 6. 口算快练 -->
+    <!-- 【弹窗：口算快练】 -->
     <div v-if="showMathModal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 z-50">
       <div class="bg-white rounded-3xl max-w-sm w-full p-5 space-y-3 shadow-2xl border border-slate-200">
         <h3 class="text-sm font-black text-slate-800">⚡ {{ currentStudent.grade }} · 10道口算快练</h3>
@@ -905,7 +930,7 @@
       </div>
     </div>
 
-    <!-- 7. 家长自定义积分奖惩 -->
+    <!-- 【弹窗：家长自定义积分奖惩】 -->
     <div v-if="showPointModal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 z-50">
       <div class="bg-white rounded-3xl max-w-sm w-full p-6 space-y-4 shadow-2xl border border-slate-200">
         <div class="flex justify-between items-center border-b border-slate-100 pb-2">
@@ -934,7 +959,7 @@
       </div>
     </div>
 
-    <!-- 8. 布置临时任务 (带附件) -->
+    <!-- 【弹窗：布置临时任务】 -->
     <div v-if="showAssignModal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 z-50">
       <div class="bg-white rounded-3xl max-w-md w-full p-5 space-y-3.5 shadow-2xl border border-slate-200">
         <div class="flex justify-between items-center border-b border-slate-100 pb-2">
@@ -973,7 +998,7 @@
       </div>
     </div>
 
-    <!-- 9. 系统设置 -->
+    <!-- 【弹窗：系统设置】 -->
     <div v-if="showSettings" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 z-50">
       <div class="bg-white rounded-3xl max-w-md w-full p-5 space-y-3 shadow-2xl border border-slate-200">
         <h3 class="text-sm font-black text-slate-800">⚙️ 核心密钥与同步配置</h3>
@@ -1000,26 +1025,21 @@
 
   </div>
 
-  <!-- 引入本地辅助模块 (带自动容错) -->
+  <!-- 本地安全引入经典 3 模块 -->
   <script src="js/db.js"></script>
   <script src="js/ai.js"></script>
   <script src="js/math.js"></script>
 
   <script>
-    // 容错兜底：如果本地 js 文件因为协议未加载，提供默认安全对象防止报错
+    // 容错防崩溃拦截
     if (!window.StudyDB) {
-      window.StudyDB = {
-        save: async () => {},
-        load: async () => null
-      };
+      window.StudyDB = { save: async () => {}, load: async () => null };
     }
     if (!window.StudyMath) {
-      window.StudyMath = {
-        generateDrill: () => Array.from({length: 10}, () => ({ expr: '8.6 + 6.2 =', ans: 14.8, userAns: '' }))
-      };
+      window.StudyMath = { generateDrill: () => Array.from({length: 10}, () => ({ expr: '8.6 + 6.2 =', ans: 14.8, userAns: '' })) };
     }
 
-    const { createApp, ref, computed, onMounted, onUnmounted } = Vue;
+    const { createApp, ref, computed, onMounted } = Vue;
 
     createApp({
       setup() {
@@ -1099,7 +1119,6 @@
         const customTasks = ref([]);
         const newTask = ref({ targetStudentId: 'ALL', title: '', duration: '15分钟', points: 3 });
 
-        // 真实新闻与前沿知识领域
         const knowledgeTopics = [
           { id: 'news', name: '真实新闻', icon: '📰' },
           { id: 'military', name: '国防军事', icon: '🪖' },
@@ -1271,7 +1290,7 @@
           }
         };
 
-        // 日历
+        // 打卡日历
         const calMonthTotalDays = computed(() => new Date(selectedCalYear.value, selectedCalMonth.value, 0).getDate());
         const calMonthStartOffset = computed(() => {
           const first = new Date(selectedCalYear.value, selectedCalMonth.value - 1, 1).getDay();
@@ -1346,12 +1365,27 @@
           });
         };
 
+        const loadFromCloud = async () => {
+          const data = await window.StudyDB.load(config.value.upstashUrl, config.value.upstashToken);
+          if (data) {
+            if (data.students) students.value = data.students;
+            if (data.checkins) checkins.value = data.checkins;
+            if (data.errors) errors.value = data.errors;
+            if (data.shopItems) shopItems.value = data.shopItems;
+          }
+        };
+
         const saveConfig = () => {
           localStorage.setItem('cfg_silicon', config.value.siliconKey);
           localStorage.setItem('cfg_upstash_url', config.value.upstashUrl);
           localStorage.setItem('cfg_upstash_token', config.value.upstashToken);
           showSettings.value = false;
+          loadFromCloud();
         };
+
+        onMounted(() => {
+          if (config.value.upstashUrl) loadFromCloud();
+        });
 
         return {
           currentLoggedInUser, activeTab, showPinModal, selectedAuthUser, enteredPin,
