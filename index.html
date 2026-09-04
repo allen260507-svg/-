@@ -2,254 +2,201 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>家庭学习管家 - 旗舰数字研学系统</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- 备用双CDN节点，确保任何网络环境都能秒加载 Vue 3 -->
   <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <script>
+    if (typeof Vue === 'undefined') {
+      document.write('<script src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.prod.js"><\/script>');
+    }
+  </script>
+  <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    body {
-      color: #0f172a;
-      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Segoe UI", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
-    }
-    .bright-kids-bg {
-      background: radial-gradient(circle at 50% 10%, #fffbeb 0%, #f0fdf4 35%, #e0f2fe 70%, #f8fafc 100%);
-      position: relative;
-    }
-    .bright-grid {
-      background-size: 36px 36px;
-      background-image: 
-        linear-gradient(to right, rgba(99, 102, 241, 0.05) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(99, 102, 241, 0.05) 1px, transparent 1px);
-    }
-    @keyframes gentleFloat {
-      0%, 100% { transform: translateY(0px) rotate(0deg); }
-      50% { transform: translateY(-10px) rotate(3deg); }
-    }
-    .float-item-1 { animation: gentleFloat 5s ease-in-out infinite; }
-    .float-item-2 { animation: gentleFloat 6.5s ease-in-out infinite 1s; }
-
-    .glass-light {
-      background: rgba(255, 255, 255, 0.95);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border: 1px solid rgba(255, 255, 255, 0.85);
-      box-shadow: 0 4px 20px -2px rgba(99, 102, 241, 0.06);
-    }
-
-    .podium-1st { height: 140px; background: linear-gradient(180deg, #fef08a 0%, #facc15 100%); border: 3px solid #eab308; box-shadow: 0 10px 25px -5px rgba(234, 179, 8, 0.4); }
-    .podium-2nd { height: 105px; background: linear-gradient(180deg, #f1f5f9 0%, #cbd5e1 100%); border: 3px solid #94a3b8; box-shadow: 0 8px 20px -5px rgba(148, 163, 184, 0.3); }
-    .podium-3rd { height: 80px; background: linear-gradient(180deg, #ffedd5 0%, #fdba74 100%); border: 3px solid #f97316; box-shadow: 0 6px 15px -5px rgba(249, 115, 22, 0.3); }
-
-    .custom-scrollbar::-webkit-scrollbar { width: 5px; height: 5px; }
-    .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 6px; }
+    body { color: #0f172a; font-family: sans-serif; background-color: #f8fafc; margin: 0; padding: 0; }
+    .podium-1st { height: 130px; background: linear-gradient(180deg, #fef08a 0%, #facc15 100%); border: 3px solid #eab308; }
+    .podium-2nd { height: 95px; background: linear-gradient(180deg, #f1f5f9 0%, #cbd5e1 100%); border: 3px solid #94a3b8; }
+    .podium-3rd { height: 75px; background: linear-gradient(180deg, #ffedd5 0%, #fdba74 100%); border: 3px solid #f97316; }
   </style>
 </head>
-<body class="h-screen w-screen overflow-hidden flex flex-col antialiased select-none bright-kids-bg bright-grid">
-  <div id="app" class="h-full flex flex-col flex-1 overflow-hidden">
+<body class="h-screen w-screen overflow-hidden flex flex-col antialiased select-none">
+  
+  <!-- 如果 Vue 加载失败的防白屏安全提示 -->
+  <div id="fallback-loading" style="padding: 50px; text-align: center; font-size: 18px; color: #475569;">
+    系统正在全速加载核心模块，请稍候...（若长时间未响应，请检查网络或刷新页面）
+  </div>
 
-    <!-- 场景一：首屏 (奥运领奖台 + 我命由我不由天) -->
-    <div v-if="!currentLoggedInUser" class="h-full w-full flex flex-col items-center justify-between p-6 md:p-8 relative overflow-hidden">
-      <div class="absolute top-12 left-16 text-4xl opacity-75 float-item-1 pointer-events-none">☀️</div>
-      <div class="absolute top-16 right-24 text-4xl opacity-75 float-item-2 pointer-events-none">🌈</div>
+  <div id="app" class="h-full flex flex-col flex-1 overflow-hidden" style="display: none;">
 
-      <div class="w-full max-w-6xl flex justify-between items-center z-10">
+    <!-- 场景一：首屏 (4人领奖台 + 我命由我不由天) -->
+    <div v-if="!currentLoggedInUser" class="h-full w-full flex flex-col items-center justify-between p-6 md:p-8 overflow-y-auto">
+      <div class="w-full max-w-6xl flex justify-between items-center">
         <div>
           <h1 class="text-2xl md:text-3xl font-black tracking-wider text-slate-900">STUDY OS · 家庭智能研学系统</h1>
           <p class="text-xs text-rose-600 font-black tracking-widest mt-0.5">🔥 我命由我不由天</p>
         </div>
-        <button @click="showSettings = true" class="px-4 py-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 rounded-xl text-xs font-bold transition shadow-xs">
+        <button @click="showSettings = true" class="px-4 py-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 rounded-xl text-xs font-bold shadow-xs">
           ⚙️ 系统设置
         </button>
       </div>
 
-      <div class="w-full max-w-5xl z-10 space-y-6">
-        <div class="bg-white/95 rounded-3xl p-6 shadow-md border border-slate-200/80">
+      <div class="w-full max-w-5xl space-y-6 my-auto">
+        <div class="bg-white rounded-3xl p-6 shadow-md border border-slate-200">
           <div class="text-center mb-6">
-            <h2 class="text-lg font-black text-slate-900 flex items-center justify-center space-x-2">
-              <span>🏅</span><span>研学积分 · 全员领奖台</span><span>🏅</span>
-            </h2>
-            <p class="text-xs text-slate-400 font-bold mt-0.5">金、银、铜与卓越第四名</p>
+            <h2 class="text-lg font-black text-slate-900">🏅 研学积分 · 全员领奖台 🏅</h2>
           </div>
 
           <div class="flex items-end justify-center space-x-3 md:space-x-6 px-4">
             <!-- 银牌 -->
-            <div v-if="rankedStudents[1]" @click="openPinModal(rankedStudents[1])" class="flex flex-col items-center cursor-pointer group flex-1 max-w-[140px]">
-              <div class="w-16 h-16 rounded-2xl bg-slate-100 border-2 border-slate-300 flex items-center justify-center text-3xl shadow-inner mb-2 overflow-hidden">
-                <span class="text-2xl">{{ rankedStudents[1].avatar }}</span>
-              </div>
+            <div v-if="rankedStudents[1]" @click="openPinModal(rankedStudents[1])" class="flex flex-col items-center cursor-pointer flex-1 max-w-[140px]">
+              <div class="w-16 h-16 rounded-2xl bg-slate-100 border-2 border-slate-300 flex items-center justify-center text-3xl mb-2">{{ rankedStudents[1].avatar }}</div>
               <div class="font-black text-slate-800 text-sm">{{ rankedStudents[1].name }}</div>
               <div class="text-xs font-black text-amber-600 mb-2">⚡ {{ rankedStudents[1].points }}分</div>
-              <div class="w-full podium-2nd rounded-t-2xl flex flex-col items-center justify-center text-slate-700 font-black"><span class="text-2xl">🥈</span><span class="text-xs mt-1">银牌</span></div>
+              <div class="w-full podium-2nd rounded-t-2xl flex flex-col items-center justify-center text-slate-700 font-black"><span class="text-2xl">🥈</span><span class="text-xs">亚军</span></div>
             </div>
 
             <!-- 金牌 -->
-            <div v-if="rankedStudents[0]" @click="openPinModal(rankedStudents[0])" class="flex flex-col items-center cursor-pointer group flex-1 max-w-[160px]">
-              <div class="w-20 h-20 rounded-2xl bg-amber-50 border-4 border-amber-400 flex items-center justify-center text-4xl shadow-inner mb-2 relative overflow-hidden">
-                <span class="text-3xl">{{ rankedStudents[0].avatar }}</span>
+            <div v-if="rankedStudents[0]" @click="openPinModal(rankedStudents[0])" class="flex flex-col items-center cursor-pointer flex-1 max-w-[160px]">
+              <div class="w-20 h-20 rounded-2xl bg-amber-50 border-4 border-amber-400 flex items-center justify-center text-4xl mb-2 relative">
+                <span>{{ rankedStudents[0].avatar }}</span>
                 <span class="absolute top-0 right-0 bg-amber-500 text-white text-[9px] px-1 rounded-bl">👑</span>
               </div>
               <div class="font-black text-slate-900 text-base">{{ rankedStudents[0].name }}</div>
               <div class="text-xs font-black text-amber-600 mb-2">⚡ {{ rankedStudents[0].points }}分</div>
-              <div class="w-full podium-1st rounded-t-2xl flex flex-col items-center justify-center text-amber-950 font-black"><span class="text-3xl">🥇</span><span class="text-sm mt-1">金牌</span></div>
+              <div class="w-full podium-1st rounded-t-2xl flex flex-col items-center justify-center text-amber-950 font-black"><span class="text-3xl">🥇</span><span class="text-sm">金牌</span></div>
             </div>
 
             <!-- 铜牌 -->
-            <div v-if="rankedStudents[2]" @click="openPinModal(rankedStudents[2])" class="flex flex-col items-center cursor-pointer group flex-1 max-w-[140px]">
-              <div class="w-16 h-16 rounded-2xl bg-orange-50 border-2 border-orange-300 flex items-center justify-center text-3xl shadow-inner mb-2 overflow-hidden">
-                <span class="text-2xl">{{ rankedStudents[2].avatar }}</span>
-              </div>
+            <div v-if="rankedStudents[2]" @click="openPinModal(rankedStudents[2])" class="flex flex-col items-center cursor-pointer flex-1 max-w-[140px]">
+              <div class="w-16 h-16 rounded-2xl bg-orange-50 border-2 border-orange-300 flex items-center justify-center text-3xl mb-2">{{ rankedStudents[2].avatar }}</div>
               <div class="font-black text-slate-800 text-sm">{{ rankedStudents[2].name }}</div>
               <div class="text-xs font-black text-amber-600 mb-2">⚡ {{ rankedStudents[2].points }}分</div>
-              <div class="w-full podium-3rd rounded-t-2xl flex flex-col items-center justify-center text-orange-950 font-black"><span class="text-2xl">🥉</span><span class="text-xs mt-1">铜牌</span></div>
+              <div class="w-full podium-3rd rounded-t-2xl flex flex-col items-center justify-center text-orange-950 font-black"><span class="text-2xl">🥉</span><span class="text-xs">铜牌</span></div>
             </div>
 
-            <!-- 卓越第四名 -->
-            <div v-if="rankedStudents[3]" @click="openPinModal(rankedStudents[3])" class="flex flex-col items-center cursor-pointer group flex-1 max-w-[140px]">
-              <div class="w-16 h-16 rounded-2xl bg-purple-50 border-2 border-purple-200 flex items-center justify-center text-3xl shadow-inner mb-2 overflow-hidden">
-                <span class="text-2xl">{{ rankedStudents[3].avatar }}</span>
-              </div>
+            <!-- 卓越奖 -->
+            <div v-if="rankedStudents[3]" @click="openPinModal(rankedStudents[3])" class="flex flex-col items-center cursor-pointer flex-1 max-w-[140px]">
+              <div class="w-16 h-16 rounded-2xl bg-purple-50 border-2 border-purple-200 flex items-center justify-center text-3xl mb-2">{{ rankedStudents[3].avatar }}</div>
               <div class="font-black text-slate-800 text-sm">{{ rankedStudents[3].name }}</div>
               <div class="text-xs font-black text-amber-600 mb-2">⚡ {{ rankedStudents[3].points }}分</div>
-              <div class="w-full h-16 bg-gradient-to-b from-purple-100 to-indigo-100 border border-purple-300 rounded-t-2xl flex flex-col items-center justify-center text-indigo-950 font-black"><span class="text-xl">🏅</span><span class="text-[10px] mt-0.5">卓越奖</span></div>
+              <div class="w-full h-16 bg-purple-100 border border-purple-300 rounded-t-2xl flex flex-col items-center justify-center text-indigo-950 font-black"><span class="text-xl">🏅</span><span class="text-[10px]">卓越</span></div>
             </div>
           </div>
 
-          <div class="mt-5 pt-3 border-t border-slate-100 flex justify-between items-center px-2 text-xs font-bold text-slate-600">
-            <span>📊 历史荣誉统计：金牌/银牌/铜牌/优胜</span>
-            <button @click="openPinModal(parentProfile)" class="px-3.5 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-800 rounded-xl font-black transition">🛡️ 家长总控入口 →</button>
+          <div class="mt-5 pt-3 border-t flex justify-between items-center px-2 text-xs font-bold text-slate-600">
+            <span>📊 历史荣誉统计：金/银/铜/优胜</span>
+            <button @click="openPinModal(parentProfile)" class="px-3.5 py-1.5 bg-indigo-50 text-indigo-800 rounded-xl font-black">🛡️ 家长总控入口 →</button>
           </div>
         </div>
       </div>
 
-      <div class="z-10 text-xs font-bold text-slate-400">人教版研学课程体系 · 数字化独立研学中枢</div>
+      <div class="text-xs font-bold text-slate-400">人教版研学课程体系 · 数字化独立研学中枢</div>
     </div>
 
     <!-- 场景二：家长总控 -->
-    <div v-else-if="currentLoggedInUser.id === 'parent'" class="h-full flex flex-col flex-1 overflow-hidden p-4 md:p-6 space-y-3.5 bg-slate-900/10 backdrop-blur-xs">
-      <header class="glass-light rounded-2xl px-5 py-3 flex items-center justify-between shadow-sm flex-shrink-0">
-        <div class="flex items-center space-x-3">
-          <div class="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center text-2xl shadow-sm">🛡️</div>
-          <span class="text-lg font-black text-slate-900">家长督导指挥中心</span>
-        </div>
-        <button @click="logout" class="px-3.5 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-xl text-xs font-black transition">🚪 退出总控</button>
+    <div v-else-if="currentLoggedInUser.id === 'parent'" class="h-full flex flex-col flex-1 overflow-hidden p-6 space-y-4">
+      <header class="bg-white rounded-2xl px-5 py-3 flex justify-between items-center shadow-sm">
+        <span class="text-lg font-black text-slate-900">🛡️ 家长督导指挥中心</span>
+        <button @click="logout" class="px-3.5 py-2 bg-rose-50 text-rose-700 rounded-xl text-xs font-black">🚪 退出总控</button>
       </header>
-
-      <div class="flex-1 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 overflow-y-auto custom-scrollbar">
-        <div v-for="st in students" :key="st.id" class="glass-light rounded-2xl p-5 flex flex-col justify-between shadow-sm border border-slate-200">
-          <div class="space-y-3.5">
-            <div class="flex justify-between items-start">
-              <div class="flex items-center space-x-2.5">
-                <div class="w-12 h-12 rounded-2xl bg-amber-50 border flex items-center justify-center text-3xl">{{ st.avatar }}</div>
-                <div>
-                  <h3 class="text-xl font-black text-slate-900">{{ st.name }}</h3>
-                  <div class="text-xs font-bold text-slate-500">{{ st.grade }}</div>
-                </div>
-              </div>
-              <span class="text-sm font-black text-amber-600">⚡ {{ st.points }}分</span>
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div v-for="st in students" :key="st.id" class="bg-white rounded-2xl p-5 border flex flex-col justify-between shadow-sm">
+          <div class="space-y-3">
+            <div class="flex justify-between items-center">
+              <span class="text-xl font-black">{{ st.avatar }} {{ st.name }}</span>
+              <span class="text-amber-600 font-black">⚡ {{ st.points }}分</span>
             </div>
-            <div class="p-2.5 rounded-xl bg-indigo-50 border border-indigo-200 flex justify-between items-center text-xs">
-              <span class="text-indigo-950 font-black">🔑 密码：<strong class="font-mono text-indigo-700 text-sm">{{ st.pin || '1234' }}</strong></span>
-              <button @click="openParentResetPin(st)" class="px-2.5 py-1 bg-indigo-600 text-white rounded-lg font-bold text-[10px]">重置密码</button>
+            <div class="p-2 bg-indigo-50 rounded-xl flex justify-between items-center text-xs">
+              <span>密码: <strong class="text-indigo-700">{{ st.pin }}</strong></span>
+              <button @click="openParentResetPin(st)" class="px-2 py-1 bg-indigo-600 text-white rounded font-bold text-[10px]">重置</button>
             </div>
           </div>
-          <div class="pt-3 border-t mt-3">
-            <button @click="switchToUser(st)" class="w-full py-2.5 bg-slate-900 text-white rounded-xl text-xs font-black shadow-xs">进入学生视角</button>
-          </div>
+          <button @click="switchToUser(st)" class="mt-4 w-full py-2 bg-slate-900 text-white rounded-xl text-xs font-black">进入学生视角</button>
         </div>
       </div>
     </div>
 
     <!-- 场景三：学生工作台 -->
-    <div v-else class="h-full flex flex-col flex-1 overflow-hidden p-3 md:p-4 space-y-2.5 bg-slate-900/5 backdrop-blur-xs">
-      <header class="glass-light rounded-2xl px-5 py-2.5 flex items-center justify-between shadow-sm flex-shrink-0">
-        <div class="flex items-center space-x-3">
-          <div class="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center text-2xl shadow-sm">{{ currentLoggedInUser.avatar }}</div>
-          <span class="text-base md:text-lg font-black text-slate-900">{{ currentLoggedInUser.name }}</span>
-        </div>
-
+    <div v-else class="h-full flex flex-col flex-1 overflow-hidden p-4 space-y-3">
+      <header class="bg-white rounded-2xl px-5 py-3 flex justify-between items-center shadow-sm">
         <div class="flex items-center space-x-2">
-          <button @click="openPinModal(parentProfile)" class="px-3 py-1.5 bg-indigo-50 text-indigo-800 border rounded-xl text-xs font-black">🛡️ 家长总控</button>
-          <div class="flex items-center space-x-1 px-3 py-1.5 bg-amber-50 border border-amber-300 rounded-xl text-xs font-black text-amber-700">⚡ <span>{{ currentStudent.points }} 积分</span></div>
-          <button @click="logout" class="px-3 py-1.5 bg-slate-100 rounded-xl text-xs font-black">🚪 退出</button>
+          <span class="text-2xl">{{ currentLoggedInUser.avatar }}</span>
+          <span class="text-lg font-black">{{ currentLoggedInUser.name }}</span>
+        </div>
+        <div class="flex items-center space-x-2">
+          <button @click="openPinModal(parentProfile)" class="px-3 py-1.5 bg-indigo-50 text-indigo-800 rounded-xl text-xs font-black">🛡️ 家长总控</button>
+          <div class="px-3 py-1.5 bg-amber-50 text-amber-700 rounded-xl text-xs font-black">⚡ {{ currentStudent.points }} 积分</div>
+          <button @click="logout" class="px-3.5 py-1.5 bg-slate-100 rounded-xl text-xs font-black">🚪 退出</button>
         </div>
       </header>
 
       <main class="flex-1 flex flex-col overflow-hidden">
-        <div class="h-full flex flex-col flex-1 overflow-hidden space-y-2.5">
-          <div class="glass-light rounded-xl px-4 py-2 flex justify-between items-center shadow-sm flex-shrink-0">
-            <span class="text-sm font-black text-slate-900">🎯 今日研学任务大看板</span>
-            <button @click="openWheelModal" class="px-3.5 py-1.5 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-xl text-xs font-black shadow-md flex items-center space-x-1 animate-bounce">
-              <span>🎡</span><span>幸运大转盘抽选</span>
-            </button>
+        <div class="h-full flex flex-col flex-1 overflow-hidden space-y-3">
+          <div class="bg-white rounded-xl px-4 py-3 flex justify-between items-center shadow-sm">
+            <span class="text-sm font-black text-slate-900">🎯 今日研学任务看板</span>
+            <button @click="openWheelModal" class="px-3.5 py-1.5 bg-orange-500 text-white rounded-xl text-xs font-black animate-bounce">🎡 幸运大转盘</button>
           </div>
 
-          <div class="flex-1 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2.5 overflow-y-auto custom-scrollbar pr-1">
-            <div v-for="task in allTodayTasks" :key="task.id" :class="[isDone(task.id) ? 'bg-emerald-50/90 border-emerald-400' : 'glass-light border-slate-200', 'rounded-2xl border p-3.5 flex items-center justify-between transition-all']">
-              <div class="flex items-center space-x-3 min-w-0 flex-1 mr-2.5">
-                <div class="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl bg-white border shadow-2xs">{{ task.icon }}</div>
-                <div class="min-w-0 flex-1 space-y-0.5">
+          <div class="flex-1 grid grid-cols-1 md:grid-cols-3 gap-3 overflow-y-auto">
+            <div v-for="task in allTodayTasks" :key="task.id" :class="[isDone(task.id) ? 'bg-emerald-50 border-emerald-400' : 'bg-white border-slate-200', 'rounded-2xl border p-4 flex items-center justify-between shadow-sm']">
+              <div class="flex items-center space-x-3">
+                <span class="text-3xl">{{ task.icon }}</span>
+                <div>
                   <div class="text-xs font-black text-amber-700">+{{ task.points }}分</div>
-                  <div class="text-sm md:text-base font-black text-slate-900 truncate">{{ task.title }}</div>
+                  <div class="text-sm font-black text-slate-900">{{ task.title }}</div>
                 </div>
               </div>
-              <div class="flex-shrink-0">
-                <button v-if="isDone(task.id)" @click="openTaskInteractive(task)" class="px-3.5 py-2 text-xs font-black text-emerald-800 bg-emerald-100 rounded-xl">✓ 已达标</button>
-                <button v-else @click="openTaskInteractive(task)" class="px-3.5 py-2 text-xs font-black text-white bg-slate-900 rounded-xl shadow-md">进入研学</button>
-              </div>
+              <button v-if="isDone(task.id)" @click="openTaskInteractive(task)" class="px-3 py-2 text-xs font-black text-emerald-800 bg-emerald-100 rounded-xl">✓ 已达标</button>
+              <button v-else @click="openTaskInteractive(task)" class="px-3 py-2 text-xs font-black text-white bg-slate-900 rounded-xl">进入研学</button>
             </div>
           </div>
         </div>
       </main>
     </div>
 
-    <!-- 静态弹窗 (密码锁、重置密码、设置) -->
-    <div id="modals-container">
-      <div v-if="showWheelModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 z-50">
-        <div class="bg-white rounded-3xl max-w-sm w-full p-6 text-center space-y-4 shadow-2xl border">
-          <h3 class="text-lg font-black text-slate-900">🎡 幸运任务大转盘</h3>
-          <p class="text-xs text-slate-500">点击关闭回到看板</p>
-          <button @click="showWheelModal = false" class="py-2.5 w-full bg-slate-900 text-white rounded-xl text-xs font-black">关闭转盘</button>
+    <!-- 弹窗 -->
+    <div v-if="showWheelModal" class="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+      <div class="bg-white rounded-3xl max-w-sm w-full p-6 text-center space-y-4 shadow-2xl">
+        <h3 class="text-lg font-black">🎡 幸运大转盘</h3>
+        <p class="text-xs text-slate-500">点击关闭回到看板</p>
+        <button @click="showWheelModal = false" class="py-2 w-full bg-slate-900 text-white rounded-xl text-xs font-black">关闭</button>
+      </div>
+    </div>
+
+    <div v-if="showPinModal" class="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+      <div class="bg-white rounded-3xl max-w-xs w-full p-6 text-center space-y-4 shadow-2xl">
+        <div class="text-4xl">{{ selectedAuthUser?.avatar }}</div>
+        <h3 class="text-lg font-black">解锁 {{ selectedAuthUser?.name }}</h3>
+        <div class="flex justify-center space-x-2 py-1">
+          <div v-for="i in 4" :key="i" class="w-3 h-3 rounded-full" :class="enteredPin.length >= i ? 'bg-indigo-600' : 'bg-slate-200'"></div>
+        </div>
+        <div class="grid grid-cols-3 gap-2 font-black">
+          <button v-for="n in [1,2,3,4,5,6,7,8,9]" :key="n" @click="pressPin(n)" class="h-10 rounded-lg bg-slate-100">{{ n }}</button>
+          <button @click="clearPin" class="h-10 rounded-lg bg-slate-100 text-xs">清空</button>
+          <button @click="pressPin(0)" class="h-10 rounded-lg bg-slate-100">0</button>
+          <button @click="showPinModal = false; enteredPin = ''" class="h-10 rounded-lg bg-slate-100 text-rose-500 text-xs">取消</button>
         </div>
       </div>
+    </div>
 
-      <div v-if="showPinModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 z-50">
-        <div class="bg-white rounded-3xl max-w-xs w-full p-6 text-center space-y-4 shadow-2xl border">
-          <div class="text-4xl mx-auto mb-2">{{ selectedAuthUser?.avatar }}</div>
-          <h3 class="text-lg font-black text-slate-900">解锁 {{ selectedAuthUser?.name }}</h3>
-          <div class="flex justify-center space-x-3 py-1">
-            <div v-for="i in 4" :key="i" class="w-3.5 h-3.5 rounded-full" :class="enteredPin.length >= i ? 'bg-indigo-600 scale-110' : 'bg-slate-200'"></div>
-          </div>
-          <div class="grid grid-cols-3 gap-2 text-slate-800 font-black text-lg pt-1">
-            <button v-for="n in [1,2,3,4,5,6,7,8,9]" :key="n" @click="pressPin(n)" class="h-12 rounded-xl bg-slate-100">{{ n }}</button>
-            <button @click="clearPin" class="h-12 rounded-xl bg-slate-100 text-xs font-bold">清空</button>
-            <button @click="pressPin(0)" class="h-12 rounded-xl bg-slate-100">0</button>
-            <button @click="showPinModal = false; enteredPin = ''" class="h-12 rounded-xl bg-slate-100 text-rose-500 text-xs font-bold">取消</button>
-          </div>
+    <div v-if="showParentResetPinModal" class="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+      <div class="bg-white rounded-3xl max-w-xs w-full p-6 text-center space-y-4 shadow-2xl">
+        <h3 class="text-sm font-black">重置 {{ parentTargetStudent ? parentTargetStudent.name : '' }} 密码</h3>
+        <input v-model="parentNewPinInput" maxlength="4" placeholder="4位新密码" class="w-full border rounded-xl p-2 text-center text-xl font-mono font-black tracking-widest outline-none">
+        <div class="flex space-x-2">
+          <button @click="showParentResetPinModal = false" class="flex-1 py-2 border rounded-xl text-xs font-bold">取消</button>
+          <button @click="confirmParentResetPin" class="flex-1 py-2 bg-indigo-600 text-white rounded-xl text-xs font-black">确认</button>
         </div>
       </div>
+    </div>
 
-      <!-- 重置密码弹窗 (修复了插值表达式变量报错问题) -->
-      <div v-if="showParentResetPinModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 z-50">
-        <div class="bg-white rounded-3xl max-w-xs w-full p-6 text-center space-y-3.5 shadow-2xl border">
-          <h3 class="text-sm font-black text-slate-900">重置 {{ parentTargetStudent ? parentTargetStudent.name : '学生' }} 的密码</h3>
-          <input v-model="parentNewPinInput" maxlength="4" placeholder="4位新密码" class="w-full border rounded-xl p-2.5 text-center text-xl font-mono font-black outline-none tracking-widest">
-          <div class="flex space-x-2 pt-1">
-            <button @click="showParentResetPinModal = false" class="flex-1 py-2 border rounded-xl text-xs font-bold">取消</button>
-            <button @click="confirmParentResetPin" class="flex-1 py-2 bg-indigo-600 text-white rounded-xl text-xs font-black">确认重置</button>
-          </div>
-        </div>
-      </div>
-
-      <div v-if="showSettings" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-        <div class="bg-white rounded-3xl max-w-md w-full p-5 space-y-3 shadow-2xl border">
-          <h3 class="text-sm font-black text-slate-800">⚙️ 系统设置</h3>
-          <div class="space-y-2 text-xs">
-            <div><label class="block font-bold mb-1">硅基流动 AI 密钥 (sk-...)</label><input v-model="config.siliconKey" type="password" class="w-full border rounded-lg p-2 font-mono"></div>
-          </div>
-          <div class="flex space-x-2 pt-2">
-            <button @click="showSettings = false" class="flex-1 py-2 border rounded-xl text-xs font-bold">关闭</button>
-            <button @click="saveConfig" class="flex-1 py-2 bg-slate-900 text-white rounded-xl text-xs font-black">保存</button>
-          </div>
+    <div v-if="showSettings" class="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+      <div class="bg-white rounded-3xl max-w-md w-full p-5 space-y-3 shadow-2xl">
+        <h3 class="text-sm font-black">系统设置</h3>
+        <input v-model="config.siliconKey" type="password" placeholder="硅基流动 AI 密钥" class="w-full border rounded-lg p-2 font-mono text-xs">
+        <div class="flex space-x-2">
+          <button @click="showSettings = false" class="flex-1 py-2 border rounded-xl text-xs">关闭</button>
+          <button @click="saveConfig" class="flex-1 py-2 bg-slate-900 text-white rounded-xl text-xs">保存</button>
         </div>
       </div>
     </div>
@@ -257,109 +204,119 @@
   </div>
 
   <script>
-    const { createApp, ref, computed } = Vue;
+    window.addEventListener('DOMContentLoaded', () => {
+      try {
+        const { createApp, ref, computed } = Vue;
+        const app = createApp({
+          setup() {
+            const currentLoggedInUser = ref(null);
+            const showPinModal = ref(false);
+            const selectedAuthUser = ref(null);
+            const enteredPin = ref('');
+            const showSettings = ref(false);
+            const showWheelModal = ref(false);
+            const showParentResetPinModal = ref(false);
+            const parentTargetStudent = ref(null);
+            const parentNewPinInput = ref('');
 
-    createApp({
-      setup() {
-        const currentLoggedInUser = ref(null);
-        const showPinModal = ref(false);
-        const selectedAuthUser = ref(null);
-        const enteredPin = ref('');
-        const showSettings = ref(false);
-        const showWheelModal = ref(false);
-        const showParentResetPinModal = ref(false);
-        const parentTargetStudent = ref(null);
-        const parentNewPinInput = ref('');
+            const config = ref({ siliconKey: localStorage.getItem('cfg_silicon') || '' });
 
-        const config = ref({ siliconKey: localStorage.getItem('cfg_silicon') || '' });
+            const students = ref([
+              { id: 'nuo', name: '诺', grade: '小学5年级', points: 8, avatar: '🐱', pin: '1234' },
+              { id: 'wei', name: '威', grade: '小学4年级', points: 24, avatar: '🦁', pin: '1234' },
+              { id: 'yi',  name: '奕', grade: '小学2年级', points: 15, avatar: '🐼', pin: '1234' },
+              { id: 'dai', name: '黛', grade: '小学6年级', points: 42, avatar: '🔭', pin: '1234' }
+            ]);
+            const currentStudentId = ref('nuo');
+            const parentProfile = { id: 'parent', name: '家长总控', avatar: '🛡️', grade: '总控管理员', pin: '8888' };
 
-        const students = ref([
-          { id: 'nuo', name: '诺', grade: '小学5年级', points: 8, avatar: '🐱', pin: '1234' },
-          { id: 'wei', name: '威', grade: '小学4年级', points: 24, avatar: '🦁', pin: '1234' },
-          { id: 'yi',  name: '奕', grade: '小学2年级', points: 15, avatar: '🐼', pin: '1234' },
-          { id: 'dai', name: '黛', grade: '小学6年级', points: 42, avatar: '🔭', pin: '1234' }
-        ]);
-        const currentStudentId = ref('nuo');
-        const parentProfile = { id: 'parent', name: '家长总控', avatar: '🛡️', grade: '总控管理员', pin: '8888' };
+            const currentStudent = computed(() => students.value.find(s => s.id === currentStudentId.value) || students.value[0]);
+            const rankedStudents = computed(() => [...students.value].sort((a, b) => b.points - a.points));
 
-        const currentStudent = computed(() => students.value.find(s => s.id === currentStudentId.value) || students.value[0]);
-        const rankedStudents = computed(() => [...students.value].sort((a, b) => b.points - a.points));
+            const baseTasks = ref([
+              { id: 1, code: '01', category: '作业', icon: '🎒', title: '登记并完成学校家庭作业', points: 3 },
+              { id: 2, code: '02', category: '阅读', icon: '🔍', title: '每日新闻/名著阅读与3道真题', points: 3 },
+              { id: 3, code: '03', category: '练字', icon: '✍️', title: '每日练字打卡(古诗句×10遍)', points: 2 },
+              { id: 4, code: '04', category: '口算', icon: '⚡', title: '每日10道年级口算', points: 2 },
+              { id: 5, code: '05', category: '奥数', icon: '🧩', title: '每日一道年级奥数题', points: 3 }
+            ]);
+            const checkins = ref({});
 
-        const baseTasks = ref([
-          { id: 1, code: '01', category: '作业', icon: '🎒', title: '登记并完成学校家庭作业', points: 3 },
-          { id: 2, code: '02', category: '阅读', icon: '🔍', title: '每日新闻/名著阅读与3道真题', points: 3 },
-          { id: 3, code: '03', category: '练字', icon: '✍️', title: '每日练字打卡(古诗句×10遍)', points: 2 },
-          { id: 4, code: '04', category: '口算', icon: '⚡', title: '每日10道年级口算', points: 2 },
-          { id: 5, code: '05', category: '奥数', icon: '🧩', title: '每日一道年级奥数题', points: 3 }
-        ]);
-        const customTasks = ref([]);
-        const checkins = ref({});
+            const allTodayTasks = computed(() => baseTasks.value);
+            const isDone = (id) => (checkins.value[`${currentStudentId.value}_2026-09-04`]?.doneTaskIds || []).includes(id);
 
-        const allTodayTasks = computed(() => [...customTasks.value, ...baseTasks.value]);
-        const isDone = (id) => (checkins.value[`${currentStudentId.value}_2026-09-04`]?.doneTaskIds || []).includes(id);
-
-        const openPinModal = (user) => { selectedAuthUser.value = user; enteredPin.value = ''; showPinModal.value = true; };
-        const pressPin = (num) => {
-          if (enteredPin.value.length < 4) {
-            enteredPin.value += String(num);
-            if (enteredPin.value.length === 4) {
-              if (enteredPin.value === (selectedAuthUser.value.pin || '1234')) {
-                switchToUser(selectedAuthUser.value);
-                showPinModal.value = false;
-                enteredPin.value = '';
-              } else {
-                alert('密码错误！');
-                enteredPin.value = '';
+            const openPinModal = (user) => { selectedAuthUser.value = user; enteredPin.value = ''; showPinModal.value = true; };
+            const pressPin = (num) => {
+              if (enteredPin.value.length < 4) {
+                enteredPin.value += String(num);
+                if (enteredPin.value.length === 4) {
+                  if (enteredPin.value === (selectedAuthUser.value.pin || '1234')) {
+                    switchToUser(selectedAuthUser.value);
+                    showPinModal.value = false;
+                    enteredPin.value = '';
+                  } else {
+                    alert('密码错误！');
+                    enteredPin.value = '';
+                  }
+                }
               }
-            }
+            };
+            const clearPin = () => { enteredPin.value = ''; };
+            const switchToUser = (u) => { currentLoggedInUser.value = u; if (u.id !== 'parent') currentStudentId.value = u.id; };
+            const logout = () => { currentLoggedInUser.value = null; };
+
+            const openParentResetPin = (st) => { 
+              parentTargetStudent.value = st; 
+              parentNewPinInput.value = ''; 
+              showParentResetPinModal.value = true; 
+            };
+            const confirmParentResetPin = () => {
+              if (!parentNewPinInput.value || parentNewPinInput.value.length !== 4) return alert('请输入4位数字密码！');
+              if (parentTargetStudent.value) {
+                parentTargetStudent.value.pin = parentNewPinInput.value;
+              }
+              showParentResetPinModal.value = false;
+              alert('密码重置成功！');
+            };
+
+            const openTaskInteractive = (task) => {
+              const k = `${currentStudentId.value}_2026-09-04`;
+              if (!checkins.value[k]) checkins.value[k] = { doneTaskIds: [] };
+              if (!checkins.value[k].doneTaskIds.includes(task.id)) {
+                checkins.value[k].doneTaskIds.push(task.id);
+                currentStudent.value.points += task.points;
+                alert(`🎉 成功完成【${task.title}】，奖励 +${task.points} 积分！`);
+              } else {
+                alert(`【${task.title}】今日已完成打卡！`);
+              }
+            };
+
+            const saveConfig = () => {
+              localStorage.setItem('cfg_silicon', config.value.siliconKey);
+              showSettings.value = false;
+              alert('配置保存成功！');
+            };
+
+            return {
+              currentLoggedInUser, showPinModal, selectedAuthUser, enteredPin,
+              parentProfile, openPinModal, pressPin, clearPin, switchToUser, logout,
+              students, currentStudentId, currentStudent, rankedStudents,
+              allTodayTasks, isDone, showSettings, saveConfig, config,
+              showWheelModal, openWheelModal: () => { showWheelModal.value = true; },
+              showParentResetPinModal, parentTargetStudent, parentNewPinInput, openParentResetPin, confirmParentResetPin,
+              openTaskInteractive
+            };
           }
-        };
-        const clearPin = () => { enteredPin.value = ''; };
-        const switchToUser = (u) => { currentLoggedInUser.value = u; if (u.id !== 'parent') currentStudentId.value = u.id; };
-        const logout = () => { currentLoggedInUser.value = null; };
-
-        const openParentResetPin = (st) => { 
-          parentTargetStudent.value = st; 
-          parentNewPinInput.value = ''; 
-          showParentResetPinModal.value = true; 
-        };
-        const confirmParentResetPin = () => {
-          if (!parentNewPinInput.value || parentNewPinInput.value.length !== 4) return alert('请输入4位数字密码！');
-          if (parentTargetStudent.value) {
-            parentTargetStudent.value.pin = parentNewPinInput.value;
-          }
-          showParentResetPinModal.value = false;
-          alert('密码重置成功！');
-        };
-
-        const openTaskInteractive = (task) => {
-          const k = `${currentStudentId.value}_2026-09-04`;
-          if (!checkins.value[k]) checkins.value[k] = { doneTaskIds: [] };
-          if (!checkins.value[k].doneTaskIds.includes(task.id)) {
-            checkins.value[k].doneTaskIds.push(task.id);
-            currentStudent.value.points += task.points;
-            alert(`🎉 成功完成【${task.title}】，奖励 +${task.points} 积分！`);
-          } else {
-            alert(`【${task.title}】今日已完成打卡！`);
-          }
-        };
-
-        const saveConfig = () => {
-          localStorage.setItem('cfg_silicon', config.value.siliconKey);
-          showSettings.value = false;
-          alert('配置保存成功！');
-        };
-
-        return {
-          currentLoggedInUser, showPinModal, selectedAuthUser, enteredPin,
-          parentProfile, openPinModal, pressPin, clearPin, switchToUser, logout,
-          students, currentStudentId, currentStudent, rankedStudents,
-          allTodayTasks, isDone, showSettings, saveConfig, config,
-          showWheelModal, openWheelModal, showParentResetPinModal, parentTargetStudent, parentNewPinInput, openParentResetPin, confirmParentResetPin,
-          openTaskInteractive
-        };
+        });
+        
+        app.mount('#app');
+        // 成功挂载后隐藏加载提示，显示应用
+        document.getElementById('fallback-loading').style.display = 'none';
+        document.getElementById('app').style.display = 'flex';
+      } catch (e) {
+        document.getElementById('fallback-loading').innerHTML = '<h2 style="color:red;">加载异常: ' + e.message + '</h2>';
       }
-    }).mount('#app');
+    });
   </script>
 </body>
 </html>
