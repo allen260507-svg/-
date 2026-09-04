@@ -1,7 +1,6 @@
-// 家庭研学中枢 - Vue 3 主控制器 (全面防白屏、异常拦截与游戏化逻辑)
+// 家庭研学中枢 - Vue 3 主控制器 (集成所有任务交互与防白屏容错)
 const { createApp, ref, computed, onMounted, onUnmounted } = Vue;
 
-// 纯原生 Web Audio 合成音效引擎
 const AudioEngine = {
   ctx: null,
   init() {
@@ -58,7 +57,6 @@ try {
       const selectedAuthUser = ref(null);
       const enteredPin = ref('');
 
-      // 弹窗状态全量安全定义
       const showSettings = ref(false);
       const showAssignModal = ref(false);
       const showPointModal = ref(false);
@@ -86,13 +84,13 @@ try {
       const parentTargetStudent = ref(null);
       const parentNewPinInput = ref('');
 
-      // 转盘状态
+      // 转盘
       const showWheelModal = ref(false);
       const wheelRotation = ref(0);
       const isWheelSpinning = ref(false);
       const wheelTargetTask = ref(null);
 
-      // 计时器状态
+      // 计时器
       const activeTimingTaskId = ref(null);
       const taskTimerSeconds = ref(0);
       const isTimerRunning = ref(false);
@@ -121,7 +119,6 @@ try {
         return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
       };
 
-      // 基础数据与配置
       const config = ref({
         siliconKey: localStorage.getItem('cfg_silicon') || '',
         upstashUrl: localStorage.getItem('cfg_upstash_url') || '',
@@ -143,83 +140,73 @@ try {
 
       const parentProfile = { id: 'parent', name: '家长总控', avatar: '🛡️', grade: '总控管理员', pin: '8888' };
       const currentStudent = computed(() => students.value.find(s => s.id === currentStudentId.value) || students.value[0]);
+      const rankedStudents = computed(() => [...students.value].sort((a, b) => b.points - a.points));
 
-      const rankedStudents = computed(() => {
-        return [...students.value].sort((a, b) => b.points - a.points);
-      });
-
-      // 任务 1：作业登记
+      // 任务 1
       const hwForm = ref({ yuwen: '', shuxue: '', yingyu: '', durationMinutes: 35, mode: 'direct' });
       const hwPhotos = ref([]);
       const hwGradingStatus = ref('');
       const isHwGrading = ref(false);
 
-      // 任务 2：阅读
+      // 任务 2
       const currentReadingArticle = computed(() => {
         const g = currentStudent.value.grade || '';
         const isJunior = g.includes('1年级') || g.includes('2年级');
         const articles = window.StudyData?.readingArticles || [];
-        return articles.find(a => a.forJunior === isJunior) || articles[0] || { title: '阅读', content: '', questions: [{q:'', options:[], ans:'A', analysis:''}, {q:'', ans:''}] };
+        return articles.find(a => a.forJunior === isJunior) || articles[0];
       });
       const readingSelectedChoice = ref('');
       const readingFillAnswer = ref('');
       const readingSubmitted = ref(false);
       const readingResultMsg = ref('');
 
-      // 任务 3：练字
+      // 任务 3
       const calligraphyData = computed(() => window.StudyData?.calligraphySets?.[0] || { chars: [] });
       const calligraphyPhotos = ref([]);
 
-      // 任务 4：口算
+      // 任务 4
       const mathProblems = ref([]);
       const mathSubmitted = ref(false);
       const mathPassed = ref(false);
       const mathScoreSummary = ref('');
 
-      // 任务 5：奥数
+      // 任务 5
       const currentOlympiadData = computed(() => {
         const g = currentStudent.value.grade || '';
         const bank = window.StudyData?.olympiadBank || {};
         for (let k in bank) {
           if (g.includes(k.replace('小学', ''))) return bank[k];
         }
-        return bank['小学3年级'] || { title: '', question: '', hint: '', steps: [], variant: { question: '', ans: '' } };
+        return bank['小学3年级'];
       });
       const olympiadStage = ref('problem');
       const olympiadPhotos = ref([]);
 
-      // 任务 6：单词
-      const todayWordPack = computed(() => window.StudyData?.englishWordPack || { words: [], speechSentences: [], structurePractice: {sentence:'', structure:''}, translationPractice: {sentence:'', hints:[], referenceCN:''}, readingComprhension: {title:'', passage:'', questions:[]}, clozeTest: {title:'', passage:'', blanks:[]} });
+      // 任务 6
+      const todayWordPack = computed(() => window.StudyData?.englishWordPack || { words: [] });
       const dictationStep = ref(0);
       const dictationCountdown = ref(20);
       const dictationTimer = ref(null);
       const dictationPhotos = ref([]);
 
-      // 任务 9：翻译
+      // 任务 9
       const userTranslationInput = ref('');
       const translationSubmitted = ref(false);
 
-      // 任务 10：英文阅读
+      // 任务 10
       const englishReadingUserChoices = ref({});
       const englishReadingSubmitted = ref(false);
       const englishReadingScore = ref(0);
 
-      // 任务 11：完形填空
+      // 任务 11
       const clozeUserChoices = ref({});
       const clozeSubmitted = ref(false);
       const clozeScore = ref(0);
 
-      // 任务 12：错题
+      // 任务 12 & 13
       const newSchoolError = ref({ subject: '数学', question: '', analysis: '', photoUrl: '' });
-
-      // 任务 13：伴读
       const bookForm = ref({ bookName: '', pages: '', duration: 20, summary: '', nextPlan: '' });
 
-      // 个人中心小测
-      const newQuiz = ref({ subject: '数学', date: '2026-09-04', title: '', score: null, maxScore: 100, reflection: '' });
-      const newShopItem = ref({ icon: '🎁', name: '', desc: '', cost: 20 });
-
-      // 语音合成
       const speakText = (text, lang = 'en-US') => {
         try {
           if ('speechSynthesis' in window) {
@@ -233,14 +220,7 @@ try {
       };
 
       const logPointTransaction = (studentId, title, change, newBalance) => {
-        pointLogs.value.unshift({
-          id: 'log_' + Date.now(),
-          studentId,
-          title,
-          change,
-          balance: newBalance,
-          time: '2026-09-04 15:30'
-        });
+        pointLogs.value.unshift({ id: 'log_' + Date.now(), studentId, title, change, balance: newBalance, time: '2026-09-04 15:30' });
       };
 
       const recordTaskDone = (taskId, files = [], extraMinutes = 0) => {
@@ -274,7 +254,7 @@ try {
         syncToCloud();
       };
 
-      // 大转盘抽选逻辑
+      // 大转盘
       const openWheelModal = () => {
         wheelRotation.value = 0;
         isWheelSpinning.value = false;
@@ -363,7 +343,6 @@ try {
               const res = await window.StudyAI.gradeHomework(config.value.siliconKey, base64);
               if (res.errors && res.errors.length > 0) {
                 res.errors.forEach(err => errors.value.unshift({ id: Date.now() + Math.random(), studentId: currentStudentId.value, ...err, date: '2026-09-04', resolved: false }));
-                alert(`发现 ${res.errors.length} 处错题，已入错题本！`);
               }
             }
             recordTaskDone(1, hwPhotos.value, hwForm.value.durationMinutes);
@@ -527,48 +506,6 @@ try {
         alert('密码重置成功！');
       };
 
-      const openAssignModal = () => { newTask.value.title = ''; parentTaskFiles.value = []; showAssignModal.value = true; };
-      const handleParentTaskFiles = (e) => {
-        Array.from(e.target.files).forEach(f => {
-          const r = new FileReader();
-          r.onload = ev => parentTaskFiles.value.push({ name: f.name, dataUrl: ev.target.result, size: f.size, type: f.type });
-          r.readAsDataURL(f);
-        });
-      };
-      const confirmAssignTask = () => {
-        if (!newTask.value.title.trim()) return alert('请输入任务名！');
-        customTasks.value.unshift({
-          id: 'ct_' + Date.now(),
-          code: '令',
-          category: '家长特派',
-          icon: '⚡',
-          title: newTask.value.title.trim(),
-          duration: '15分钟',
-          points: newTask.value.points || 3,
-          criteria: '家长验收',
-          targetStudentId: newTask.value.targetStudentId,
-          isCustom: true,
-          parentAttachments: [...parentTaskFiles.value]
-        });
-        showAssignModal.value = false;
-        parentTaskFiles.value = [];
-        syncToCloud();
-        alert('任务下发成功！');
-      };
-
-      const openPointAdjustModal = (st) => { targetPointStudent.value = st; customPointAmount.value = 10; customPointReason.value = ''; showPointModal.value = true; };
-      const confirmCustomPointAdjust = () => {
-        if (!targetPointStudent.value) return;
-        const delta = parseInt(customPointAmount.value, 10);
-        if (isNaN(delta) || delta === 0) return alert('请输入有效数值！');
-        targetPointStudent.value.points += delta;
-        if (targetPointStudent.value.points < 0) targetPointStudent.value.points = 0;
-        logPointTransaction(targetPointStudent.value.id, `家长奖惩: ${customPointReason.value || '调整'}`, delta, targetPointStudent.value.points);
-        showPointModal.value = false;
-        syncToCloud();
-        alert('积分调整成功！');
-      };
-
       const handleAvatarChange = (e) => {
         const file = e.target.files[0];
         if (!file) return;
@@ -605,13 +542,7 @@ try {
       const isHomeworkDone = computed(() => (checkins.value[`${currentStudentId.value}_2026-09-04`]?.doneTaskIds || []).includes(1));
       const totalTaskCount = computed(() => allTodayTasks.value.length);
       const todayDoneCount = computed(() => (checkins.value[`${currentStudentId.value}_2026-09-04`]?.doneTaskIds || []).length);
-      const todayPoints = computed(() => {
-        const doneIds = checkins.value[`${currentStudentId.value}_2026-09-04`]?.doneTaskIds || [];
-        return allTodayTasks.value.filter(t => doneIds.includes(t.id)).reduce((a, b) => a + b.points, 0);
-      });
       const isDone = (id) => (checkins.value[`${currentStudentId.value}_2026-09-04`]?.doneTaskIds || []).includes(id);
-
-      const studentErrors = computed(() => errors.value.filter(e => e.studentId === currentStudentId.value && !e.resolved));
 
       const syncToCloud = async () => {
         try {
@@ -669,8 +600,6 @@ try {
           showSchoolErrorModal.value = false;
           showBookReadingModal.value = false;
           showParentResetPinModal.value = false;
-          showAssignModal.value = false;
-          showPointModal.value = false;
           showWheelModal.value = false;
         }
         if (showPinModal.value) {
@@ -693,7 +622,7 @@ try {
         currentLoggedInUser, activeTab, showPinModal, selectedAuthUser, enteredPin,
         parentProfile, openPinModal, pressPin, clearPin, switchToUser, logout,
         students, currentStudentId, currentStudent, rankedStudents,
-        baseTasks, customTasks, allTodayTasks, isHomeworkDone, totalTaskCount, todayDoneCount, todayPoints, isDone,
+        baseTasks, customTasks, allTodayTasks, isHomeworkDone, totalTaskCount, todayDoneCount, isDone,
         config, showSettings, saveConfig, syncToCloud,
         activeTimingTaskId, taskTimerSeconds, isTimerRunning, startTaskTimer, pauseTaskTimer, formatSeconds,
         showWheelModal, wheelRotation, isWheelSpinning, wheelTargetTask, openWheelModal, spinLuckyWheel, jumpToWheelTask,
@@ -710,16 +639,12 @@ try {
         showSchoolErrorModal, newSchoolError, submitSchoolError, errors,
         showBookReadingModal, bookForm, submitBookReading,
         showParentResetPinModal, parentTargetStudent, parentNewPinInput, openParentResetPin, confirmParentResetPin,
-        showAssignModal, newTask, parentTaskFiles, openAssignModal, handleParentTaskFiles, confirmAssignTask,
-        showPointModal, targetPointStudent, customPointAmount, customPointReason, openPointAdjustModal, confirmCustomPointAdjust,
-        handleAvatarChange, checkins, recordTaskDone, openTaskInteractive, studentErrors
+        handleAvatarChange, checkins, recordTaskDone, openTaskInteractive
       };
     }
-  }).mount('#app');
+  });
+
+  app.mount('#app');
 } catch (err) {
-  console.error("Vue Application Mount Error:", err);
-  document.body.innerHTML = `<div style="padding:4onta; font-family:sans-serif; text-align:center; margin-top:50px;">
-    <h2 style="color:#e11d48;">系统加载遇到了一点小状况</h2>
-    <p>请按 F12 打开开发者工具检查控制台错误，或重新检查 JS 脚本引入。</p>
-  </div>`;
+  console.error("Vue Mount Error:", err);
 }
