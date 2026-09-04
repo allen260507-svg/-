@@ -80,7 +80,7 @@
             开启今日研学空间
           </h2>
           <p class="text-sm md:text-base text-slate-600 mt-2 font-bold tracking-wide">
-            四人独立档案 · 真实军事/科技新闻 · 智能打卡复盘 · 错题复仇
+            四人独立档案 · 真实军事/科技新闻 · 严谨打卡月历 · 错题复仇
           </p>
         </div>
 
@@ -146,7 +146,7 @@
               <span class="text-lg font-black text-slate-900">家长督导指挥中心</span>
               <span class="text-xs px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-800 font-black">总控模式</span>
             </div>
-            <p class="text-xs text-slate-500 font-bold mt-0.5">监控诺、威、奕、黛 4 位学生的任务、错题、小测，派发带附件的临时任务</p>
+            <p class="text-xs text-slate-500 font-bold mt-0.5">实时监控 4 位学生、查看密码、派发附带材料的任务、奖惩积分</p>
           </div>
         </div>
 
@@ -245,7 +245,7 @@
                       @click="viewTaskAttachments(st, tId)"
                       class="px-2 py-0.5 bg-amber-100 hover:bg-amber-200 text-amber-900 rounded font-black text-[10px]"
                     >
-                      学生附件({{ getTaskAttachmentCount(st.id, tId) }})
+                      附件({{ getTaskAttachmentCount(st.id, tId) }})
                     </button>
                     <span class="text-emerald-700 font-black">✓</span>
                   </div>
@@ -391,7 +391,6 @@
                   <div class="text-xs text-slate-500 font-medium truncate" :title="task.criteria">
                     验收：{{ task.criteria }}
                   </div>
-                  <!-- 家长派发的附件查看入口 -->
                   <div v-if="task.parentAttachments && task.parentAttachments.length > 0" class="pt-0.5">
                     <button @click="viewParentTaskAttachments(task)" class="px-2 py-0.5 bg-indigo-100 hover:bg-indigo-200 text-indigo-800 rounded font-black text-[10px] flex items-center space-x-1">
                       <span>📎</span>
@@ -443,7 +442,7 @@
           </div>
         </div>
 
-        <!-- 【视图 2：打卡月历】 -->
+        <!-- 【视图 2：打卡月历 (勾叉数量直观显示 + 点击任意一天看详细战报)】 -->
         <div v-if="activeTab === 'records'" class="h-full flex flex-col flex-1 glass-light rounded-2xl p-4 overflow-hidden shadow-sm border border-slate-200/80 space-y-3">
           <div class="flex flex-wrap items-center justify-between gap-3 pb-2 border-b border-slate-200/80 flex-shrink-0">
             <div class="flex items-center space-x-2">
@@ -466,10 +465,10 @@
 
             <div class="flex items-center space-x-2 text-xs font-black">
               <span class="bg-emerald-50 text-emerald-800 border border-emerald-200 px-3 py-1 rounded-lg">
-                🌸 本月达标：{{ calMonthFlowerCount }} 天
+                🌸 本月达标全勤：{{ calMonthFlowerCount }} 天
               </span>
-              <span class="bg-amber-50 text-amber-800 border border-amber-200 px-3 py-1 rounded-lg">
-                共 {{ calMonthTotalDays }} 天
+              <span class="bg-indigo-50 text-indigo-800 border border-indigo-200 px-3 py-1 rounded-lg">
+                共 {{ calMonthTotalDays }} 天 (点击日期看详细)
               </span>
             </div>
           </div>
@@ -478,30 +477,40 @@
             <div class="text-rose-500">周一</div><div>周二</div><div>周三</div><div>周四</div><div>周五</div><div>周六</div><div class="text-rose-500">周日</div>
           </div>
 
+          <!-- 精装修日历格子：醒目显示 ✓做完数 和 ✕未做数，点击进入当天详细 -->
           <div class="grid grid-cols-7 gap-2 flex-1 overflow-y-auto custom-scrollbar pr-1">
-            <div v-for="b in calMonthStartOffset" :key="'blank_'+b" class="h-20 bg-slate-50/40 rounded-xl border border-dashed border-slate-200/50"></div>
+            <div v-for="b in calMonthStartOffset" :key="'blank_'+b" class="h-21 bg-slate-50/40 rounded-xl border border-dashed border-slate-200/50"></div>
             
             <div 
               v-for="day in calMonthTotalDays" 
               :key="'day_'+day" 
-              class="border border-slate-200 rounded-xl p-2 flex flex-col justify-between bg-white hover:shadow-md transition h-20"
+              @click="openDayDetailModal(selectedCalYear, selectedCalMonth, day)"
+              class="border border-slate-200 rounded-xl p-2 flex flex-col justify-between bg-white hover:border-indigo-400 hover:shadow-md cursor-pointer transition h-21 select-none group"
             >
               <div class="flex justify-between items-center">
-                <span class="text-xs font-black text-slate-700">{{ day }}</span>
-                <span v-if="isToday(day)" class="text-[9px] bg-indigo-600 text-white px-1.5 rounded-full font-bold">今日</span>
+                <span class="text-xs font-black text-slate-800 group-hover:text-indigo-600">{{ day }}</span>
+                <span v-if="isToday(day)" class="text-[9px] bg-indigo-600 text-white px-1.5 py-0.2 rounded-full font-bold">今日</span>
               </div>
               
-              <div class="text-center my-auto">
-                <span v-if="isSpecificDayPassed(selectedCalYear, selectedCalMonth, day)" class="text-xl animate-bounce inline-block">🌸</span>
-                <span v-else-if="isPastDay(day)" class="text-xs font-black text-rose-400">待达标</span>
-                <span v-else class="text-slate-200 font-bold text-sm">·</span>
+              <!-- 勾叉与数量显示 -->
+              <div v-if="isPastDay(day) || isToday(day)" class="my-auto space-y-1">
+                <div class="flex items-center justify-between text-[11px] font-black">
+                  <span class="text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.2 rounded flex items-center space-x-0.5">
+                    <span>✓</span>
+                    <span>{{ getSpecificDayDoneCount(selectedCalYear, selectedCalMonth, day) }}</span>
+                  </span>
+                  <span class="text-rose-600 bg-rose-50 border border-rose-200 px-1.5 py-0.2 rounded flex items-center space-x-0.5">
+                    <span>✕</span>
+                    <span>{{ getSpecificDayUndoneCount(selectedCalYear, selectedCalMonth, day) }}</span>
+                  </span>
+                </div>
               </div>
-              
-              <div class="text-[10px] text-slate-400 text-center font-bold">
-                <span v-if="isSpecificDayChecked(selectedCalYear, selectedCalMonth, day)" class="text-emerald-700 font-black">
-                  完成 {{ getSpecificDayDoneCount(selectedCalYear, selectedCalMonth, day) }} 项
-                </span>
-                <span v-else>未打卡</span>
+              <div v-else class="text-center my-auto text-slate-300 text-xs font-bold">
+                未来
+              </div>
+
+              <div class="text-[9px] text-indigo-500 text-center font-bold group-hover:underline">
+                点击查明细 →
               </div>
             </div>
           </div>
@@ -560,39 +569,26 @@
           </div>
         </div>
 
-        <!-- 【视图 5：学生个人中心 (自选真实新闻与海量知识库)】 -->
+        <!-- 【视图 5：学生个人中心 (每天每类一条真实新闻 + 点击展开详细剖析)】 -->
         <div v-if="activeTab === 'profile'" class="h-full flex flex-col flex-1 glass-light rounded-2xl p-4 overflow-hidden shadow-sm border border-slate-200/80 space-y-3">
           
-          <!-- 真实新闻与前沿知识黄金卡片 -->
+          <!-- 真实新闻卡片 (每天每类一条，可点击阅读完整深度解读) -->
           <div class="bg-gradient-to-r from-amber-50 via-indigo-50 to-purple-50 border border-indigo-100 rounded-2xl p-3.5 flex-shrink-0 shadow-xs space-y-2">
             <div class="flex flex-wrap items-center justify-between gap-2">
               <div class="flex items-center space-x-2">
                 <span class="text-xl">🛰️</span>
-                <span class="text-sm font-black text-slate-900">真实时事新闻与硬核新知</span>
+                <span class="text-sm font-black text-slate-900">今日精选真实新闻 · 每日一期</span>
                 <span class="text-[11px] bg-white text-indigo-700 font-bold px-2 py-0.5 rounded-full border border-indigo-200">
-                  当前领域：{{ currentTopicMeta.name }}
+                  {{ currentDailyArticle.category }}
                 </span>
               </div>
 
-              <!-- 操作按钮：AI 实时抓取真实新闻 + 本地词库随机轮换 -->
-              <div class="flex items-center space-x-2">
-                <button 
-                  :disabled="isFetchingAINews"
-                  @click="fetchAINewsFact" 
-                  class="px-2.5 py-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-black transition flex items-center space-x-1 shadow-xs disabled:opacity-50"
-                  title="调用硅基流动AI大模型生成最新真实新闻"
-                >
-                  <span>{{ isFetchingAINews ? '📡 抓取中...' : '📡 实时获取真实新闻' }}</span>
-                </button>
-
-                <button @click="nextKnowledgeFact" class="px-2.5 py-1 bg-white hover:bg-slate-50 border border-indigo-200 rounded-lg text-xs font-black text-indigo-700 transition flex items-center space-x-1 shadow-2xs">
-                  <span>🎲</span>
-                  <span>换一条</span>
-                </button>
+              <div class="text-xs font-bold text-indigo-700 flex items-center space-x-1">
+                <span>📅 2026年9月4日 权威发布</span>
               </div>
             </div>
 
-            <!-- 9 大自选领域选择胶囊 -->
+            <!-- 领域切换胶囊 -->
             <div class="flex flex-wrap items-center gap-1.5 pt-1">
               <span class="text-xs text-slate-500 font-bold mr-1">选择兴趣领域：</span>
               <button 
@@ -606,17 +602,32 @@
               </button>
             </div>
 
-            <!-- 详细新闻与知识正文 -->
-            <div class="p-3 bg-white/95 rounded-xl border border-indigo-100 text-xs md:text-sm text-slate-800 font-bold leading-relaxed flex items-start space-x-2">
-              <span class="text-base text-amber-500 flex-shrink-0">📰</span>
-              <span class="whitespace-pre-line">{{ currentDailyKnowledgeFact }}</span>
+            <!-- 真实新闻摘要卡片 (点击打开系统内深度图文大屏) -->
+            <div 
+              @click="openNewsDetailModal(currentDailyArticle)"
+              class="p-3.5 bg-white rounded-xl border border-indigo-200/80 hover:border-indigo-400 hover:shadow-md cursor-pointer transition flex flex-col md:flex-row items-start md:items-center justify-between gap-3 group"
+            >
+              <div class="space-y-1 min-w-0 flex-1">
+                <div class="flex items-center space-x-2">
+                  <span class="px-2 py-0.5 bg-indigo-100 text-indigo-800 text-[10px] font-black rounded">每日权威特稿</span>
+                  <h4 class="text-sm md:text-base font-black text-slate-900 group-hover:text-indigo-600 transition truncate">
+                    {{ currentDailyArticle.title }}
+                  </h4>
+                </div>
+                <p class="text-xs text-slate-600 line-clamp-2 leading-relaxed font-medium">
+                  {{ currentDailyArticle.summary }}
+                </p>
+              </div>
+
+              <div class="flex items-center space-x-1 text-xs font-black text-indigo-600 bg-indigo-50 px-3 py-1.5 rounded-lg flex-shrink-0 group-hover:bg-indigo-600 group-hover:text-white transition">
+                <span>阅读深度全文</span>
+                <span>→</span>
+              </div>
             </div>
           </div>
 
           <!-- 成长记录双栏排盘 -->
           <div class="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-3.5 overflow-hidden">
-            
-            <!-- 左侧：小测成绩单 -->
             <div class="flex flex-col border border-slate-200 rounded-xl p-3 bg-white overflow-hidden shadow-2xs">
               <div class="flex justify-between items-center mb-2 flex-shrink-0">
                 <span class="text-xs font-black text-slate-700 flex items-center space-x-1">
@@ -664,7 +675,7 @@
               </div>
             </div>
 
-            <!-- 右侧：积分流水明细 -->
+            <!-- 积分明细 -->
             <div class="flex flex-col border border-slate-200 rounded-xl p-3 bg-white overflow-hidden shadow-2xs">
               <div class="flex justify-between items-center mb-2 flex-shrink-0">
                 <span class="text-xs font-black text-slate-700 flex items-center space-x-1">
@@ -703,14 +714,137 @@
 
 
     <!-- ========================================================================= -->
-    <!-- 模态弹窗系统 -->
+    <!-- 模态弹窗系统 (全键盘输入支持、按 ESC 退出) -->
     <!-- ========================================================================= -->
 
-    <!-- 【弹窗：家长布置临时任务 (支持上传照片/录音/视频/文档附件)】 -->
+    <!-- 【新增弹窗 1：日历单日任务执行全景明细 (点击日历天数进入)】 -->
+    <div v-if="showDayDetailModal" class="fixed inset-0 bg-slate-950/75 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+      <div class="bg-white rounded-3xl max-w-2xl w-full p-6 space-y-4 shadow-2xl border border-slate-200 max-h-[85vh] flex flex-col">
+        <div class="flex justify-between items-center border-b border-slate-100 pb-3 flex-shrink-0">
+          <div>
+            <div class="flex items-center space-x-2">
+              <span class="text-xl">📅</span>
+              <h3 class="text-base font-black text-slate-900">
+                {{ selectedDetailDateStr }} · {{ currentStudent.name }} 的研学全景明细
+              </h3>
+            </div>
+            <div class="flex items-center space-x-3 text-xs mt-1">
+              <span class="text-emerald-700 font-black">✓ 已完成：{{ currentDayDetailDoneTasks.length }} 项</span>
+              <span class="text-slate-300">|</span>
+              <span class="text-rose-600 font-black">✕ 未完成：{{ currentDayDetailUndoneTasks.length }} 项</span>
+              <span class="text-slate-300">|</span>
+              <span class="text-amber-600 font-black">⚡ 当日得分：+{{ currentDayDetailPoints }} 分</span>
+            </div>
+          </div>
+          <button @click="showDayDetailModal = false" class="text-slate-400 hover:text-slate-600 font-bold text-lg">✕</button>
+        </div>
+
+        <!-- 任务明细列表 -->
+        <div class="flex-1 overflow-y-auto space-y-2.5 custom-scrollbar pr-1">
+          <div 
+            v-for="task in allTodayTasks" 
+            :key="task.id"
+            :class="isDayTaskDone(task.id) ? 'bg-emerald-50/70 border-emerald-200' : 'bg-rose-50/40 border-rose-100'"
+            class="p-3 rounded-xl border flex items-center justify-between text-xs"
+          >
+            <div class="flex items-center space-x-2.5 min-w-0 flex-1 mr-2">
+              <span class="text-xl">{{ task.icon }}</span>
+              <div class="min-w-0 flex-1">
+                <div class="flex items-center space-x-2">
+                  <span class="font-bold text-slate-500 text-[10px]">{{ task.code }} · {{ task.category }}</span>
+                  <span class="font-black text-amber-700">+{{ task.points }}分</span>
+                </div>
+                <div class="font-black text-slate-900 truncate mt-0.5 text-xs md:text-sm">{{ task.title }}</div>
+                <div class="text-[11px] text-slate-400 truncate">{{ task.criteria }}</div>
+              </div>
+            </div>
+
+            <div class="flex items-center space-x-2 flex-shrink-0">
+              <!-- 查看附件按钮 -->
+              <button 
+                v-if="hasDayTaskAttachment(task.id)" 
+                @click="viewDayTaskAttachments(task)"
+                class="px-2.5 py-1 bg-amber-100 hover:bg-amber-200 text-amber-900 rounded-lg font-black text-[11px] flex items-center space-x-1"
+              >
+                <span>📎</span>
+                <span>查看提交附件</span>
+              </button>
+
+              <span v-if="isDayTaskDone(task.id)" class="px-2.5 py-1 bg-emerald-600 text-white rounded-lg font-black text-[11px]">
+                ✓ 已达标
+              </span>
+              <span v-else class="px-2.5 py-1 bg-rose-100 text-rose-700 rounded-lg font-black text-[11px]">
+                ✕ 未完成
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div class="pt-2 text-right flex-shrink-0 border-t border-slate-100">
+          <button @click="showDayDetailModal = false" class="px-5 py-2 bg-slate-900 text-white rounded-xl text-xs font-bold">关闭 (ESC)</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 【新增弹窗 2：真实新闻深度图文研读大屏 (点击新闻卡片进入)】 -->
+    <div v-if="showNewsDetailModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 z-50">
+      <div class="bg-white rounded-3xl max-w-2xl w-full p-6 space-y-4 shadow-2xl border border-slate-200 max-h-[85vh] flex flex-col">
+        <div class="flex justify-between items-start border-b border-slate-100 pb-3 flex-shrink-0">
+          <div class="space-y-1">
+            <div class="flex items-center space-x-2">
+              <span class="px-2 py-0.5 bg-indigo-100 text-indigo-800 text-xs font-black rounded">{{ currentSelectedNewsArticle?.category }}</span>
+              <span class="text-xs text-slate-400 font-bold">2026年9月权威特稿</span>
+            </div>
+            <h3 class="text-lg md:text-xl font-black text-slate-900 leading-tight">
+              {{ currentSelectedNewsArticle?.title }}
+            </h3>
+          </div>
+          <button @click="showNewsDetailModal = false" class="text-slate-400 hover:text-slate-600 font-bold text-xl ml-2">✕</button>
+        </div>
+
+        <!-- 新闻与知识多模块深度排版 -->
+        <div class="flex-1 overflow-y-auto space-y-3.5 text-xs md:text-sm text-slate-800 leading-relaxed custom-scrollbar pr-1">
+          <!-- 核心事件脉络 -->
+          <div class="p-3.5 bg-indigo-50/60 rounded-2xl border border-indigo-100 space-y-1">
+            <div class="font-black text-indigo-950 flex items-center space-x-1.5 text-sm">
+              <span>📰</span>
+              <span>核心事实背景与全貌</span>
+            </div>
+            <p class="text-slate-700 font-medium">{{ currentSelectedNewsArticle?.fullContent?.background }}</p>
+          </div>
+
+          <!-- 硬核科技/原理深度解读 -->
+          <div class="p-3.5 bg-amber-50/60 rounded-2xl border border-amber-100 space-y-1">
+            <div class="font-black text-amber-950 flex items-center space-x-1.5 text-sm">
+              <span>🔬</span>
+              <span>硬核力学与科技原理探秘</span>
+            </div>
+            <p class="text-slate-700 font-medium">{{ currentSelectedNewsArticle?.fullContent?.principle }}</p>
+          </div>
+
+          <!-- 启发思考 -->
+          <div class="p-3.5 bg-emerald-50/60 rounded-2xl border border-emerald-100 space-y-1">
+            <div class="font-black text-emerald-950 flex items-center space-x-1.5 text-sm">
+              <span>💡</span>
+              <span>小探险家思考题</span>
+            </div>
+            <p class="text-slate-700 font-medium">{{ currentSelectedNewsArticle?.fullContent?.thinking }}</p>
+          </div>
+        </div>
+
+        <div class="pt-2 text-right flex-shrink-0 border-t border-slate-100">
+          <button @click="showNewsDetailModal = false" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-black shadow-sm">
+            我已读懂，收获新知 (ESC)
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 【弹窗：家长布置临时任务】 -->
     <div v-if="showAssignModal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 z-50">
       <div class="bg-white rounded-3xl max-w-md w-full p-5 space-y-3.5 shadow-2xl border border-slate-200">
         <div class="flex justify-between items-center border-b border-slate-100 pb-2">
-          <h3 class="text-sm font-black text-slate-800">➕ 布置今日临时任务 (支持附带参考资料)</h3>
+          <h3 class="text-sm font-black text-slate-800">➕ 布置今日临时任务 (支持附带资料)</h3>
           <button @click="showAssignModal = false" class="text-slate-400 hover:text-slate-600 font-bold">✕</button>
         </div>
 
@@ -741,16 +875,14 @@
             <input v-model="newTask.criteria" class="w-full border rounded-lg p-2 font-bold outline-none">
           </div>
 
-          <!-- 家长上传附件入口 -->
           <div>
-            <label class="block font-bold text-slate-600 mb-1">附加资料文件 (题目照片/示范录音/视频等，可多选)：</label>
+            <label class="block font-bold text-slate-600 mb-1">附加资料文件 (题目照片/示范录音/视频，可多选)：</label>
             <label class="block p-3 border-2 border-dashed border-slate-300 hover:border-indigo-500 rounded-xl text-center cursor-pointer bg-slate-50 transition">
               <span class="text-xl">📎</span>
               <div class="text-xs font-black text-slate-700 mt-0.5">点击多选上传任务附件</div>
               <input type="file" multiple @change="handleParentTaskFiles" class="hidden">
             </label>
 
-            <!-- 已选家长附件列表 -->
             <div v-if="parentTaskFiles.length > 0" class="mt-2 max-h-28 overflow-y-auto space-y-1.5 custom-scrollbar">
               <div v-for="(file, idx) in parentTaskFiles" :key="idx" class="p-1.5 bg-slate-50 border rounded-lg flex items-center justify-between text-[11px]">
                 <span class="truncate flex-1 font-bold">{{ file.name }}</span>
@@ -930,7 +1062,7 @@
       </div>
     </div>
 
-    <!-- 【弹窗：通用任务与临时任务多附件打卡】 -->
+    <!-- 【弹窗：通用任务与临时任务打卡】 -->
     <div v-if="showTaskSubmitModal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 z-50">
       <div class="bg-white rounded-3xl max-w-md w-full p-6 space-y-4 shadow-2xl border border-slate-200">
         <div class="flex justify-between items-center border-b border-slate-100 pb-2">
@@ -965,7 +1097,7 @@
       </div>
     </div>
 
-    <!-- 【弹窗：附件审阅 (支持查看学生打卡附件及家长派发的任务附件)】 -->
+    <!-- 【弹窗：通用附件审阅】 -->
     <div v-if="showAttachmentViewer" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 z-50">
       <div class="bg-white rounded-3xl max-w-xl w-full p-6 space-y-4 shadow-2xl border border-slate-200 max-h-[85vh] flex flex-col">
         <div class="flex justify-between items-center border-b border-slate-100 pb-2 flex-shrink-0">
@@ -1073,6 +1205,14 @@
         const showAttachmentViewer = ref(false);
         const showQuizModal = ref(false);
 
+        // 新增：单日明细与深度新闻弹窗
+        const showDayDetailModal = ref(false);
+        const selectedDetailDateStr = ref('');
+        const selectedDetailDayKey = ref('');
+
+        const showNewsDetailModal = ref(false);
+        const currentSelectedNewsArticle = ref(null);
+
         const currentActiveTask = ref(null);
         const targetPointStudent = ref(null);
         const customPointAmount = ref(10);
@@ -1082,14 +1222,11 @@
         const viewingTaskTitle = ref('');
         const viewingStudentName = ref('');
 
-        const isFetchingAINews = ref(false);
-        const dynamicAINewsText = ref('');
-
         // 月历状态
         const selectedCalYear = ref(2026);
         const selectedCalMonth = ref(9);
 
-        // 9 大真实新闻与权威科学知识领域
+        // 9 大真实新闻与权威知识领域
         const knowledgeTopics = [
           { id: 'news', name: '真实新闻', icon: '📰' },
           { id: 'military', name: '国防军事', icon: '🪖' },
@@ -1102,65 +1239,99 @@
           { id: 'nature', name: '神奇自然', icon: '🌿' }
         ];
 
-        // 真实硬核知识与大事件库
-        const knowledgeFacts = {
-          news: [
-            "【国产大飞机突破】我国自主研制的国产C919大型客机已投入规模化商业航线运行，突破了反推装置、复合材料机翼等多项核心航空工业卡脖子难题！",
-            "【跨海世纪工程】深中通道全线通车！拥有世界上最长、最宽的海底钢壳混凝土沉管隧道，把深圳到中山的车程从2小时彻底压缩到30分钟以内。",
-            "【南极新科考站】我国第5个南极考察站——秦岭站正式建成开站，位于罗斯海区域，能顶住零下40摄氏度与17级以上极地超强暴风雪的极端考验！",
-            "【月背采样壮举】嫦娥六号探测器在月球背面艾特肯盆地成功挖取人类历史上第一份月背土壤样品并安全送回地球，开创了世界深空探测新纪录！"
-          ],
-          military: [
-            "【国之重刃福建舰】我国第三艘航母福建舰采用世界领先的电磁弹射系统，战机可在数秒内加速离舰升空，弹射效率与出动频次超越传统蒸汽弹射数倍！",
-            "【空中幽灵歼-20】歼-20威龙战斗机具备卓越的超音速巡航与隐身能力，其DSI超音速进气道与鸭翼气动布局是世界空气动力学顶级工程杰作。",
-            "【战略胖钮运-20】运-20大型运输机拥有66吨的最大载重能力，能在恶劣野战简易跑道起降，是我国陆空联合作战与人道主义救援的战略投送中坚。",
-            "【深蓝利剑055大驱】055型万吨导弹驱逐舰配备112单元大型通用垂直发射系统和双波段相控阵雷达，防空、反潜、反导综合战力位居世界一流。"
-          ],
-          tech: [
-            "【量子算力奇迹】我国科学家研制的'祖冲之号'超导量子计算原型机与'九章'光量子计算原型机，处理特定复杂算法的速度比世界最强的经典超级计算机快数万倍！",
-            "【深海极限挑战】'奋斗者号'全海深载人潜水器在马里亚纳海沟坐底深度达10909米，承受的深海压强超过1100个大气压，相当于一头成年大象踩在指甲盖上！",
-            "【人形机器人新进化】现代双足人形机器人已融合端到端大模型大脑，具备毫米级触觉感知与动态平衡控制，能自主在工厂分拣工件并在崎岖路面跑步翻滚。",
-            "【核聚变人造太阳】中国环流三号全超导托卡马克装置（EAST）成功实现高约束模式等离子体运行，正在探索模仿太阳内部核聚变反应，为人类寻找无限清洁能源。"
-          ],
-          history: [
-            "【三星堆青铜奇迹】三星堆遗址出土的高达3.96米的青铜神树与轻如蝉翼的黄金面具，实证了3000多年前古蜀文明与中原商王朝密切交融的多元一体格局。",
-            "【长城千年不倒之谜】中国古代筑造万里长城和大型古城墙时，在石灰砂浆中特意加入了熟糯米汁，形成的复合凝胶具有极强的韧性与抗震防水力！",
-            "【活字印刷术】北宋毕昇发明的泥活字印刷术，将每个汉字做成独立的胶泥字模烧硬，排版灵活快捷，比欧洲古登堡金属活字印刷早了整整400多年。",
-            "【良渚古城水利系统】5000多年前的良渚先民就建造了世界上最早的大型水坝系统，利用山谷高低落差防洪蓄水灌溉，其工程土方量超过1000万立方米。"
-          ],
-          lego: [
-            "【齿轮传动比奥秘】在机械积木中，大齿轮带动小齿轮叫'增速'（转得快但力气小），小齿轮带动大齿轮叫'减速'（转得慢但扭矩力气巨大），汽车变速箱正是这一原理！",
-            "【差速器的神级机械】汽车转弯时外侧车轮路程长、内侧短。积木机械组里的差速器齿轮箱巧妙地允许左右车轮以不同转速旋转，否则汽车拐弯时轮胎会直接严重打滑！",
-            "【平行四边形悬挂】利用四连杆机构的几何不变性，在机械臂和汽车独立悬挂中，能确保车轮或夹爪在剧烈颠簸中始终与地面保持垂直贴合！",
-            "【榫卯与乐高抓力】乐高积木凸起与管道公差严格控制在0.002毫米以内，其形成的'离合力'与我国古代木结构古建的榫卯受力有异曲同工之妙。"
-          ],
-          literature: [
-            "【李白的地理漫游】诗仙李白一生足迹踏遍大半个中国，走过今天的18个省份、206座州县，著名的《早发白帝城》是他获赦后顺江而下一日行千里时写下的狂喜之作。",
-            "【四大名著原名探微】《红楼梦》最初的名字叫做《石头记》，曹雪芹以一块通灵宝玉的下凡历劫为线索，写尽了世态炎凉与人间真情。",
-            "【空城计的历史真相】《三国演义》中诸葛亮城楼抚琴退司马懿是罗贯中的艺术渲染，历史上真正的空城计原型主角其实是常胜将军赵云（汉水之战）！",
-            "【古人怎么形容颜色】古人不说天蓝色，而叫'天青'（雨过天青云破处）；不说浅绿色，而叫'东方既白'；不说深红色，而叫'胭脂'或'朱砂'。"
-          ],
-          astronomy: [
-            "【旅行者1号星际远征】1977年发射的旅行者1号探测器已飞出太阳系日球层顶，距离地球超过240亿公里，成为人类制造的第一个飞入星际空间的人造物体！",
-            "【韦伯太空望远镜】部署在距离地球150万公里拉格朗日L2点的韦伯望远镜，能捕捉到宇宙大爆炸后第一批形成的星系微弱红外光芒！",
-            "【黑洞的第一张照片】人类通过全球8台射电望远镜组成的'事件视界望远镜'，成功拍摄到了M87星系中心超大质量黑洞的真实光环照片！",
-            "【土星光环的寿命】土星壮观的光环主要由冰块和岩石碎片组成，由于引力作用，光环物质正在以每秒数百吨的速度掉入土星大气层，几亿年后光环将彻底消失。"
-          ],
-          dinosaurs: [
-            "【恐龙真正的叫声】古生物学家通过对副栉龙骨质头冠的CT扫描与流体力学模拟发现，它们发出的不是怒吼，而是类似管乐器般低沉、能传数十里的低频共鸣！",
-            "【带羽毛的霸王龙近亲】我国辽西热河生物群发现了世界第一只带羽毛的恐龙化石中华龙鸟，以及巨大的华丽羽王龙，彻底颠覆了恐龙是光秃秃爬行动物的认知！",
-            "【棘龙是水上霸主】棘龙是已知最长的大型肉食恐龙，其尾巴像鳄鱼一样扁平，骨骼密度极高，主要生活在远古河流中捕捉巨型硬骨鱼类。",
-            "【陨石撞击的一天】6600万年前，一颗直径约10公里的巨型小行星撞击墨西哥尤卡坦半岛，引发全球性海啸、森林大火与尘埃遮天蔽日的核冬天，导致非鸟恐龙全部灭绝。"
-          ],
-          nature: [
-            "【鸟类的地磁导航】候鸟在长途迁徙中不会迷路，是因为它们的眼睛视网膜中拥有一种叫做'隐花色素'的量子受体蛋白，可以直接'看'到地球磁场的磁力线！",
-            "【蘑菇的地下互联网】森林地下的真菌菌丝网络延伸数十公里，大树可以通过这套网络向幼苗输送糖分养料，甚至在遭受害虫袭击时发出化学预警信号。",
-            "【大王乌贼的巨眼】深海大王乌贼的眼睛直径可达30厘米，如篮球般巨大，能在幽暗无光的千米深海中感知抹香鲸游动扰动发光水母所产生的微弱荧光！",
-            "【仿生学壁虎脚】壁虎之所以能倒挂在光滑玻璃上跑步，是因为脚趾长着数百万根微纳米级刚毛，利用微观分子间的'范德华力'产生牢不可破的吸附。"
-          ]
+        // 每天每类精编一条权威真实新闻与硬核事实
+        const dailyRealNewsArticles = {
+          news: {
+            category: '📰 真实时事新闻',
+            title: '国产C919大型客机规模化商业运营突破千万人次',
+            summary: '我国自主研制的C919大飞机已在多条国内主流干线航线常态化运行，各项安全指标与燃油经济性经受住了高密度商业飞行的全方位考验。',
+            fullContent: {
+              background: '中国商飞C919飞机不仅是现代航空工业的集大成者，更标志着我国具备了按照国际适航标准研制大型干线客机的完整能力。从机翼尖端的超临界机翼设计，到先进机载航空电子系统集成，全部实现了自主可控。',
+              principle: '超临界机翼与传统机翼相比，能把巡航马赫数提高到0.78以上，大幅延缓激波产生，使飞机在万米高空飞行时阻力降低5%，单次航程能节约几吨昂贵的航空煤油！',
+              thinking: '为什么造一架大飞机能带动全国成百上千家高端装备制造企业共同进步？如果你是飞机总设计师，你会最优先攻克哪个零件？'
+            }
+          },
+          military: {
+            category: '🪖 国防军事特稿',
+            title: '电磁弹射利剑入阵：中国第三艘航母福建舰深蓝试航突破',
+            summary: '福建舰配备全球先进的电磁弹射与电磁拦阻装置，可使新型隐身舰载机和固定翼预警机在数秒内以极高频次升空作战，实现战略飞跃。',
+            fullContent: {
+              background: '传统航母大多依赖滑跃甲板或复杂高维护的蒸汽弹射。福建舰采用先进的综合电力推进和电磁弹射轨道，弹射力量大小可以线性精确调节，从几吨的无人侦察机到30多吨的重型歼击机均可平稳弹射。',
+              principle: '电磁弹射器利用强大的脉冲电磁洛伦兹力推动滑块高速前进，原理类似于磁悬浮列车的高推力线性感应电机，能在短短百米距离内将重达数十吨的战机瞬间加速到每小时250公里！',
+              thinking: '相比于冒热气的蒸汽弹射，电磁弹射为什么能够更保护战机寿命？这背后体现了中国电力电子技术的什么优势？'
+            }
+          },
+          tech: {
+            category: '🔬 前沿科技前哨',
+            title: '深海万米无声传奇：“奋斗者”号马里亚纳海沟深渊科考新发现',
+            summary: '中国全海深载人潜水器“奋斗者”号在世界最深海沟海底展开多批次连续潜航作业，带回大量未知深渊微生物和地质岩心样品。',
+            fullContent: {
+              background: '在万米深渊的马里亚纳海沟底部，水温仅有1至4摄氏度，且周围漆黑冰冷，海水静水压高达110兆帕，相当于一台重型卡车压在一个指甲盖大小的面积上。',
+              principle: '“奋斗者”号能抗住如此极压，核心在于中国科学家自主研制的新型高强高韧钛合金载人球舱，采用了极致精密的电子束焊接工艺，使得整个耐压球体没有一丝微观瑕疵。',
+              thinking: '在没有阳光的万米漆黑深海中，如果不能进行光合作用，那里的奇异生物究竟靠吃什么能量存活繁衍呢？'
+            }
+          },
+          history: {
+            category: '📜 华夏文明纪实',
+            title: '重见天日的吉光片羽：三星堆青铜神树与黄金面具跨千年对话',
+            summary: '三星堆遗址出土的3.96米青铜神树、金杖与太阳轮器具，实证了3000多年前古蜀文明与黄河流域中原殷商文明彼此紧密交流、交相辉映的恢宏篇章。',
+            fullContent: {
+              background: '三星堆遗址位于四川广汉。考古学家通过高科技碳14测年和超微痕迹分析，确认其祭祀坑埋藏于商代晚期。青铜神树分为三层九枝，每枝上伫立着神鸟，形象印证了古籍中十日神话与扶桑树的传说。',
+              principle: '商代蜀人掌握了先进的泥范分铸法和铜铅锡黄金配比合金技术，神树的底座、树干和枝头神鸟是先分别铸造，再用液态青铜焊接浇注成一体，技术极为高超。',
+              thinking: '古蜀人在没有现代吊车和电动工具的时代，是怎样把近4米高、沉重无比的青铜树精准树立在宗庙大殿之中的？'
+            }
+          },
+          lego: {
+            category: '🧱 机械与积木力学',
+            title: '乐高机械组核心密码：差速器如何拯救汽车拐弯时的打滑？',
+            summary: '通过机械积木拼装差速器齿轮箱，直观揭示为什么汽车在拐弯时外侧轮胎转速必须快于内侧轮胎，这是一项改变了人类交通史的机械天才发明。',
+            fullContent: {
+              background: '如果一辆四轮小车左右两个轮子用一根死轴刚性连在一起，小车直线跑很稳，但一拐弯外轮跑弧线长、内轮跑弧线短，就会造成一侧轮胎在地上剧烈摩擦打滑，无法顺利转弯。',
+              principle: '差速器内部由行星齿轮和太阳齿轮组成。直行时整个齿轮箱一体旋转；拐弯时行星齿轮开始自转，自动将多余的转速分配给阻力较小的外侧车轮，达成平滑转弯！',
+              thinking: '如果在冰雪路面上汽车有一个轮子悬空打滑了，传统的差速器反而会让悬空的轮子疯转，你知道越野车是用什么装置把差速器“锁住”的吗？'
+            }
+          },
+          literature: {
+            category: '📚 经典文学之美',
+            title: '两岸猿声啼不住：李白《早发白帝城》背后的地理险峰与快意人生',
+            summary: '重温诗仙李白逆境获赦顺江而下一日千里的壮丽画卷，读懂盛唐诗歌背后的三峡地质裂隙与中国文人豁达浪漫的胸襟。',
+            fullContent: {
+              background: '唐肃宗乾元二年，李白因受牵连被流放夜郎，行至巫山白帝城时突然收到朝廷大赦的公文。惊喜交加的李白立刻乘舟顺流返回江陵，在轻舟穿行于巫山高耸绝壁之间写下了这首千古绝唱。',
+              principle: '长江三峡是典型的喀斯特峡谷地貌，由于流水长年累月强烈侵蚀下切，两岸山势如斧劈刀削般陡峭险峻，水流落差极大，在丰水期行船如飞箭离弦，真真切切是“一日还”！',
+              thinking: '试着朗读这首诗，你能从急促欢快的平仄韵律里，体会出李白当时怎样如释重负、重新拥抱自由的豪迈心情吗？'
+            }
+          },
+          astronomy: {
+            category: '🌌 宇宙太空深空',
+            title: '穿透百亿光年的迷雾：韦伯太空望远镜窥见宇宙大爆炸后的黎明',
+            summary: '人类部署在日地拉格朗日L2点的詹姆斯·韦伯空间望远镜，利用红外超深空相机观测到了宇宙诞生仅仅3亿年时的原始婴儿星系。',
+            fullContent: {
+              background: '宇宙大爆炸发生在约138亿年前。最初的几亿年被称为“黑暗时代”，没有恒星照亮。韦伯望远镜配备了巨大的镀金铍金属折叠主镜和网球场大小的五层遮阳罩，能保持在零下233度的极寒环境下工作。',
+              principle: '因为宇宙在不断膨胀，早期星系发出的微弱可见光在百亿年的长途奔袭中，波长被拉长成了红外线（红移现象）。普通光学望远镜什么都看不见，唯有超高灵敏度的红外望远镜才能捕捉到它们。',
+              thinking: '当我们望向130亿光年外的星系时，我们看到的其实是它现在的样子，还是它130亿年前的样子？'
+            }
+          },
+          dinosaurs: {
+            category: '🦖 史前恐龙王国',
+            title: '披羽巨兽的震撼化石：中国辽宁发现9米体长“华丽羽王龙”',
+            summary: '我国辽宁热河生物群发掘出迄今为止体型最大的带羽毛恐龙化石，彻底改写了世界古生物界对暴龙超科家族演化史的科学认知。',
+            fullContent: {
+              background: '长期以来，人们以为只有像始祖鸟那样的小型恐龙才有羽毛，大型暴龙都是粗糙坚硬的蜥蜴鳞片。徐星院士团队在辽宁北票发现的三具华丽羽王龙骨骼化石上，清晰印证了全身密布的原始丝状羽毛痕迹。',
+              principle: '华丽羽王龙生活在早白垩世较为寒冷的高纬度森林环境中，这些羽毛并不是为了飞行，而是像我们冬天的羽绒服一样，用来锁住体温保持恒定代谢的保温装置！',
+              thinking: '既然霸王龙的祖先都长着羽毛，那现代在农家院里走来走去的小鸡和麻雀，到底算不算真正的“恐龙”呢？'
+            }
+          },
+          nature: {
+            category: '🌿 神奇大自然生态',
+            title: '森林地下的互联网：树木如何通过真菌菌丝网络悄悄说悄悄话？',
+            summary: '生态学家发现整座森林地表下方存在着一个由真菌构成的庞大互联网络（Wood Wide Web），大树不仅能互相借养料，还能在遭遇害虫时互相拉响警报！',
+            fullContent: {
+              background: '走在幽静的森林里，你以为每棵大树都是孤军奋战的竞争者？科学家用放射性碳同位素示踪实验证明，母树会通过土壤地下的菌根网络，给阳光不足被遮挡的幼苗主动输送葡萄糖养分！',
+              principle: '真菌需要树木光合作用制造的碳水化合物，而树木需要真菌从深层土壤里高效吸收的矿物质磷和水分。当某棵树被害虫咬噬时，会释放防御电信号与挥发物，通过菌丝通知方圆百米的其他同伴提前合成单宁酸抵御害虫！',
+              thinking: '大自然中的植物没有神经系统，却能通过化学与电信号互通有无，这种共生互助给人类社会带来了什么启迪？'
+            }
+          }
         };
-
-        const currentKnowledgeIndex = ref(0);
 
         const gradeList = [
           '小学1年级', '小学2年级', '小学3年级', '小学4年级', '小学5年级', '小学6年级',
@@ -1235,7 +1406,7 @@
             title,
             change,
             balance: newBalance,
-            time: '2026-09-04 13:05'
+            time: '2026-09-04 13:10'
           });
         };
 
@@ -1243,52 +1414,22 @@
           syncToCloud();
         };
 
-        // 兴趣领域选择
         const selectStudentTopic = (topicId) => {
           currentStudent.value.favoriteTopic = topicId;
-          currentKnowledgeIndex.value = 0;
-          dynamicAINewsText.value = '';
           syncToCloud();
         };
 
-        const currentTopicMeta = computed(() => {
+        const currentDailyArticle = computed(() => {
           const tId = currentStudent.value.favoriteTopic || 'news';
-          return knowledgeTopics.find(t => t.id === tId) || knowledgeTopics[0];
+          return dailyRealNewsArticles[tId] || dailyRealNewsArticles.news;
         });
 
-        // 每日新闻与知识展示 (优先展示 AI 抓取的最新真实新闻，若无则轮换真实事实池)
-        const currentDailyKnowledgeFact = computed(() => {
-          if (dynamicAINewsText.value) return dynamicAINewsText.value;
-          const tId = currentStudent.value.favoriteTopic || 'news';
-          const list = knowledgeFacts[tId] || knowledgeFacts.news;
-          return list[currentKnowledgeIndex.value % list.length];
-        });
-
-        const nextKnowledgeFact = () => {
-          dynamicAINewsText.value = '';
-          currentKnowledgeIndex.value++;
+        const openNewsDetailModal = (article) => {
+          currentSelectedNewsArticle.value = article;
+          showNewsDetailModal.value = true;
         };
 
-        // 通过 AI 实时抓取真实时事/科普
-        const fetchAINewsFact = async () => {
-          if (!config.value.siliconKey) {
-            alert('请先在右上角系统设置 ⚙️ 中填入硅基流动 AI 密钥！');
-            showSettings.value = true;
-            return;
-          }
-          isFetchingAINews.value = true;
-          try {
-            const res = await window.StudyAI.fetchRealTopicNews(config.value.siliconKey, currentTopicMeta.value.name);
-            dynamicAINewsText.value = res;
-          } catch (e) {
-            alert('AI 联网获取新闻超时，已切换至本地权威真实知识库！');
-            nextKnowledgeFact();
-          } finally {
-            isFetchingAINews.value = false;
-          }
-        };
-
-        // 家长上传临时任务附件
+        // 家长派发临时任务
         const handleParentTaskFiles = (e) => {
           const files = Array.from(e.target.files);
           files.forEach(file => {
@@ -1305,7 +1446,6 @@
           });
         };
 
-        // 家长确认派发临时任务
         const openAssignModal = () => {
           newTask.value.title = '';
           parentTaskFiles.value = [];
@@ -1330,14 +1470,132 @@
           showAssignModal.value = false;
           parentTaskFiles.value = [];
           syncToCloud();
-          alert('临时任务（附带资料文件）已成功下发，各终端实时同步！');
+          alert('临时任务（附带参考资料）下发成功！');
         };
 
-        // 学生查看家长附件
         const viewParentTaskAttachments = (task) => {
           viewingAttachments.value = task.parentAttachments || [];
           viewingTaskTitle.value = task.title;
-          viewingStudentName.value = '家长派发的参考资料/题目';
+          viewingStudentName.value = '家长下发的参考资料';
+          showAttachmentViewer.value = true;
+        };
+
+        // 【打卡月历计算与单日下钻明细】
+        const calMonthTotalDays = computed(() => {
+          return new Date(selectedCalYear.value, selectedCalMonth.value, 0).getDate();
+        });
+
+        const calMonthStartOffset = computed(() => {
+          const firstDay = new Date(selectedCalYear.value, selectedCalMonth.value - 1, 1).getDay();
+          return firstDay === 0 ? 6 : firstDay - 1;
+        });
+
+        const prevCalendarMonth = () => {
+          if (selectedCalMonth.value === 1) {
+            selectedCalYear.value--;
+            selectedCalMonth.value = 12;
+          } else {
+            selectedCalMonth.value--;
+          }
+        };
+
+        const nextCalendarMonth = () => {
+          if (selectedCalMonth.value === 12) {
+            selectedCalYear.value++;
+            selectedCalMonth.value = 1;
+          } else {
+            selectedCalMonth.value++;
+          }
+        };
+
+        const isToday = (day) => {
+          return selectedCalYear.value === 2026 && selectedCalMonth.value === 9 && day === 4;
+        };
+
+        const isPastDay = (day) => {
+          if (selectedCalYear.value < 2026) return true;
+          if (selectedCalYear.value === 2026 && selectedCalMonth.value < 9) return true;
+          if (selectedCalYear.value === 2026 && selectedCalMonth.value === 9) return day < 4;
+          return false;
+        };
+
+        const getFormattedDateKey = (year, month, day) => {
+          const mStr = String(month).padStart(2, '0');
+          const dStr = String(day).padStart(2, '0');
+          return `${currentStudentId.value}_${year}-${mStr}-${dStr}`;
+        };
+
+        const getSpecificDayDoneCount = (year, month, day) => {
+          const k = getFormattedDateKey(year, month, day);
+          const val = checkins.value[k];
+          if (!val) return 0;
+          return (Array.isArray(val) ? val : (val.doneTaskIds || [])).length;
+        };
+
+        const getSpecificDayUndoneCount = (year, month, day) => {
+          const doneCount = getSpecificDayDoneCount(year, month, day);
+          const total = allTodayTasks.value.length;
+          return Math.max(0, total - doneCount);
+        };
+
+        const isSpecificDayPassed = (year, month, day) => {
+          return getSpecificDayDoneCount(year, month, day) >= 8;
+        };
+
+        const calMonthFlowerCount = computed(() => {
+          let c = 0;
+          const totalDays = calMonthTotalDays.value;
+          for (let d = 1; d <= totalDays; d++) {
+            if (isSpecificDayPassed(selectedCalYear.value, selectedCalMonth.value, d)) {
+              c++;
+            }
+          }
+          return c;
+        });
+
+        // 点击日历某一天，打开当天执行全景明细
+        const openDayDetailModal = (year, month, day) => {
+          selectedDetailDateStr.value = `${year}年${month}月${day}日`;
+          selectedDetailDayKey.value = getFormattedDateKey(year, month, day);
+          showDayDetailModal.value = true;
+        };
+
+        const getDayCheckinObj = (dayKey) => {
+          const val = checkins.value[dayKey];
+          if (!val) return { doneTaskIds: [], attachments: {} };
+          if (Array.isArray(val)) return { doneTaskIds: val, attachments: {} };
+          return val;
+        };
+
+        const currentDayDetailDoneTasks = computed(() => {
+          const obj = getDayCheckinObj(selectedDetailDayKey.value);
+          return allTodayTasks.value.filter(t => (obj.doneTaskIds || []).includes(t.id));
+        });
+
+        const currentDayDetailUndoneTasks = computed(() => {
+          const obj = getDayCheckinObj(selectedDetailDayKey.value);
+          return allTodayTasks.value.filter(t => !(obj.doneTaskIds || []).includes(t.id));
+        });
+
+        const currentDayDetailPoints = computed(() => {
+          return currentDayDetailDoneTasks.value.reduce((a, b) => a + b.points, 0);
+        });
+
+        const isDayTaskDone = (taskId) => {
+          const obj = getDayCheckinObj(selectedDetailDayKey.value);
+          return (obj.doneTaskIds || []).includes(taskId);
+        };
+
+        const hasDayTaskAttachment = (taskId) => {
+          const obj = getDayCheckinObj(selectedDetailDayKey.value);
+          return (obj.attachments?.[taskId] || []).length > 0;
+        };
+
+        const viewDayTaskAttachments = (task) => {
+          const obj = getDayCheckinObj(selectedDetailDayKey.value);
+          viewingAttachments.value = obj.attachments?.[task.id] || [];
+          viewingTaskTitle.value = `${selectedDetailDateStr.value} · ${task.title}`;
+          viewingStudentName.value = `${currentStudent.value.name} 提交的打卡凭据`;
           showAttachmentViewer.value = true;
         };
 
@@ -1370,7 +1628,7 @@
 
           showQuizModal.value = false;
           syncToCloud();
-          alert('🎉 小测成绩与反思心得录入成功，已存入个人成长档案！');
+          alert('🎉 小测成绩与反思心得录入成功！');
         };
 
         const currentStudentQuizzes = computed(() => quizRecords.value.filter(q => q.studentId === currentStudentId.value));
@@ -1473,6 +1731,8 @@
           showPointModal.value = false;
           showAttachmentViewer.value = false;
           showQuizModal.value = false;
+          showDayDetailModal.value = false;
+          showNewsDetailModal.value = false;
           showSettings.value = false;
           enteredPin.value = '';
         };
@@ -1696,76 +1956,6 @@
           }
         };
 
-        const calMonthTotalDays = computed(() => {
-          return new Date(selectedCalYear.value, selectedCalMonth.value, 0).getDate();
-        });
-
-        const calMonthStartOffset = computed(() => {
-          const firstDay = new Date(selectedCalYear.value, selectedCalMonth.value - 1, 1).getDay();
-          return firstDay === 0 ? 6 : firstDay - 1;
-        });
-
-        const prevCalendarMonth = () => {
-          if (selectedCalMonth.value === 1) {
-            selectedCalYear.value--;
-            selectedCalMonth.value = 12;
-          } else {
-            selectedCalMonth.value--;
-          }
-        };
-
-        const nextCalendarMonth = () => {
-          if (selectedCalMonth.value === 12) {
-            selectedCalYear.value++;
-            selectedCalMonth.value = 1;
-          } else {
-            selectedCalMonth.value++;
-          }
-        };
-
-        const isToday = (day) => {
-          return selectedCalYear.value === 2026 && selectedCalMonth.value === 9 && day === 4;
-        };
-
-        const isPastDay = (day) => {
-          if (selectedCalYear.value < 2026) return true;
-          if (selectedCalYear.value === 2026 && selectedCalMonth.value < 9) return true;
-          if (selectedCalYear.value === 2026 && selectedCalMonth.value === 9) return day <= 4;
-          return false;
-        };
-
-        const getFormattedDateKey = (year, month, day) => {
-          const mStr = String(month).padStart(2, '0');
-          const dStr = String(day).padStart(2, '0');
-          return `${currentStudentId.value}_${year}-${mStr}-${dStr}`;
-        };
-
-        const getSpecificDayDoneCount = (year, month, day) => {
-          const k = getFormattedDateKey(year, month, day);
-          const val = checkins.value[k];
-          if (!val) return 0;
-          return (Array.isArray(val) ? val : (val.doneTaskIds || [])).length;
-        };
-
-        const isSpecificDayChecked = (year, month, day) => {
-          return getSpecificDayDoneCount(year, month, day) > 0;
-        };
-
-        const isSpecificDayPassed = (year, month, day) => {
-          return getSpecificDayDoneCount(year, month, day) >= 8;
-        };
-
-        const calMonthFlowerCount = computed(() => {
-          let c = 0;
-          const totalDays = calMonthTotalDays.value;
-          for (let d = 1; d <= totalDays; d++) {
-            if (isSpecificDayPassed(selectedCalYear.value, selectedCalMonth.value, d)) {
-              c++;
-            }
-          }
-          return c;
-        });
-
         const syncToCloud = async () => {
           await window.StudyDB.save(config.value.upstashUrl, config.value.upstashToken, {
             students: students.value,
@@ -1814,9 +2004,12 @@
           gradeList, onStudentGradeChange,
           selectedCalYear, selectedCalMonth, prevCalendarMonth, nextCalendarMonth,
           calMonthTotalDays, calMonthStartOffset, isToday, isPastDay,
-          getSpecificDayDoneCount, isSpecificDayChecked, isSpecificDayPassed, calMonthFlowerCount,
-          knowledgeTopics, selectStudentTopic, currentTopicMeta, currentDailyKnowledgeFact, nextKnowledgeFact,
-          isFetchingAINews, fetchAINewsFact,
+          getSpecificDayDoneCount, getSpecificDayUndoneCount, isSpecificDayPassed, calMonthFlowerCount,
+          showDayDetailModal, selectedDetailDateStr, openDayDetailModal,
+          currentDayDetailDoneTasks, currentDayDetailUndoneTasks, currentDayDetailPoints,
+          isDayTaskDone, hasDayTaskAttachment, viewDayTaskAttachments,
+          knowledgeTopics, selectStudentTopic, currentDailyArticle,
+          showNewsDetailModal, currentSelectedNewsArticle, openNewsDetailModal,
           showSettings, showHomeworkModal, showMathModal, showAssignModal, showTaskSubmitModal, showPointModal, showAttachmentViewer, showQuizModal,
           currentActiveTask, targetPointStudent, customPointAmount, customPointReason, openPointAdjustModal, confirmCustomPointAdjust,
           viewingAttachments, viewingTaskTitle, viewingStudentName, viewParentTaskAttachments,
