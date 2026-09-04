@@ -1,4 +1,4 @@
-// 家庭研学中枢 - Vue 3 主控制器 (实现计时器、作业双模质检、听写默写、奥数举一反三、总控密码重置)
+// 家庭研学中枢 - Vue 3 主控制器 (实现计时器、作业双模质检、听写默写、奥数举一反三、多文件附件累加托管)
 const { createApp, ref, computed, onMounted, onUnmounted } = Vue;
 
 createApp({
@@ -154,6 +154,29 @@ createApp({
     // 任务13：整本书伴读表单
     const bookForm = ref({ bookName: '', pages: '', duration: 20, summary: '', nextPlan: '' });
 
+    // ==========================================
+    // 独立文件托管管理：所有附件支持多次追加与多选
+    // ==========================================
+    const handleHwMultiPhotos = (e) => {
+      window.StudyFileManager.handleFileSelection(e, hwPhotos);
+    };
+
+    const handleCalligraphyPhotos = (e) => {
+      window.StudyFileManager.handleFileSelection(e, calligraphyPhotos);
+    };
+
+    const handleOlympiadPhotos = (e) => {
+      window.StudyFileManager.handleFileSelection(e, olympiadPhotos);
+    };
+
+    const handleDictationPhotos = (e) => {
+      window.StudyFileManager.handleFileSelection(e, dictationPhotos);
+    };
+
+    const removeFileItem = (targetRefArray, index) => {
+      window.StudyFileManager.removeAttachment(targetRefArray, index);
+    };
+
     // 语音朗读辅助函数 (Web Speech API)
     const speakText = (text, lang = 'en-US') => {
       if ('speechSynthesis' in window) {
@@ -175,11 +198,11 @@ createApp({
         title,
         change,
         balance: newBalance,
-        time: '2026-09-04 14:30'
+        time: new Date().toLocaleString()
       });
     };
 
-    // 登记打卡完成
+    // 登记打卡完成 (调用 fileManager 完美合并历史附件和本次追加附件)
     const recordTaskDone = (taskId, files = [], extraMinutes = 0) => {
       const k = `${currentStudentId.value}_2026-09-04`;
       let current = checkins.value[k];
@@ -189,10 +212,12 @@ createApp({
       if (!current.doneTaskIds.includes(taskId)) {
         current.doneTaskIds.push(taskId);
       }
+      
       if (files && files.length > 0) {
         if (!current.attachments) current.attachments = {};
-        current.attachments[taskId] = files;
+        current.attachments = window.StudyFileManager.mergeTaskAttachments(current.attachments, taskId, files);
       }
+
       checkins.value[k] = current;
 
       // 累加学习总时长
@@ -216,18 +241,9 @@ createApp({
     // --- 任务 1: 学校作业提交逻辑 ---
     const openHomeworkModal = () => {
       startTaskTimer(1);
-      hwPhotos.value = [];
+      hwPhotos.value = []; // 打开时可按需保留或清空，当前设为每次新开重置或由用户自主管理
       hwGradingStatus.value = '';
       showHomeworkModal.value = true;
-    };
-
-    const handleHwMultiPhotos = (e) => {
-      const files = Array.from(e.target.files);
-      files.forEach(f => {
-        const r = new FileReader();
-        r.onload = ev => hwPhotos.value.push({ name: f.name, dataUrl: ev.target.result, size: f.size, type: f.type });
-        r.readAsDataURL(f);
-      });
     };
 
     const submitSchoolHomework = async () => {
@@ -306,15 +322,6 @@ createApp({
       showCalligraphyModal.value = true;
     };
 
-    const handleCalligraphyPhotos = (e) => {
-      const files = Array.from(e.target.files);
-      files.forEach(f => {
-        const r = new FileReader();
-        r.onload = ev => calligraphyPhotos.value.push({ name: f.name, dataUrl: ev.target.result, size: f.size, type: f.type });
-        r.readAsDataURL(f);
-      });
-    };
-
     const submitCalligraphy = () => {
       recordTaskDone(3, calligraphyPhotos.value, 10);
       showCalligraphyModal.value = false;
@@ -337,7 +344,6 @@ createApp({
         if (parseFloat(p.userAns) === p.ans) {
           right++;
         } else {
-          // 自动沉淀入错题集
           errors.value.unshift({
             id: Date.now() + Math.random(),
             studentId: currentStudentId.value,
@@ -362,21 +368,12 @@ createApp({
       }
     };
 
-    // --- 任务 5: 奥数闯关 (提示、详解、举一反三) ---
+    // --- 任务 5: 奥数闯关 ---
     const openOlympiadModal = () => {
       startTaskTimer(5);
       olympiadStage.value = 'problem';
       olympiadPhotos.value = [];
       showOlympiadModal.value = true;
-    };
-
-    const handleOlympiadPhotos = (e) => {
-      const files = Array.from(e.target.files);
-      files.forEach(f => {
-        const r = new FileReader();
-        r.onload = ev => olympiadPhotos.value.push({ name: f.name, dataUrl: ev.target.result, size: f.size, type: f.type });
-        r.readAsDataURL(f);
-      });
     };
 
     const nextOlympiadStage = (next) => {
@@ -389,7 +386,7 @@ createApp({
       alert('🎉 奥数逻辑思维闯关成功，已完成打卡！');
     };
 
-    // --- 任务 6: 记 5 个单词与 20 秒间隔听写默写模式 ---
+    // --- 任务 6: 记单词与听写模式 ---
     const openWordModal = () => {
       startTaskTimer(6);
       showWordModal.value = true;
@@ -441,7 +438,7 @@ createApp({
     const openEnglishReadingModal = () => { startTaskTimer(10); showEnglishReadingModal.value = true; };
     const openClozeModal = () => { startTaskTimer(11); showClozeModal.value = true; };
 
-    // --- 任务 12: 错题消化与学校错题录入 ---
+    // --- 任务 12: 错题消化与录入 ---
     const openSchoolErrorModal = () => {
       startTaskTimer(12);
       newSchoolError.value = { subject: '数学', question: '', analysis: '', photoUrl: '' };
@@ -468,7 +465,7 @@ createApp({
       alert('🎉 学校错题已成功录入错题集！');
     };
 
-    // --- 任务 13: 整本书伴读打卡 ---
+    // --- 任务 13: 整本书伴读 ---
     const openBookReadingModal = () => {
       startTaskTimer(13);
       showBookReadingModal.value = true;
@@ -544,7 +541,7 @@ createApp({
 
     const logout = () => { currentLoggedInUser.value = null; };
 
-    // 整合今日所有任务 (家长指定某项或新增的优先置顶)
+    // 整合今日所有任务
     const allTodayTasks = computed(() => {
       const personalCustom = customTasks.value.filter(t => t.targetStudentId === 'ALL' || t.targetStudentId === currentStudentId.value);
       return [...personalCustom, ...baseTasks.value];
@@ -662,7 +659,8 @@ createApp({
       showSchoolErrorModal, newSchoolError, openSchoolErrorModal, submitSchoolError, errors,
       showBookReadingModal, bookForm, openBookReadingModal, submitBookReading,
       showParentResetPinModal, parentTargetStudent, parentNewPinInput, openParentResetPin, confirmParentResetPin,
-      handleAvatarChange, checkins, recordTaskDone
+      handleAvatarChange, checkins, recordTaskDone,
+      removeFileItem
     };
   }
 }).mount('#app');
