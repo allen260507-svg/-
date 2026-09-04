@@ -10,21 +10,17 @@
     body {
       color: #0f172a;
       font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Segoe UI", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
-    }
-    .nezha-bg {
-      background-position: center center;
-      background-repeat: no-repeat;
-      background-size: cover;
-      background-attachment: fixed;
+      background: linear-gradient(rgba(10, 15, 30, 0.72), rgba(2, 6, 23, 0.88)), 
+                  url('https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?q=80&w=2574&auto=format&fit=crop') center center / cover no-repeat fixed;
     }
     .glass-dark {
-      background: rgba(15, 23, 42, 0.72);
+      background: rgba(15, 23, 42, 0.75);
       backdrop-filter: blur(16px);
       -webkit-backdrop-filter: blur(16px);
       border: 1px solid rgba(255, 255, 255, 0.12);
     }
     .glass-light {
-      background: rgba(255, 255, 255, 0.88);
+      background: rgba(255, 255, 255, 0.90);
       backdrop-filter: blur(16px);
       -webkit-backdrop-filter: blur(16px);
       border: 1px solid rgba(255, 255, 255, 0.6);
@@ -42,15 +38,15 @@
     .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 6px; }
   </style>
 </head>
-<body class="h-screen w-screen overflow-hidden flex flex-col antialiased nezha-bg" :style="{ backgroundImage: `url(${currentWallpaper})` }">
-  <div id="app" class="h-full flex flex-col flex-1 overflow-hidden select-none">
+<body class="h-screen w-screen overflow-hidden flex flex-col antialiased select-none">
+  <div id="app" class="h-full flex flex-col flex-1 overflow-hidden">
 
     <!-- ========================================================================= -->
-    <!-- 场景一：哪吒燃魂开机首屏 (档案选择器 + 自定义壁纸) -->
+    <!-- 场景一：哪吒燃魂开机首屏 (极简档案选择，不漏任何默认密码) -->
     <!-- ========================================================================= -->
     <div v-if="!currentLoggedInUser" class="h-full w-full flex flex-col items-center justify-between p-6 md:p-10 relative overflow-hidden bg-slate-950/40 backdrop-blur-xs">
       
-      <!-- 顶栏标识与更换壁纸快捷入口 -->
+      <!-- 顶栏标识 -->
       <div class="w-full max-w-6xl flex justify-between items-center z-10">
         <div class="flex items-center space-x-3">
           <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-rose-600 via-amber-500 to-orange-500 flex items-center justify-center text-white font-black text-xl shadow-lg shadow-rose-600/40">
@@ -62,17 +58,9 @@
           </div>
         </div>
 
-        <!-- 换壁纸与设置入口 -->
-        <div class="flex items-center space-x-2">
-          <button @click="triggerWallpaperUpload" class="px-3 py-1.5 glass-dark text-white hover:text-amber-300 rounded-xl text-xs font-bold transition flex items-center space-x-1 shadow-md">
-            <span>🖼️</span>
-            <span>换哪吒壁纸</span>
-          </button>
-          <button @click="showSettings = true" class="px-3 py-1.5 glass-dark text-slate-300 hover:text-white rounded-xl text-xs font-bold transition shadow-md">
-            ⚙️ 设置
-          </button>
-          <input type="file" ref="wallpaperInput" accept="image/*" @change="handleWallpaperChange" class="hidden">
-        </div>
+        <button @click="showSettings = true" class="px-3.5 py-1.5 glass-dark text-slate-300 hover:text-white rounded-xl text-xs font-bold transition shadow-md">
+          ⚙️ 系统设置
+        </button>
       </div>
 
       <!-- 中间：档案选择区 (4学生 + 1家长总控) -->
@@ -82,7 +70,7 @@
             选择研学档案进入系统
           </h2>
           <p class="text-sm md:text-base text-amber-200 mt-2 font-black tracking-wide drop-shadow-md">
-            四人独立档案 · 智能作业评测 · 错题复仇 · 积分特权兑换
+            独立档案 · 智能评测 · 错题复仇 · 现实特权兑换
           </p>
         </div>
 
@@ -111,7 +99,7 @@
             </div>
           </div>
 
-          <!-- 家长监督总控卡片 -->
+          <!-- 家长总控卡片 -->
           <div 
             @click="openPinModal(parentProfile)"
             class="profile-card bg-rose-950/70 backdrop-blur-md border border-rose-500/50 rounded-3xl p-5 flex flex-col items-center justify-between cursor-pointer transition-all duration-300 group"
@@ -130,15 +118,15 @@
         </div>
       </div>
 
-      <!-- 底部信息 -->
+      <!-- 底部声明（无任何明文密码泄露） -->
       <div class="z-10 text-xs font-bold text-slate-300/80 drop-shadow">
-        人教版教材体系 · 默认学生密码: 1234 · 家长密码: 8888
+        人教版研学课程体系 · 数字化独立研学中枢
       </div>
     </div>
 
 
     <!-- ========================================================================= -->
-    <!-- 场景二：【家长总控专属主页】(4娃完成全貌大盘，不再是单人任务) -->
+    <!-- 场景二：【家长总控专属主页】(4娃全貌大盘 + 展示学生密码 + 附件审阅) -->
     <!-- ========================================================================= -->
     <div v-else-if="currentLoggedInUser.id === 'parent'" class="h-full flex flex-col flex-1 overflow-hidden bg-slate-900/40 backdrop-blur-xs p-3 md:p-5 space-y-3">
       
@@ -153,7 +141,7 @@
               <span class="text-lg font-black text-slate-900">家长督导指挥中心</span>
               <span class="text-xs px-2 py-0.5 rounded-full bg-rose-100 text-rose-800 font-black">总控模式</span>
             </div>
-            <p class="text-xs text-slate-500 font-bold mt-0.5">实时掌握 诺、威、奕、黛 4 位学生的作业、错题与多媒体实证</p>
+            <p class="text-xs text-slate-500 font-bold mt-0.5">监控诺、威、奕、黛 4 位学生的完成进度、错题、多媒体作业，并管理通行密码</p>
           </div>
         </div>
 
@@ -162,9 +150,6 @@
             <span>➕</span>
             <span>一键派发临时任务</span>
           </button>
-          <button @click="triggerWallpaperUpload" class="px-3 py-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-xl text-xs font-bold transition shadow-xs">
-            🖼️ 换壁纸
-          </button>
           <button @click="logout" class="px-3.5 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-xl text-xs font-black transition flex items-center space-x-1">
             <span>🚪</span>
             <span>退出总控</span>
@@ -172,7 +157,7 @@
         </div>
       </header>
 
-      <!-- 4 个学生的完成情况大卡片 (4 列横向并排) -->
+      <!-- 4 个学生的完成情况大卡片 (4 列横向并排，展示各学生密码) -->
       <div class="flex-1 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3.5 overflow-y-auto custom-scrollbar">
         <div 
           v-for="st in students" 
@@ -195,6 +180,17 @@
                 <div class="text-sm font-black text-amber-600">⚡ {{ st.points }}分</div>
                 <button @click="openPointAdjustModal(st)" class="text-[11px] font-black text-indigo-600 hover:underline mt-0.5">奖惩积分</button>
               </div>
+            </div>
+
+            <!-- 【核心需求】：在家长管理中心清晰显示学生的通行密码 -->
+            <div class="p-2 rounded-xl bg-indigo-50/80 border border-indigo-200/80 flex justify-between items-center text-xs">
+              <span class="text-indigo-950 font-black flex items-center space-x-1">
+                <span>🔑</span>
+                <span>通行密码：</span>
+              </span>
+              <span class="font-mono font-black text-indigo-700 bg-white px-2.5 py-0.5 rounded-lg border border-indigo-200 tracking-wider text-sm shadow-2xs">
+                {{ st.pin || '1234' }}
+              </span>
             </div>
 
             <!-- 今日完成进度条 -->
@@ -220,11 +216,11 @@
               </div>
             </div>
 
-            <!-- 今日已交附件与已做项目小结 -->
+            <!-- 今日打卡记录与附件审阅 -->
             <div>
               <div class="text-xs font-black text-slate-700 mb-1.5 flex justify-between items-center">
                 <span>今日打卡记录 ({{ (getStudentCheckinObj(st.id).doneTaskIds || []).length }}条)</span>
-                <span v-if="getStudentTotalAttachmentCount(st.id) > 0" class="text-[10px] px-1.5 py-0.2 rounded bg-amber-100 text-amber-800">
+                <span v-if="getStudentTotalAttachmentCount(st.id) > 0" class="text-[10px] px-1.5 py-0.2 rounded bg-amber-100 text-amber-800 font-black">
                   📁 {{ getStudentTotalAttachmentCount(st.id) }} 个附件
                 </span>
               </div>
@@ -239,7 +235,6 @@
                   class="p-2 rounded-lg bg-white border border-slate-200/80 flex items-center justify-between text-xs"
                 >
                   <span class="font-bold text-slate-800 truncate">{{ getTaskTitle(tId) }}</span>
-                  <!-- 附件查看按钮 -->
                   <div class="flex items-center space-x-1 flex-shrink-0">
                     <button 
                       v-if="hasAttachments(st.id, tId)" 
@@ -255,7 +250,7 @@
             </div>
           </div>
 
-          <!-- 底部动作 -->
+          <!-- 底部动作：进入该学生视角 -->
           <div class="pt-3 border-t border-slate-200 mt-3 flex space-x-2">
             <button @click="switchToUser(st)" class="flex-1 py-2 bg-slate-900 hover:bg-black text-white rounded-xl text-xs font-black transition shadow-xs">
               进入学生视角
@@ -267,7 +262,7 @@
 
 
     <!-- ========================================================================= -->
-    <!-- 场景三：【学生专属研学工作台】(大字号、高清晰度、支持全媒体附件多传) -->
+    <!-- 场景三：【学生专属研学工作台】(大字号、高清晰度、全格式多附件支持) -->
     <!-- ========================================================================= -->
     <div v-else class="h-full flex flex-col flex-1 overflow-hidden bg-slate-900/30 backdrop-blur-xs p-3 md:p-4 space-y-2.5">
       
@@ -281,7 +276,7 @@
             <div class="flex items-center space-x-2">
               <span class="text-base md:text-lg font-black text-slate-900">{{ currentLoggedInUser.name }}</span>
               <span class="text-xs px-2.5 py-0.5 rounded-full bg-slate-100 font-black text-slate-700">{{ currentLoggedInUser.grade }}</span>
-              <span class="text-xs px-2 py-0.5 rounded-full bg-amber-100 text-amber-900 font-black border border-amber-300">人教版</span>
+              <span class="text-xs px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-900 font-black border border-amber-300">人教版</span>
             </div>
           </div>
         </div>
@@ -300,7 +295,7 @@
 
           <div class="h-5 w-px bg-slate-300 mx-1"></div>
 
-          <!-- 家长总控直达入口 -->
+          <!-- 家长总控直达 -->
           <button @click="openPinModal(parentProfile)" class="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-800 border border-rose-200 rounded-xl text-xs font-black transition flex items-center space-x-1">
             <span>🛡️</span>
             <span>家长总控</span>
@@ -312,11 +307,6 @@
             <span>{{ currentStudent.points }} 积分</span>
           </div>
 
-          <!-- 换壁纸 -->
-          <button @click="triggerWallpaperUpload" class="px-2.5 py-1.5 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 rounded-xl text-xs font-bold transition">
-            🖼️
-          </button>
-
           <!-- 退出 -->
           <button @click="logout" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-black transition">
             🚪 退出
@@ -324,11 +314,10 @@
         </div>
       </header>
 
-      <!-- 主视图 1：任务看板 (超大字号、清晰可读、支持任意附件) -->
+      <!-- 主视图 1：任务看板 (大字号、清晰可读、支持任意格式多附件) -->
       <main class="flex-1 flex flex-col overflow-hidden">
         <div v-if="activeTab === 'today'" class="h-full flex flex-col flex-1 overflow-hidden space-y-2.5">
           
-          <!-- 规则与状态汇总条 -->
           <div class="glass-light rounded-xl px-4 py-2.5 flex flex-wrap items-center justify-between gap-3 shadow-md flex-shrink-0">
             <div class="flex items-center space-x-3 text-sm font-bold">
               <span class="text-slate-900 font-black flex items-center space-x-1">
@@ -354,7 +343,7 @@
             </div>
           </div>
 
-          <!-- 任务矩阵 (3列网格，字体加大加粗) -->
+          <!-- 任务矩阵 -->
           <div class="flex-1 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2.5 overflow-y-auto custom-scrollbar pr-1">
             <div 
               v-for="task in allTodayTasks" 
@@ -366,7 +355,6 @@
                 'rounded-2xl border p-3.5 flex items-center justify-between transition-all duration-150'
               ]"
             >
-              <!-- 任务详情 -->
               <div class="flex items-center space-x-3 min-w-0 flex-1 mr-3">
                 <div 
                   class="w-11 h-11 rounded-xl flex items-center justify-center font-black text-base flex-shrink-0"
@@ -426,7 +414,7 @@
                   ⚡ 开始口算
                 </button>
 
-                <!-- 其他任务打卡：弹出通用多附件上传抽屉 -->
+                <!-- 其他任务打卡：多附件通用上传 -->
                 <button 
                   v-else 
                   @click="openTaskSubmitModal(task)" 
@@ -524,10 +512,10 @@
 
 
     <!-- ========================================================================= -->
-    <!-- 模态弹窗系统：PIN密码盘、多附件上传、作业批改、积分调整、附件查看 -->
+    <!-- 模态弹窗系统 (支持全键盘数字输入、按 ESC 退出) -->
     <!-- ========================================================================= -->
 
-    <!-- 【弹窗：PIN 密码键盘】 -->
+    <!-- 【弹窗：PIN 密码键盘 (支持实体键盘直接输入数字/退格)】 -->
     <div v-if="showPinModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 z-50">
       <div class="bg-slate-900 border border-amber-500/30 rounded-3xl max-w-xs w-full p-6 text-center space-y-4 shadow-2xl">
         <div class="w-16 h-16 rounded-2xl bg-slate-800 flex items-center justify-center text-4xl mx-auto shadow-inner border border-slate-700">
@@ -535,7 +523,7 @@
         </div>
         <div>
           <h3 class="text-lg font-black text-white">解锁 {{ selectedAuthUser?.name }} 的档案</h3>
-          <p class="text-xs text-slate-400 mt-1 font-medium">请输入 4 位通行密码 (默认: 1234, 家长: 8888)</p>
+          <p class="text-xs text-slate-400 mt-1 font-medium">请输入 4 位通行密码 (支持键盘输入，ESC 退出)</p>
         </div>
 
         <div class="flex justify-center space-x-3 py-2">
@@ -548,23 +536,22 @@
           </button>
           <button @click="clearPin" class="h-12 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold active:scale-95 transition text-slate-400">清空</button>
           <button @click="pressPin(0)" class="h-12 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 transition">0</button>
-          <button @click="showPinModal = false" class="h-12 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold active:scale-95 transition text-rose-400">取消</button>
+          <button @click="showPinModal = false; enteredPin = ''" class="h-12 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold active:scale-95 transition text-rose-400">取消</button>
         </div>
       </div>
     </div>
 
-    <!-- 【弹窗：作业批改与多附件上传 (支持多图、录音、视频)】 -->
+    <!-- 【弹窗：作业批改与多附件上传】 -->
     <div v-if="showHomeworkModal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 z-50">
       <div class="bg-white rounded-3xl max-w-lg w-full p-6 space-y-4 shadow-2xl border border-slate-200">
         <div class="flex justify-between items-center border-b border-slate-100 pb-2">
           <div>
             <h3 class="text-base font-black text-slate-900">📸 提交学校作业 (多文件/格式不限)</h3>
-            <p class="text-xs text-slate-500">可多选上传：各科作业照片、讲题录音、背诵视频等</p>
+            <p class="text-xs text-slate-500">可多选上传：各科作业照片、讲题录音、背诵视频等 (按 ESC 退出)</p>
           </div>
           <button @click="showHomeworkModal = false" class="text-slate-400 hover:text-slate-600 font-bold">✕</button>
         </div>
 
-        <!-- 文件选择按钮 -->
         <div>
           <label class="block p-4 border-2 border-dashed border-slate-300 hover:border-amber-500 rounded-2xl text-center cursor-pointer bg-slate-50 hover:bg-amber-50/50 transition">
             <span class="text-2xl">📁</span>
@@ -574,7 +561,6 @@
           </label>
         </div>
 
-        <!-- 已选文件预览列表 -->
         <div v-if="uploadedHomeworkFiles.length > 0" class="max-h-48 overflow-y-auto space-y-2 pr-1 custom-scrollbar">
           <div v-for="(file, idx) in uploadedHomeworkFiles" :key="idx" class="p-2.5 rounded-xl border border-slate-200 bg-white flex items-center justify-between text-xs">
             <div class="flex items-center space-x-2 min-w-0 flex-1 mr-2">
@@ -584,9 +570,7 @@
                 <div class="text-[10px] text-slate-400">{{ (file.size / 1024).toFixed(1) }} KB</div>
               </div>
             </div>
-            <!-- 音频直接预览播放 -->
             <audio v-if="file.type.startsWith('audio/')" :src="file.dataUrl" controls class="h-7 w-36"></audio>
-            <!-- 图片缩略图 -->
             <img v-else-if="file.type.startsWith('image/')" :src="file.dataUrl" class="w-8 h-8 rounded object-cover border">
             <button @click="removeHomeworkFile(idx)" class="ml-2 text-rose-500 hover:text-rose-700 font-black">✕</button>
           </div>
@@ -611,12 +595,11 @@
         <div class="flex justify-between items-center border-b border-slate-100 pb-2">
           <div>
             <h3 class="text-base font-black text-slate-900">完成打卡：{{ currentActiveTask?.title }}</h3>
-            <p class="text-xs text-slate-500">可附加凭证 (录音、照片、打卡视频等，允许不传)</p>
+            <p class="text-xs text-slate-500">可附加凭证 (录音、照片、视频等，按 ESC 退出)</p>
           </div>
           <button @click="showTaskSubmitModal = false" class="text-slate-400 hover:text-slate-600 font-bold">✕</button>
         </div>
 
-        <!-- 附件上传器 -->
         <div>
           <label class="block p-3 border-2 border-dashed border-slate-300 hover:border-emerald-500 rounded-xl text-center cursor-pointer bg-slate-50 transition">
             <span class="text-xl">📎</span>
@@ -625,7 +608,6 @@
           </label>
         </div>
 
-        <!-- 已选文件列表 -->
         <div v-if="genericTaskFiles.length > 0" class="max-h-40 overflow-y-auto space-y-2 pr-1 custom-scrollbar">
           <div v-for="(file, idx) in genericTaskFiles" :key="idx" class="p-2 rounded-lg border bg-white flex items-center justify-between text-xs">
             <span class="truncate flex-1 mr-2 font-bold">{{ file.name }}</span>
@@ -648,12 +630,11 @@
         <div class="flex justify-between items-center border-b border-slate-100 pb-2 flex-shrink-0">
           <div>
             <h3 class="text-base font-black text-slate-900">📁 附件审阅：{{ viewingTaskTitle }}</h3>
-            <p class="text-xs text-slate-500">学生：{{ viewingStudentName }}</p>
+            <p class="text-xs text-slate-500">学生：{{ viewingStudentName }} (按 ESC 退出)</p>
           </div>
           <button @click="showAttachmentViewer = false" class="text-slate-400 hover:text-slate-600 font-bold text-lg">✕</button>
         </div>
 
-        <!-- 附件列表展示 -->
         <div class="flex-1 overflow-y-auto space-y-3 pr-1 custom-scrollbar">
           <div v-for="(att, i) in viewingAttachments" :key="i" class="p-3 rounded-xl border border-slate-200 bg-slate-50 space-y-2">
             <div class="flex items-center justify-between text-xs font-bold text-slate-700">
@@ -661,22 +642,18 @@
               <span class="text-slate-400 text-[10px]">{{ (att.size / 1024).toFixed(1) }} KB</span>
             </div>
 
-            <!-- 图片 -->
             <div v-if="att.type.startsWith('image/')">
               <img :src="att.dataUrl" class="max-h-72 rounded-lg mx-auto border object-contain">
             </div>
 
-            <!-- 音频 -->
             <div v-else-if="att.type.startsWith('audio/')" class="pt-1">
               <audio :src="att.dataUrl" controls class="w-full"></audio>
             </div>
 
-            <!-- 视频 -->
             <div v-else-if="att.type.startsWith('video/')" class="pt-1">
               <video :src="att.dataUrl" controls class="max-h-72 w-full rounded-lg bg-black"></video>
             </div>
 
-            <!-- 文档/其他 -->
             <div v-else class="text-center py-2">
               <a :href="att.dataUrl" :download="att.name" class="text-xs text-indigo-600 font-black hover:underline">点击下载附件</a>
             </div>
@@ -693,7 +670,7 @@
     <div v-if="showPointModal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 z-50">
       <div class="bg-white rounded-3xl max-w-xs w-full p-5 space-y-3 shadow-2xl border border-slate-200">
         <h3 class="text-sm font-black text-slate-900">⚡ 奖惩积分：{{ targetPointStudent?.name }}</h3>
-        <p class="text-xs text-slate-500">当前可用：{{ targetPointStudent?.points }} 分</p>
+        <p class="text-xs text-slate-500">当前可用：{{ targetPointStudent?.points }} 分 (按 ESC 退出)</p>
 
         <div class="grid grid-cols-2 gap-2 text-xs font-black">
           <button @click="adjustPoints(5)" class="py-2.5 bg-emerald-50 text-emerald-800 rounded-xl hover:bg-emerald-100">+5 表现优秀</button>
@@ -796,7 +773,7 @@
   <script src="js/math.js"></script>
 
   <script>
-    const { createApp, ref, computed, onMounted } = Vue;
+    const { createApp, ref, computed, onMounted, onUnmounted } = Vue;
 
     createApp({
       setup() {
@@ -805,11 +782,6 @@
         const showPinModal = ref(false);
         const selectedAuthUser = ref(null);
         const enteredPin = ref('');
-
-        // 默认哪吒超清剧照壁纸 (可随时点击更换)
-        const defaultWallpaper = 'https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?q=80&w=2574&auto=format&fit=crop';
-        const currentWallpaper = ref(localStorage.getItem('study_wallpaper') || defaultWallpaper);
-        const wallpaperInput = ref(null);
 
         const showSettings = ref(false);
         const showHomeworkModal = ref(false);
@@ -863,7 +835,6 @@
         const customTasks = ref([]);
         const newTask = ref({ targetStudentId: 'ALL', title: '', duration: '15分钟', points: 3, criteria: '家长抽查 / 拍照确认' });
 
-        // 打卡数据结构升级支持附件: { [key]: { doneTaskIds: [1, 4], attachments: { [taskId]: [files...] } } }
         const checkins = ref({});
         const errors = ref([]);
 
@@ -872,23 +843,6 @@
           { name: '电影/游乐园门票', desc: '自选周末电影一场', cost: 50 },
           { name: '自选图书/心愿盲盒', desc: '50元以内自选物品', cost: 80 }
         ];
-
-        // 更换壁纸逻辑
-        const triggerWallpaperUpload = () => {
-          if (wallpaperInput.value) wallpaperInput.value.click();
-        };
-
-        const handleWallpaperChange = (e) => {
-          const file = e.target.files[0];
-          if (!file) return;
-          const reader = new FileReader();
-          reader.onload = (ev) => {
-            currentWallpaper.value = ev.target.result;
-            localStorage.setItem('study_wallpaper', ev.target.result);
-            alert('🎉 哪吒新剧照壁纸更换成功！');
-          };
-          reader.readAsDataURL(file);
-        };
 
         // 规范化打卡读取
         const getStudentCheckinObj = (sId) => {
@@ -944,7 +898,7 @@
           return found ? found.title : `任务 #${tId}`;
         };
 
-        // 认证与切换
+        // 认证与键盘输入支持
         const openPinModal = (user) => {
           selectedAuthUser.value = user;
           enteredPin.value = '';
@@ -953,12 +907,13 @@
 
         const pressPin = (num) => {
           if (enteredPin.value.length < 4) {
-            enteredPin.value += num;
+            enteredPin.value += String(num);
             if (enteredPin.value.length === 4) {
               const expectedPin = selectedAuthUser.value.pin || '1234';
               if (enteredPin.value === expectedPin) {
                 switchToUser(selectedAuthUser.value);
                 showPinModal.value = false;
+                enteredPin.value = '';
               } else {
                 alert('密码错误，请重新输入！');
                 enteredPin.value = '';
@@ -978,6 +933,36 @@
 
         const logout = () => {
           currentLoggedInUser.value = null;
+        };
+
+        // 全局键盘监听：支持物理键盘输入 PIN 与 按 ESC 退出任何弹窗
+        const closeAllModals = () => {
+          showPinModal.value = false;
+          showHomeworkModal.value = false;
+          showMathModal.value = false;
+          showAssignModal.value = false;
+          showTaskSubmitModal.value = false;
+          showPointModal.value = false;
+          showAttachmentViewer.value = false;
+          showSettings.value = false;
+          enteredPin.value = '';
+        };
+
+        const handleGlobalKeyDown = (e) => {
+          // 按 ESC 退出所有弹窗
+          if (e.key === 'Escape') {
+            closeAllModals();
+            return;
+          }
+
+          // 密码弹窗打开时支持键盘输入
+          if (showPinModal.value) {
+            if (e.key >= '0' && e.key <= '9') {
+              pressPin(e.key);
+            } else if (e.key === 'Backspace') {
+              enteredPin.value = enteredPin.value.slice(0, -1);
+            }
+          }
         };
 
         const currentStudent = computed(() => {
@@ -1023,7 +1008,7 @@
           syncToCloud();
         };
 
-        // 通用打卡弹窗 (多附件支持)
+        // 通用打卡弹窗
         const genericTaskFiles = ref([]);
         const openTaskSubmitModal = (task) => {
           currentActiveTask.value = task;
@@ -1054,7 +1039,7 @@
           alert('打卡达标成功！');
         };
 
-        // 作业多文件上传
+        // 作业批改
         const uploadedHomeworkFiles = ref([]);
         const gradingStatus = ref('');
         const isGrading = ref(false);
@@ -1092,9 +1077,8 @@
 
         const submitHomeworkToAI = async () => {
           isGrading.value = true;
-          gradingStatus.value = 'AI 正在对上传的作业逐页、逐题扫描...';
+          gradingStatus.value = 'AI 正在对作业进行逐页、逐题扫描...';
           try {
-            // 挑出第一张或主要图片送给 AI
             const imgFile = uploadedHomeworkFiles.value.find(f => f.type.startsWith('image/'));
             const base64 = imgFile ? imgFile.dataUrl.split(',')[1] : null;
 
@@ -1104,9 +1088,9 @@
                 res.errors.forEach(err => {
                   errors.value.unshift({ id: Date.now() + Math.random(), studentId: currentStudentId.value, ...err, date: '2026-09-04', resolved: false });
                 });
-                alert(`批改完毕！共 ${res.total} 题，发现 ${res.errors.length} 处错题，已归入复仇本。作业过审打卡！`);
+                alert(`批改完毕！共 ${res.total} 题，发现 ${res.errors.length} 处错题已入复仇本，作业打卡通过！`);
               } else {
-                alert(`太棒了！全部 ${res.total} 题解答正确！`);
+                alert(`太棒了！全部 ${res.total} 题解答正确！满分通过！`);
               }
             } else {
               alert('作业附件已妥善收录归档，审核通过！');
@@ -1138,7 +1122,7 @@
           alert(`已为 ${targetPointStudent.value.name} ${delta >= 0 ? '奖励' : '扣除'} ${Math.abs(delta)} 积分！`);
         };
 
-        // 临时任务派发
+        // 临时任务
         const openAssignModal = () => {
           newTask.value.title = '';
           showAssignModal.value = true;
@@ -1246,13 +1230,17 @@
         });
 
         onMounted(() => {
+          window.addEventListener('keydown', handleGlobalKeyDown);
           if (config.value.upstashUrl) loadFromCloud();
+        });
+
+        onUnmounted(() => {
+          window.removeEventListener('keydown', handleGlobalKeyDown);
         });
 
         return {
           currentLoggedInUser, activeTab, showPinModal, selectedAuthUser, enteredPin,
           parentProfile, openPinModal, pressPin, clearPin, switchToUser, logout,
-          defaultWallpaper, currentWallpaper, wallpaperInput, triggerWallpaperUpload, handleWallpaperChange,
           showSettings, showHomeworkModal, showMathModal, showAssignModal, showTaskSubmitModal, showPointModal, showAttachmentViewer,
           currentActiveTask, targetPointStudent, viewingAttachments, viewingTaskTitle, viewingStudentName,
           config, students, currentStudentId, currentStudent,
