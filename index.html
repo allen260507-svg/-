@@ -63,7 +63,7 @@
 <body class="h-screen w-screen overflow-hidden flex flex-col antialiased select-none bright-kids-bg bright-grid">
   <div id="app" class="h-full flex flex-col flex-1 overflow-hidden">
 
-    <!-- ================= 场景一：首屏 (经典 4学生 + 1家长总控的 5卡片矩阵) ================= -->
+    <!-- ================= 场景一：首屏 (4学生 + 1家长总控的 5卡片矩阵) ================= -->
     <div v-if="!currentLoggedInUser" class="h-full w-full flex flex-col items-center justify-between p-6 md:p-10 relative overflow-hidden">
       <div class="w-full max-w-6xl flex justify-between items-center z-10">
         <div>
@@ -81,7 +81,7 @@
           <p class="text-sm text-slate-500 font-bold mt-1">独立档案 · 智能错题复仇 · 游戏化转盘 · 全功能督导</p>
         </div>
 
-        <!-- 经典 5 卡片矩阵网格：4个学生 + 1个家长总控 -->
+        <!-- 5卡片矩阵：4个学生 + 1个家长总控 -->
         <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-5 px-3 max-w-5xl mx-auto">
           <!-- 4 位学生卡片 (诺、威、奕、黛) -->
           <div 
