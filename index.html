@@ -27,41 +27,19 @@
       border: 1px solid rgba(255, 255, 255, 0.85);
       box-shadow: 0 4px 20px -2px rgba(99, 102, 241, 0.06);
     }
-
-    /* 4人奥运领奖台立体高度 */
-    .podium-1st { height: 140px; background: linear-gradient(180deg, #fef08a 0%, #facc15 100%); border: 3px solid #eab308; }
-    .podium-2nd { height: 105px; background: linear-gradient(180deg, #f1f5f9 0%, #cbd5e1 100%); border: 3px solid #94a3b8; }
-    .podium-3rd { height: 80px; background: linear-gradient(180deg, #ffedd5 0%, #fdba74 100%); border: 3px solid #f97316; }
-    .podium-4th { height: 60px; background: linear-gradient(180deg, #f3e8ff 0%, #d8b4fe 100%); border: 3px solid #a855f7; }
-
-    /* 田字格生字样式 */
+    .profile-card {
+      transition: all 0.25s ease;
+    }
+    .profile-card:hover {
+      transform: translateY(-6px) scale(1.01);
+      box-shadow: 0 20px 30px -10px rgba(99, 102, 241, 0.2);
+    }
     .tianzige-box {
-      width: 100px;
-      height: 100px;
-      position: relative;
-      border: 2px solid #ef4444;
-      background-color: #fff;
+      width: 100px; height: 100px; position: relative; border: 2px solid #ef4444; background-color: #fff;
     }
-    .tianzige-box::before {
-      content: '';
-      position: absolute;
-      top: 50%;
-      left: 0;
-      right: 0;
-      border-top: 1px dashed #fca5a5;
-    }
-    .tianzige-box::after {
-      content: '';
-      position: absolute;
-      left: 50%;
-      top: 0;
-      bottom: 0;
-      border-left: 1px dashed #fca5a5;
-    }
-    .kaiti-font {
-      font-family: "KaiTi", "楷体", "STKaiti", serif;
-    }
-
+    .tianzige-box::before { content: ''; position: absolute; top: 50%; left: 0; right: 0; border-top: 1px dashed #fca5a5; }
+    .tianzige-box::after { content: ''; position: absolute; left: 50%; top: 0; bottom: 0; border-left: 1px dashed #fca5a5; }
+    .kaiti-font { font-family: "KaiTi", "楷体", "STKaiti", serif; }
     .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
     .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 6px; }
   </style>
@@ -69,92 +47,67 @@
 <body class="h-screen w-screen overflow-hidden flex flex-col antialiased select-none bright-kids-bg bright-grid">
   <div id="app" class="h-full flex flex-col flex-1 overflow-hidden">
 
-    <!-- ================= 场景一：首屏 (4人全员奥运领奖台 + 标语“我命由我不由天”) ================= -->
-    <div v-if="!currentLoggedInUser" class="h-full w-full flex flex-col items-center justify-between p-6 md:p-8 relative overflow-hidden">
+    <!-- ================= 场景一：朴素高级感的 5 卡片首屏 ================= -->
+    <div v-if="!currentLoggedInUser" class="h-full w-full flex flex-col items-center justify-between p-6 md:p-10 relative overflow-hidden">
+      <!-- 顶栏 -->
       <div class="w-full max-w-6xl flex justify-between items-center z-10">
         <div>
           <h1 class="text-2xl md:text-3xl font-black tracking-wider text-slate-900">STUDY OS · 家庭智能研学系统</h1>
-          <p class="text-base text-rose-600 font-black tracking-widest mt-1">🔥 我命由我不由天</p>
+          <p class="text-xs text-rose-600 font-black tracking-widest mt-1">🔥 我命由我不由天</p>
         </div>
-        <button @click="showSettings = true" class="px-4 py-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 rounded-xl text-sm font-bold shadow-xs">
+        <button @click="showSettings = true" class="px-4 py-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 rounded-xl text-xs font-bold shadow-xs transition">
           ⚙️ 系统设置
         </button>
       </div>
 
-      <!-- 4 人全员奥运立体领奖台 -->
-      <div class="w-full max-w-5xl z-10 space-y-5">
-        <div class="bg-white/95 rounded-3xl p-6 shadow-md border border-slate-200/80">
-          <div class="text-center mb-6">
-            <h2 class="text-2xl font-black text-slate-900">🏅 研学积分 · 全员奥运领奖台 🏅</h2>
-            <p class="text-xs text-slate-400 font-bold mt-1">金、银、铜与卓越第四名全员登台受奖</p>
-          </div>
+      <!-- 中间 5 个高级感卡片矩阵 (4学生 + 1家长总控) -->
+      <div class="w-full max-w-5xl z-10 text-center space-y-6">
+        <div>
+          <h2 class="text-3xl md:text-4xl font-black text-slate-900 tracking-tight">选择今日研学空间</h2>
+          <p class="text-sm text-slate-500 font-bold mt-1">独立档案 · 智能错题复仇 · 游戏化转盘 · 全功能督导</p>
+        </div>
 
-          <div class="flex items-end justify-center space-x-3 md:space-x-6 px-4">
-            <!-- 银牌 (第2名) -->
-            <div v-if="rankedStudents[1]" @click="openPinModal(rankedStudents[1])" class="flex flex-col items-center cursor-pointer group flex-1 max-w-[140px]">
-              <div class="w-16 h-16 rounded-2xl bg-slate-100 border-2 border-slate-300 flex items-center justify-center text-3xl mb-2 overflow-hidden shadow-inner">
-                <img v-if="rankedStudents[1].avatarImg" :src="rankedStudents[1].avatarImg" class="w-full h-full object-cover">
-                <span v-else>{{ rankedStudents[1].avatar }}</span>
-              </div>
-              <div class="font-black text-slate-800 text-lg">{{ rankedStudents[1].name }}</div>
-              <div class="text-sm font-black text-amber-600 mb-2">⚡ {{ rankedStudents[1].points }}分</div>
-              <div class="w-full podium-2nd rounded-t-2xl flex flex-col items-center justify-center text-slate-700 font-black shadow-md">
-                <span class="text-3xl">🥈</span><span class="text-xs mt-1">亚军银牌</span>
-              </div>
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-5 px-3">
+          <!-- 4 位学生卡片 -->
+          <div 
+            v-for="st in students" 
+            :key="st.id" 
+            @click="openPinModal(st)"
+            class="profile-card bg-white/95 rounded-3xl p-5 flex flex-col items-center justify-between cursor-pointer border border-slate-200/80 shadow-md"
+          >
+            <div class="w-20 h-20 rounded-2xl bg-gradient-to-br from-amber-50 to-indigo-50 border flex items-center justify-center text-4xl shadow-inner overflow-hidden mb-3">
+              <img v-if="st.avatarImg" :src="st.avatarImg" class="w-full h-full object-cover">
+              <span v-else>{{ st.avatar }}</span>
             </div>
 
-            <!-- 金牌 (第1名) -->
-            <div v-if="rankedStudents[0]" @click="openPinModal(rankedStudents[0])" class="flex flex-col items-center cursor-pointer group flex-1 max-w-[160px]">
-              <div class="w-20 h-20 rounded-2xl bg-amber-50 border-4 border-amber-400 flex items-center justify-center text-4xl mb-2 relative shadow-inner overflow-hidden">
-                <img v-if="rankedStudents[0].avatarImg" :src="rankedStudents[0].avatarImg" class="w-full h-full object-cover">
-                <span v-else>{{ rankedStudents[0].avatar }}</span>
-                <span class="absolute top-0 right-0 bg-amber-500 text-white text-[10px] px-1.5 py-0.5 rounded-bl font-black">👑</span>
-              </div>
-              <div class="font-black text-slate-900 text-xl">{{ rankedStudents[0].name }}</div>
-              <div class="text-sm font-black text-amber-600 mb-2">⚡ {{ rankedStudents[0].points }}分</div>
-              <div class="w-full podium-1st rounded-t-2xl flex flex-col items-center justify-center text-amber-950 font-black shadow-lg">
-                <span class="text-4xl">🥇</span><span class="text-sm mt-1">冠军金牌</span>
-              </div>
+            <div class="text-center">
+              <div class="text-lg font-black text-slate-900">{{ st.name }}</div>
+              <div class="text-xs text-indigo-600 font-bold mt-0.5">{{ st.grade }}</div>
             </div>
 
-            <!-- 铜牌 (第3名) -->
-            <div v-if="rankedStudents[2]" @click="openPinModal(rankedStudents[2])" class="flex flex-col items-center cursor-pointer group flex-1 max-w-[140px]">
-              <div class="w-16 h-16 rounded-2xl bg-orange-50 border-2 border-orange-300 flex items-center justify-center text-3xl mb-2 overflow-hidden shadow-inner">
-                <img v-if="rankedStudents[2].avatarImg" :src="rankedStudents[2].avatarImg" class="w-full h-full object-cover">
-                <span v-else>{{ rankedStudents[2].avatar }}</span>
-              </div>
-              <div class="font-black text-slate-800 text-lg">{{ rankedStudents[2].name }}</div>
-              <div class="text-sm font-black text-amber-600 mb-2">⚡ {{ rankedStudents[2].points }}分</div>
-              <div class="w-full podium-3rd rounded-t-2xl flex flex-col items-center justify-center text-orange-950 font-black shadow-md">
-                <span class="text-3xl">🥉</span><span class="text-xs mt-1">季军铜牌</span>
-              </div>
-            </div>
-
-            <!-- 卓越奖 (第4名) -->
-            <div v-if="rankedStudents[3]" @click="openPinModal(rankedStudents[3])" class="flex flex-col items-center cursor-pointer group flex-1 max-w-[140px]">
-              <div class="w-16 h-16 rounded-2xl bg-purple-50 border-2 border-purple-200 flex items-center justify-center text-3xl mb-2 overflow-hidden shadow-inner">
-                <img v-if="rankedStudents[3].avatarImg" :src="rankedStudents[3].avatarImg" class="w-full h-full object-cover">
-                <span v-else>{{ rankedStudents[3].avatar }}</span>
-              </div>
-              <div class="font-black text-slate-800 text-lg">{{ rankedStudents[3].name }}</div>
-              <div class="text-sm font-black text-amber-600 mb-2">⚡ {{ rankedStudents[3].points }}分</div>
-              <div class="w-full podium-4th rounded-t-2xl flex flex-col items-center justify-center text-purple-950 font-black shadow-md">
-                <span class="text-2xl">🏅</span><span class="text-[10px] mt-0.5">卓越荣誉</span>
-              </div>
+            <div class="w-full pt-3 mt-3 border-t border-slate-100 flex justify-between items-center text-xs font-black">
+              <span class="text-slate-400">今日: {{ getStudentDoneCount(st.id) }}/13</span>
+              <span class="text-amber-600">⚡ {{ st.points }}分</span>
             </div>
           </div>
 
-          <!-- 历史荣誉统计 -->
-          <div class="mt-6 pt-3 border-t border-slate-100 flex flex-wrap justify-between items-center px-3 text-sm font-bold text-slate-600 gap-2">
-            <div class="flex items-center space-x-3">
-              <span>📊 历史荣誉统计：</span>
-              <span v-for="st in students" :key="st.id" class="bg-slate-100 px-2.5 py-1 rounded-lg">
-                {{ st.name }}: 🥇{{ st.medals.gold }} 🥈{{ st.medals.silver }} 🥉{{ st.medals.bronze }} 🏅{{ st.medals.fourth }}
-              </span>
+          <!-- 家长总控卡片 -->
+          <div 
+            @click="openPinModal(parentProfile)"
+            class="profile-card bg-gradient-to-b from-indigo-50 to-purple-50 rounded-3xl p-5 flex flex-col items-center justify-between cursor-pointer border border-indigo-200 shadow-md"
+          >
+            <div class="w-20 h-20 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 text-white flex items-center justify-center text-4xl shadow-md border border-white/50">
+              <span>🛡️</span>
             </div>
-            <button @click="openPinModal(parentProfile)" class="px-4 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-800 rounded-xl font-black transition text-sm">
-              🛡️ 家长总控入口 →
-            </button>
+
+            <div class="text-center">
+              <div class="text-lg font-black text-indigo-950">家长总控</div>
+              <div class="text-xs text-indigo-600 font-bold mt-0.5">全员指挥中心</div>
+            </div>
+
+            <div class="w-full pt-3 mt-3 border-t border-indigo-200/60 text-center text-xs font-black text-indigo-800">
+              重置密码·派任务
+            </div>
           </div>
         </div>
       </div>
@@ -167,8 +120,8 @@
       <header class="glass-light rounded-2xl px-6 py-4 flex justify-between items-center shadow-sm">
         <span class="text-xl font-black text-slate-900">🛡️ 家长督导指挥中心 (总控管理)</span>
         <div class="flex space-x-3">
-          <button @click="openAssignModal" class="px-4 py-2 bg-slate-900 hover:bg-black text-white rounded-xl text-sm font-black shadow-md">➕ 派发临时任务(带附件)</button>
-          <button @click="logout" class="px-4 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-xl text-sm font-black">🚪 退出总控</button>
+          <button @click="openAssignModal" class="px-4 py-2 bg-slate-900 hover:bg-black text-white rounded-xl text-xs font-black shadow-md">➕ 派发临时任务(带附件)</button>
+          <button @click="logout" class="px-4 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-xl text-xs font-black">🚪 退出总控</button>
         </div>
       </header>
 
@@ -192,7 +145,7 @@
                 <span class="text-slate-500">今日打卡:</span>
                 <div>
                   <span class="text-emerald-700 font-black">✓ {{ getStudentDoneCount(st.id) }} 项</span>
-                  <span class="text-rose-600 font-black ml-2">✕ {{ allTodayTasks.length - getStudentDoneCount(st.id) }} 项</span>
+                  <span class="text-rose-600 font-black ml-2">✕ {{ 13 - getStudentDoneCount(st.id) }} 项</span>
                 </div>
               </div>
             </div>
@@ -250,7 +203,7 @@
 
       <main class="flex-1 flex flex-col overflow-hidden">
         
-        <!-- 今日看板 (完成项目可随时点击查改) -->
+        <!-- 今日看板 -->
         <div v-if="activeTab === 'today'" class="h-full flex flex-col flex-1 overflow-hidden space-y-2.5">
           <div class="glass-light rounded-xl px-5 py-2.5 flex justify-between items-center shadow-sm flex-shrink-0">
             <span class="text-base font-black text-slate-900">🎯 今日研学任务大看板 (完成项目可随时点击回看/修改)</span>
@@ -286,7 +239,7 @@
         <!-- 打卡月历视图 -->
         <div v-if="activeTab === 'records'" class="h-full flex flex-col flex-1 glass-light rounded-2xl p-5 overflow-hidden shadow-sm border space-y-3">
           <div class="flex justify-between items-center pb-2 border-b">
-            <span class="text-base font-black text-slate-900">📅 2026年9月 研学打卡月历 (点击日期查看单日全景明细)</span>
+            <span class="text-base font-black text-slate-900">📅 2026年9月 研学打卡月历 (点击日期查明细)</span>
             <span class="text-sm font-black bg-emerald-50 text-emerald-800 px-3 py-1 rounded-lg">本月全勤达标：28 天</span>
           </div>
           <div class="grid grid-cols-7 gap-2 text-center text-sm font-black text-slate-400 py-1">
@@ -306,7 +259,7 @@
               </div>
               <div v-if="day<=4" class="text-xs font-black text-center space-x-1">
                 <span class="text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded">✓ {{ getDayDoneCount(day) }}</span>
-                <span class="text-rose-600 bg-rose-50 px-1.5 py-0.5 rounded">✕ {{ allTodayTasks.length - getDayDoneCount(day) }}</span>
+                <span class="text-rose-600 bg-rose-50 px-1.5 py-0.5 rounded">✕ {{ 13 - getDayDoneCount(day) }}</span>
               </div>
               <div v-else class="text-center text-slate-300 text-xs font-bold">待研学</div>
               <span class="text-[10px] text-indigo-500 text-center font-bold">查明细 →</span>
@@ -355,7 +308,7 @@
           </div>
         </div>
 
-        <!-- 个人中心 (柱状图与明细统计表) -->
+        <!-- 个人中心 -->
         <div v-if="activeTab === 'profile'" class="h-full flex flex-col flex-1 glass-light rounded-2xl p-5 overflow-y-auto space-y-5 custom-scrollbar">
           <div class="flex justify-between items-center pb-3 border-b">
             <div class="flex items-center space-x-4">
@@ -377,18 +330,17 @@
             <div class="text-xl font-black text-amber-600">⚡ {{ currentStudent.points }} 积分</div>
           </div>
 
-          <!-- 柱状图展示 -->
+          <!-- 柱状图与统计表 -->
           <div class="p-5 bg-white rounded-2xl border space-y-4 shadow-2xs">
             <div class="text-base font-black text-slate-800">📊 近 7 天每日研学任务完成走势图</div>
             <div class="h-44 flex items-end justify-between px-6 border-b pb-2">
-              <div v-for="d in ['8/29','8/30','8/31','9/1','9/2','9/3','9/4(今)']" :key="d" class="flex flex-col items-center">
+              <div v-for="d in ['8/29','8/30','8/31','9/1','9/2','9/3','9/4(今) ']" :key="d" class="flex flex-col items-center">
                 <span class="text-xs font-black text-indigo-700 mb-1.5">{{ d.includes('9/4') ? todayDoneCount : (Math.floor(Math.random()*2)+11) }}</span>
                 <div class="w-10 bg-indigo-500 rounded-t-lg transition-all" :style="{ height: (d.includes('9/4') ? todayDoneCount*9+30 : (Math.floor(Math.random()*20)+75)) + 'px' }"></div>
                 <span class="text-xs text-slate-400 mt-2 font-bold">{{ d }}</span>
               </div>
             </div>
 
-            <!-- 柱状图正下方对应的数据统计表 -->
             <div class="mt-4 pt-2">
               <div class="text-sm font-black text-slate-800 mb-2">📋 近 7 天研学明细数据统计表：</div>
               <div class="overflow-x-auto">
@@ -426,21 +378,14 @@
 
     <!-- ================= 核心弹窗合集 ================= -->
     <div id="all-modals">
-
-      <!-- 🎮 游戏化大转盘弹窗 (带物理声效与定向作弊) -->
+      <!-- 游戏化大转盘弹窗 -->
       <div v-if="showWheelModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 z-50">
         <div class="bg-white rounded-3xl max-w-md w-full p-6 text-center space-y-4 shadow-2xl border">
-          <h3 class="text-xl font-black text-slate-900">🎡 学校作业已搞定！下一个学什么？</h3>
-          <p class="text-xs text-slate-400 font-bold">转盘自动决定今日下一个攻坚任务</p>
-
-          <!-- 转盘物理盘体 -->
+          <h3 class="text-xl font-black text-slate-900">🎡 学校作业已搞定！转盘抽奖</h3>
+          <p class="text-xs text-slate-400 font-bold">系统已智能锁定今日必做核心科目</p>
           <div class="relative w-64 h-64 mx-auto my-3 flex items-center justify-center">
-            <!-- 指针 -->
             <div class="absolute -top-3 left-1/2 -translate-x-1/2 z-20 text-3xl">🔻</div>
-            <div 
-              class="w-60 h-60 rounded-full border-8 border-amber-400 shadow-xl flex items-center justify-center overflow-hidden transition-transform duration-3000 ease-out"
-              :style="{ transform: `rotate(${wheelRotationDeg}deg)` }"
-            >
+            <div class="w-60 h-60 rounded-full border-8 border-amber-400 shadow-xl flex items-center justify-center overflow-hidden transition-transform duration-3000 ease-out" :style="{ transform: `rotate(${wheelRotationDeg}deg)` }">
               <div class="w-full h-full grid grid-cols-2 grid-rows-2 text-white font-black text-sm text-center">
                 <div class="bg-indigo-500 flex items-center justify-center p-2">⚡ 口算快练</div>
                 <div class="bg-rose-500 flex items-center justify-center p-2">🧩 奥数思维</div>
@@ -449,18 +394,15 @@
               </div>
             </div>
           </div>
-
-          <!-- 抽中结果展示 -->
           <div v-if="wheelTargetTask" class="p-3.5 bg-emerald-50 border border-emerald-200 rounded-2xl animate-bounce">
-            <span class="text-xs text-emerald-800 font-bold">🎉 恭喜抽中目标！</span>
+            <span class="text-xs text-emerald-800 font-bold">🎉 智能作弊命中目标：</span>
             <div class="text-lg font-black text-emerald-950 mt-0.5">{{ wheelTargetTask.icon }} {{ wheelTargetTask.title }}</div>
           </div>
-
           <div class="pt-2">
-            <button v-if="!wheelTargetTask" :disabled="isSpinning" @click="startSpinWheel" class="w-full py-3.5 bg-gradient-to-r from-amber-500 to-rose-500 text-white rounded-2xl text-base font-black shadow-lg hover:brightness-105 active:scale-95 transition">
+            <button v-if="!wheelTargetTask" :disabled="isSpinning" @click="startSpinWheel" class="w-full py-3.5 bg-gradient-to-r from-amber-500 to-rose-500 text-white rounded-2xl text-base font-black shadow-lg">
               {{ isSpinning ? '🌀 转盘飞转中...' : '🎲 启动大转盘！' }}
             </button>
-            <button v-else @click="openWheelSelectedTask" class="w-full py-3.5 bg-slate-900 text-white rounded-2xl text-base font-black shadow-lg active:scale-95 transition">
+            <button v-else @click="openWheelSelectedTask" class="w-full py-3.5 bg-slate-900 text-white rounded-2xl text-base font-black shadow-lg">
               立即前往完成该任务 →
             </button>
           </div>
@@ -496,7 +438,7 @@
         </div>
       </div>
 
-      <!-- 任务 2: 阅读与 3 道真题 (选项真实可点，当场判分) -->
+      <!-- 任务 2: 阅读真题 -->
       <div v-if="showReadingModal" class="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50">
         <div class="bg-white rounded-3xl max-w-2xl w-full p-6 space-y-4 shadow-2xl border max-h-[90vh] flex flex-col">
           <div class="flex justify-between items-center border-b pb-2">
@@ -513,15 +455,7 @@
               <div v-for="q in currentReadingArticle.questions" :key="q.id" class="space-y-2 p-3.5 bg-white rounded-xl border">
                 <div class="font-black text-slate-900 text-base">{{ q.q }}</div>
                 <div class="space-y-2 pt-1">
-                  <button 
-                    v-for="opt in q.options" 
-                    :key="opt"
-                    @click="readingUserChoices[q.id] = opt.slice(0,1)"
-                    :class="readingUserChoices[q.id] === opt.slice(0,1) ? 'bg-indigo-600 text-white font-black' : 'bg-white border-2 text-slate-700 hover:border-indigo-400'"
-                    class="w-full p-3 rounded-xl text-left font-bold transition text-sm cursor-pointer"
-                  >
-                    {{ opt }}
-                  </button>
+                  <button v-for="opt in q.options" :key="opt" @click="readingUserChoices[q.id] = opt.slice(0,1)" :class="readingUserChoices[q.id] === opt.slice(0,1) ? 'bg-indigo-600 text-white font-black' : 'bg-white border-2 text-slate-700 hover:border-indigo-400'" class="w-full p-3 rounded-xl text-left font-bold transition text-sm cursor-pointer">{{ opt }}</button>
                 </div>
                 <div v-if="readingSubmitted" class="text-xs text-slate-600 pt-2 border-t mt-2">
                   <span class="font-black text-emerald-700">正确答案：{{ q.ans }}</span> | 解析：{{ q.analysis }}
@@ -539,26 +473,19 @@
         </div>
       </div>
 
-      <!-- 任务 3: 每日练字 (一次3字，各写10遍，硬笔毛笔双笔法) -->
+      <!-- 任务 3: 田字格练字 -->
       <div v-if="showCalligraphyModal" class="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50">
         <div class="bg-white rounded-3xl max-w-xl w-full p-6 space-y-4 shadow-2xl border max-h-[90vh] flex flex-col">
           <div class="flex justify-between items-center border-b pb-2">
             <h3 class="text-lg font-black text-slate-900">✍️ 每日练字打卡 · 经典生字临摹</h3>
             <button @click="showCalligraphyModal = false" class="text-slate-400 font-bold text-lg">✕</button>
           </div>
-          
           <div class="flex-1 overflow-y-auto space-y-4 custom-scrollbar pr-1 text-sm">
-            <div class="p-3 bg-amber-100 border border-amber-300 text-amber-950 rounded-xl font-black text-center">
-              {{ calligraphyPack.ruleNotice }}
-            </div>
-
-            <!-- 3 个生字并排展示 -->
+            <div class="p-3 bg-amber-100 border border-amber-300 text-amber-950 rounded-xl font-black text-center">{{ calligraphyPack.ruleNotice }}</div>
             <div class="grid grid-cols-3 gap-3">
               <div v-for="item in calligraphyPack.chars" :key="item.char" class="p-3 bg-amber-50/60 border border-amber-200 rounded-2xl flex flex-col items-center space-y-2">
                 <div class="text-xs font-black text-rose-600">{{ item.pinyin }}</div>
-                <div class="tianzige-box rounded-lg flex items-center justify-center shadow-xs">
-                  <span class="kaiti-font text-6xl text-slate-900 z-10">{{ item.char }}</span>
-                </div>
+                <div class="tianzige-box rounded-lg flex items-center justify-center shadow-xs"><span class="kaiti-font text-6xl text-slate-900 z-10">{{ item.char }}</span></div>
                 <div class="font-bold text-slate-800 text-xs">{{ item.word }}</div>
                 <div class="text-[11px] text-slate-500 text-left bg-white p-2 rounded-lg border w-full space-y-1">
                   <div><b>硬笔:</b> {{ item.hardTip }}</div>
@@ -566,27 +493,19 @@
                 </div>
               </div>
             </div>
-
-            <div>
-              <label class="block font-bold text-slate-700 mb-1">拍照上传练字本打卡照片：</label>
-              <input type="file" multiple accept="image/*" @change="handleCalligraphyPhotos" class="w-full text-sm">
-            </div>
+            <div><label class="block font-bold text-slate-700 mb-1">拍照上传练字本打卡照片：</label><input type="file" multiple accept="image/*" @change="handleCalligraphyPhotos" class="w-full text-sm"></div>
           </div>
-
-          <button @click="submitCalligraphy" class="w-full py-3 bg-rose-600 text-white rounded-xl text-base font-black shadow-md">
-            已完成书写，提交照片打卡 (+2分)
-          </button>
+          <button @click="submitCalligraphy" class="w-full py-3 bg-rose-600 text-white rounded-xl text-base font-black shadow-md">已完成书写，提交照片打卡 (+2分)</button>
         </div>
       </div>
 
-      <!-- 任务 4: 口算 (单行规整大排版，一屏展示无滚动条) -->
+      <!-- 任务 4: 口算 -->
       <div v-if="showMathModal" class="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50">
         <div class="bg-white rounded-3xl max-w-lg w-full p-6 space-y-4 shadow-2xl border">
           <div class="flex justify-between items-center border-b pb-2">
             <h3 class="text-lg font-black text-slate-800">⚡ 10道口算快练 (一屏全览无滚动条)</h3>
             <button @click="showMathModal = false" class="text-slate-400 font-bold text-lg">✕</button>
           </div>
-          <!-- 左右双列单行对齐排版 -->
           <div class="grid grid-cols-2 gap-3 py-1">
             <div v-for="(p, i) in mathProblems" :key="i" class="flex items-center justify-between p-3 border-2 rounded-xl text-base font-black" :class="mathSubmitted ? (parseFloat(p.userAns)===p.ans?'bg-emerald-50 border-emerald-300':'bg-rose-50 border-rose-300') : 'bg-slate-50 border-slate-200'">
               <span class="w-24 font-mono text-lg text-slate-800">{{ p.expr }}</span>
@@ -603,7 +522,7 @@
         </div>
       </div>
 
-      <!-- 任务 5: 奥数题 (无 \\n 乱码，考点提示与举一反三变式) -->
+      <!-- 任务 5: 奥数 -->
       <div v-if="showOlympiadModal" class="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50">
         <div class="bg-white rounded-3xl max-w-xl w-full p-6 space-y-4 shadow-2xl border max-h-[90vh] flex flex-col">
           <div class="flex justify-between items-center border-b pb-2">
@@ -615,10 +534,10 @@
             <div><label class="block font-bold mb-1">草稿演算过程拍照：</label><input type="file" multiple accept="image/*" @change="handleOlympiadPhotos" class="w-full text-sm"></div>
             
             <div v-if="olympiadStage !== 'problem'" class="p-3.5 bg-amber-50 rounded-xl border border-amber-200 text-amber-900 text-sm">
-              <span class="font-black">💡 考点与思考提示：</span>{{ currentOlympiadData.hint }}
+              <span class="font-black">💡 考点提示：</span>{{ currentOlympiadData.hint }}
             </div>
-            <div v-if="olympiadStage === 'solution' || olympiadStage === 'variant'" class="p-3.5 bg-emerald-50 rounded-xl border border-emerald-200 space-y-1.5 text-slate-800 text-sm">
-              <div class="font-black text-emerald-950 mb-1">🎯 逐步详细解答步骤：</div>
+            <div v-if="olympiadStage === 'solution' || olympiadStage === 'variant'" class="p-3.5 bg-emerald-50 rounded-xl border border-emerald-200 space-y-1 text-slate-800 text-sm">
+              <div class="font-black text-emerald-950 mb-1">🎯 详细解答步骤：</div>
               <div v-for="(st, idx) in currentOlympiadData.steps" :key="idx" class="font-medium">{{ st }}</div>
             </div>
             <div v-if="olympiadStage === 'variant'" class="p-4 bg-indigo-50 rounded-2xl border border-indigo-200 space-y-2">
@@ -636,7 +555,7 @@
         </div>
       </div>
 
-      <!-- 任务 6: 记单词 (超大童趣图、逐词音标与中文、20秒听写) -->
+      <!-- 任务 6: 记单词 -->
       <div v-if="showWordModal" class="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50">
         <div class="bg-white rounded-3xl max-w-2xl w-full p-6 space-y-4 shadow-2xl border max-h-[90vh] flex flex-col">
           <div class="flex justify-between items-center border-b pb-2">
@@ -645,7 +564,6 @@
           </div>
           <div class="flex-1 overflow-y-auto space-y-4 custom-scrollbar pr-1">
             <div v-for="w in todayWordPack.words" :key="w.word" class="p-4 bg-slate-50 border-2 rounded-2xl flex items-start space-x-4">
-              <!-- 大图展示 -->
               <img :src="w.img" class="w-36 h-36 rounded-2xl object-cover border-2 border-slate-200 shadow-sm flex-shrink-0">
               <div class="flex-1 space-y-1.5 text-sm">
                 <div class="flex items-center space-x-2">
@@ -655,14 +573,11 @@
                 </div>
                 <div class="text-base font-bold text-slate-800">{{ w.meaning }}</div>
                 <div class="text-slate-500 font-bold text-xs">搭配: {{ w.collocations }}</div>
-                
-                <!-- 例句逐词注音与对译 -->
                 <div class="bg-white p-3 rounded-xl border border-slate-200 mt-2 space-y-1.5">
                   <div class="flex items-center space-x-2">
                     <span class="font-black text-base text-slate-900">{{ w.sentence }}</span>
                     <button @click="speakText(w.sentence)" class="text-indigo-600 font-bold">🔊</button>
                   </div>
-                  <!-- 逐词分解 -->
                   <div class="flex flex-wrap gap-2 pt-1 border-t border-dashed">
                     <div v-for="tok in w.wordTokens" :key="tok.w" class="bg-slate-50 px-1.5 py-0.5 rounded text-xs text-center">
                       <div class="font-black text-slate-800">{{ tok.w }}</div>
@@ -696,33 +611,7 @@
         </div>
       </div>
 
-      <!-- 任务 7: 朗读例句 -->
-      <div v-if="showSentenceSpeakModal" class="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50">
-        <div class="bg-white rounded-3xl max-w-md w-full p-6 space-y-3 shadow-2xl border">
-          <h3 class="text-lg font-black text-slate-900">🎙️ 朗读 5 句英语例句</h3>
-          <div class="space-y-2 text-sm">
-            <div v-for="(s, i) in todayWordPack.sentences" :key="i" class="p-2.5 bg-slate-50 rounded-xl flex items-center justify-between font-bold">
-              <span>{{ s }}</span>
-              <button @click="speakText(s)" class="text-indigo-600 font-black">🔊 点读</button>
-            </div>
-          </div>
-          <div class="pt-2"><input type="file" accept="audio/*" class="text-sm"></div>
-          <button @click="recordTaskDone(7); showSentenceSpeakModal = false;" class="w-full py-3 bg-slate-900 text-white rounded-xl text-base font-black">确认打卡 (+2分)</button>
-        </div>
-      </div>
-
-      <!-- 任务 8: 结构造句 -->
-      <div v-if="showSentenceStructureModal" class="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50">
-        <div class="bg-white rounded-3xl max-w-md w-full p-6 space-y-3.5 shadow-2xl border">
-          <h3 class="text-lg font-black text-slate-900">🌟 每日一句：结构仿写造句</h3>
-          <div class="p-3.5 bg-amber-50 rounded-xl text-sm font-bold text-amber-900">{{ todayWordPack.sentenceForStructure.original }}</div>
-          <div class="text-xs text-slate-500 font-medium">{{ todayWordPack.sentenceForStructure.prompt }}</div>
-          <textarea v-model="structureUserInput" placeholder="用此句型结构写下你自己的句子..." class="w-full border-2 rounded-xl p-3 text-sm outline-none" rows="3"></textarea>
-          <button @click="recordTaskDone(8); showSentenceStructureModal = false;" class="w-full py-3 bg-slate-900 text-white rounded-xl text-base font-black">完成打卡 (+2分)</button>
-        </div>
-      </div>
-
-      <!-- 任务 9: 英译中 (生词提示先给，参考答案考后给) -->
+      <!-- 任务 9: 英译中 -->
       <div v-if="showTranslationModal" class="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50">
         <div class="bg-white rounded-3xl max-w-md w-full p-6 space-y-4 shadow-2xl border">
           <h3 class="text-lg font-black text-slate-900">🧭 每日一句：英译中</h3>
@@ -740,80 +629,14 @@
         </div>
       </div>
 
-      <!-- 任务 10: 英文小阅读 -->
-      <div v-if="showEnglishReadingModal" class="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50">
-        <div class="bg-white rounded-3xl max-w-md w-full p-6 space-y-3 shadow-2xl border max-h-[85vh] flex flex-col">
-          <h3 class="text-lg font-black text-slate-900">📖 英文阅读理解 (串联今日5词)</h3>
-          <div class="flex-1 overflow-y-auto space-y-3 text-sm custom-scrollbar">
-            <div class="p-3.5 bg-slate-50 rounded-xl font-medium leading-relaxed">{{ todayWordPack.readingComp.passage }}</div>
-            <div v-for="q in todayWordPack.readingComp.questions" :key="q.id" class="p-3 bg-indigo-50/50 rounded-xl space-y-1.5">
-              <div class="font-black text-slate-800">{{ q.q }}</div>
-              <div class="space-y-1">
-                <button v-for="o in q.options" :key="o" @click="engReadingChoices[q.id] = o.slice(0,1)" :class="engReadingChoices[q.id] === o.slice(0,1) ? 'bg-indigo-600 text-white font-black' : 'bg-white border text-slate-700'" class="w-full p-2 rounded-lg text-left text-xs font-bold">{{ o }}</button>
-              </div>
-            </div>
-          </div>
-          <button @click="recordTaskDone(10); showEnglishReadingModal = false;" class="w-full py-3 bg-slate-900 text-white rounded-xl text-base font-black">提交阅读打卡 (+2分)</button>
-        </div>
-      </div>
-
-      <!-- 任务 11: 完形填空 -->
-      <div v-if="showClozeModal" class="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50">
-        <div class="bg-white rounded-3xl max-w-md w-full p-6 space-y-3 shadow-2xl border max-h-[85vh] flex flex-col">
-          <h3 class="text-lg font-black text-slate-900">🕵️ 每日完形填空 (串联今日5词)</h3>
-          <div class="flex-1 overflow-y-auto space-y-3 text-sm custom-scrollbar">
-            <div class="p-3.5 bg-slate-50 rounded-xl font-medium leading-relaxed">{{ todayWordPack.clozeTest.passage }}</div>
-            <div v-for="b in todayWordPack.clozeTest.blanks" :key="b.num" class="p-3 bg-indigo-50/50 rounded-xl">
-              <div class="font-black mb-1.5">第 {{ b.num }} 空:</div>
-              <div class="flex space-x-2">
-                <button v-for="o in b.options" :key="o" @click="clozeChoices[b.num] = o.slice(0,1)" :class="clozeChoices[b.num] === o.slice(0,1) ? 'bg-indigo-600 text-white font-black' : 'bg-white border text-slate-700'" class="px-3 py-1.5 rounded-lg text-xs font-bold">{{ o }}</button>
-              </div>
-            </div>
-          </div>
-          <button @click="recordTaskDone(11); showClozeModal = false;" class="w-full py-3 bg-slate-900 text-white rounded-xl text-base font-black">提交完形打卡 (+2分)</button>
-        </div>
-      </div>
-
-      <!-- 任务 12: 错题录入 -->
-      <div v-if="showSchoolErrorModal" class="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50">
-        <div class="bg-white rounded-3xl max-w-md w-full p-6 space-y-3.5 shadow-2xl border">
-          <h3 class="text-lg font-black text-slate-900">⚔️ 录入学校作业真实错题</h3>
-          <div class="space-y-2.5 text-sm">
-            <select v-model="newSchoolError.subject" class="w-full border-2 rounded-xl p-2.5 font-bold">
-              <option value="数学">📐 数学错题</option><option value="语文">📖 语文错题</option><option value="英语">🔤 英语错题</option>
-            </select>
-            <textarea v-model="newSchoolError.question" placeholder="敲字录入错题题目内容..." rows="3" class="w-full border-2 rounded-xl p-2.5 text-sm"></textarea>
-            <textarea v-model="newSchoolError.analysis" placeholder="错因分析与订正心得..." rows="2" class="w-full border-2 rounded-xl p-2.5 text-sm"></textarea>
-          </div>
-          <button @click="submitSchoolError" class="w-full py-3 bg-rose-600 text-white rounded-xl text-base font-black">归入错题本并打卡 (+2分)</button>
-        </div>
-      </div>
-
-      <!-- 任务 13: 整本书伴读打卡 -->
-      <div v-if="showBookReadingModal" class="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50">
-        <div class="bg-white rounded-3xl max-w-md w-full p-6 space-y-3.5 shadow-2xl border">
-          <h3 class="text-lg font-black text-slate-900">🏰 整本书伴读打卡</h3>
-          <div class="space-y-2.5 text-sm">
-            <input v-model="bookForm.bookName" placeholder="今天阅读的书名 (如：《昆虫记》)" class="w-full border-2 rounded-xl p-2.5 font-bold">
-            <div class="grid grid-cols-2 gap-2">
-              <input v-model="bookForm.pages" placeholder="今天读的页码 (如：P12-P35)" class="w-full border-2 rounded-xl p-2.5">
-              <input v-model.number="bookForm.duration" type="number" placeholder="阅读分钟数" class="w-full border-2 rounded-xl p-2.5 font-bold">
-            </div>
-            <textarea v-model="bookForm.summary" placeholder="今天读的内容大致讲了什么..." rows="2" class="w-full border-2 rounded-xl p-2.5"></textarea>
-            <input v-model="bookForm.nextPlan" placeholder="明天的阅读计划..." class="w-full border-2 rounded-xl p-2.5">
-          </div>
-          <button @click="submitBookReading" class="w-full py-3 bg-teal-700 text-white rounded-xl text-base font-black">保存阅读计划并打卡 (+2分)</button>
-        </div>
-      </div>
-
-      <!-- PIN 密码键盘弹窗 -->
+      <!-- PIN 密码键盘 -->
       <div v-if="showPinModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 z-50">
         <div class="bg-white rounded-3xl max-w-xs w-full p-6 text-center space-y-4 shadow-2xl border">
           <div class="w-16 h-16 rounded-2xl bg-amber-50 border flex items-center justify-center text-4xl mx-auto overflow-hidden">
             <img v-if="selectedAuthUser && selectedAuthUser.avatarImg" :src="selectedAuthUser.avatarImg" class="w-full h-full object-cover">
             <span v-else>{{ selectedAuthUser ? selectedAuthUser.avatar : '👤' }}</span>
           </div>
-          <h3 class="text-lg font-black text-slate-900">解锁 {{ selectedAuthUser ? selectedAuthUser.name : '' }}</h3>
+          <h3 class="text-base font-black text-slate-900">解锁 {{ selectedAuthUser ? selectedAuthUser.name : '' }}</h3>
           <div class="flex justify-center space-x-3 py-1">
             <div v-for="i in 4" :key="i" class="w-3.5 h-3.5 rounded-full" :class="enteredPin.length >= i ? 'bg-indigo-600 scale-110' : 'bg-slate-200'"></div>
           </div>
@@ -866,7 +689,7 @@
         </div>
       </div>
 
-      <!-- 日历单日明细下钻 -->
+      <!-- 日历单日明细 -->
       <div v-if="showDayDetailModal" class="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50">
         <div class="bg-white rounded-3xl max-w-lg w-full p-6 space-y-4 shadow-2xl">
           <h3 class="text-base font-black">📅 {{ selectedDetailDateStr }} 研学全景明细</h3>
@@ -911,7 +734,7 @@
 
   </div>
 
-  <!-- 引入外部模块脚本 -->
+  <!-- 引入模块脚本 -->
   <script src="js/data.js"></script>
   <script src="js/db.js"></script>
   <script src="js/ai.js"></script>
