@@ -1,194 +1,178 @@
-// 家庭研学中枢 - 核心数据与题库模块
+// 家庭研学中枢 - 真实真题与词库核心数据模块
 window.StudyData = {
   // 学生初始档案
   defaultStudents: [
-    { id: 'nuo', name: '诺', grade: '小学5年级', points: 8, avatar: '🐱', pin: '1234', favoriteTopic: 'military' },
-    { id: 'wei', name: '威', grade: '小学4年级', points: 24, avatar: '🦁', pin: '1234', favoriteTopic: 'news' },
-    { id: 'yi',  name: '奕', grade: '小学2年级', points: 15, avatar: '🐼', pin: '1234', favoriteTopic: 'lego' },
-    { id: 'dai', name: '黛', grade: '小学6年级', points: 42, avatar: '🔭', pin: '1234', favoriteTopic: 'tech' }
+    { id: 'nuo', name: '诺', grade: '小学5年级', points: 8, avatar: '🐱', pin: '1234', totalStudyMinutes: 35 },
+    { id: 'wei', name: '威', grade: '小学4年级', points: 24, avatar: '🦁', pin: '1234', totalStudyMinutes: 68 },
+    { id: 'yi',  name: '奕', grade: '小学2年级', points: 15, avatar: '🐼', pin: '1234', totalStudyMinutes: 42 },
+    { id: 'dai', name: '黛', grade: '小学6年级', points: 42, avatar: '🔭', pin: '1234', totalStudyMinutes: 110 }
   ],
 
-  // 基础 15 项研学任务 (大号趣味图标)
+  // 权威 13 项研学任务
   baseTasks: [
-    { id: 1, code: '01', category: '第一优先', icon: '🎒', title: '登记并完成学校家庭作业', duration: '35分钟', points: 3, criteria: '语数英要求 + 困难处理记录' },
-    { id: 2, code: '02', category: '语文', icon: '🔍', title: '每日新闻阅读与综合题', duration: '30分钟', points: 3, criteria: '真实计时≥30分钟 + 问答' },
-    { id: 3, code: '03', category: '语文', icon: '✍️', title: '每日练字拍照打卡', duration: '10分钟', points: 2, criteria: '田字格楷体范字临摹 + 必须上传照片' },
-    { id: 4, code: '04', category: '数学', icon: '⚡', title: '每日10道年级口算', duration: '8分钟', points: 2, criteria: '在线即时自动判分' },
-    { id: 5, code: '05', category: '数学', icon: '🧩', title: '每日一道年级奥数题', duration: '10分钟', points: 3, criteria: '草稿演练拍照 + 揭晓标准答案与错因剖析' },
-    { id: 6, code: '06', category: '英语', icon: '🔤', title: '画面记忆5词 + 造句 + 手写', duration: '18分钟', points: 3, criteria: '5造句 + 系统朗读 + 默写' },
-    { id: 7, code: '07', category: '英语', icon: '🎙️', title: '自己说5个英语句子', duration: '6分钟', points: 2, criteria: '5句文字 + 录音' },
-    { id: 8, code: '08', category: '英语', icon: '🌟', title: '每日一句：从结构到表达', duration: '5分钟', points: 2, criteria: '3分钟独立思考 + 自动判定' },
-    { id: 9, code: '09', category: '英语', icon: '🧭', title: '每日一句：英译中', duration: '5分钟', points: 2, criteria: '分级提示 + 提交译文' },
-    { id: 10, code: '10', category: '英语', icon: '📖', title: '年级小阅读理解', duration: '10分钟', points: 2, criteria: '短文 + 考试题3题' },
-    { id: 11, code: '11', category: '英语', icon: '🕵️', title: '每日英语完形填空', duration: '8分钟', points: 2, criteria: '语境及语法综合判断' },
-    { id: 12, code: '12', category: '综合', icon: '⚔️', title: '当日错题消化与复盘', duration: '15分钟', points: 2, criteria: '错因说明 + 红笔订正' },
-    { id: 13, code: '13', category: '阅读', icon: '🏰', title: '整本书伴读与思考', duration: '20分钟', points: 2, criteria: '阅读时长 + 情节复述' },
-    { id: 14, code: '14', category: '体能', icon: '🚀', title: '跳绳或户外体能运动', duration: '20分钟', points: 2, criteria: '跳绳500次或户外活动' },
-    { id: 15, code: '15', category: '习惯', icon: '🛸', title: '整理书包与明日准备', duration: '5分钟', points: 1, criteria: '书包整洁 + 削铅笔' }
+    { id: 1, code: '01', category: '第一优先', icon: '🎒', title: '登记并完成学校家庭作业', duration: '35分钟', points: 3, criteria: '逐科要求登记 + 自由选择AI质检' },
+    { id: 2, code: '02', category: '语文/阅读', icon: '🔍', title: '每日新闻/名著阅读与真题', duration: '20分钟', points: 3, criteria: '计时≥20分钟 + 真题单选填空判分' },
+    { id: 3, code: '03', category: '语文/书法', icon: '✍️', title: '每日练字拍照打卡', duration: '10分钟', points: 2, criteria: '年级10个生字词田字格楷体临摹' },
+    { id: 4, code: '04', category: '数学/计算', icon: '⚡', title: '每日10道年级口算', duration: '8分钟', points: 2, criteria: '即时判分 + 错题自动归入错题集' },
+    { id: 5, code: '05', category: '数学/思维', icon: '🧩', title: '每日一道年级奥数题', duration: '15分钟', points: 3, criteria: '草稿拍照 + 提示详解 + 懂了举一反三' },
+    { id: 6, code: '06', category: '英语/词汇', icon: '🔤', title: '记5个大纲单词', duration: '15分钟', points: 3, criteria: '音标点读 + 词组 + 20秒间隔默写(+3分)' },
+    { id: 7, code: '07', category: '英语/口语', icon: '🎙️', title: '今日词汇朗读或自述5句', duration: '6分钟', points: 2, criteria: '跟读今日单词例句 + 录音上传' },
+    { id: 8, code: '08', category: '英语/造句', icon: '🌟', title: '每日一句：从结构到表达', duration: '5分钟', points: 2, criteria: '今日核心单词选句 + 句型结构重组' },
+    { id: 9, code: '09', category: '英语/翻译', icon: '🧭', title: '每日一句：英译中', duration: '5分钟', points: 2, criteria: '今日核心单词选句 + 提示与参考译文' },
+    { id: 10, code: '10', category: '英语/阅读', icon: '📖', title: '年级小阅读理解(串联5词)', duration: '10分钟', points: 2, criteria: '今日词汇串联短文 + 3道阅读选择题' },
+    { id: 11, code: '11', category: '英语/完形', icon: '🕵️', title: '每日英语完形填空(串联5词)', duration: '8分钟', points: 2, criteria: '今日词汇语境挖空 + 综合语法选择' },
+    { id: 12, code: '12', category: '综合/复盘', icon: '⚔️', title: '当日错题消化与学校错题录入', duration: '15分钟', points: 2, criteria: '消化系统错题 + 支持拍照/敲字录入新错题' },
+    { id: 13, code: '13', category: '阅读/习惯', icon: '🏰', title: '整本书伴读与思考', duration: '20分钟', points: 2, criteria: '书名页数 + 计时 + 梗概与明日计划' }
   ],
 
-  // 田字格楷体字帖库
-  calligraphyBank: [
-    { char: '静', pinyin: 'jìng', radical: '青', strokes: 14, words: '宁静 · 静思 · 专心致志', tips: '左侧青字底提微挑，右侧争字竖笔直挺有力，重心平稳。' },
-    { char: '恒', pinyin: 'héng', radical: '忄', strokes: 9, words: '持之以恒 · 永恒 · 恒心', tips: '竖心旁左点低右点高，右侧亘字上下两横平整舒展，居中收紧。' },
-    { char: '思', pinyin: 'sī', radical: '心', strokes: 9, words: '深思熟虑 · 思考 · 善思', tips: '上部田字稍扁居上，下部心字底卧钩圆润有力，三点呼应自然。' },
-    { char: '博', pinyin: 'bó', radical: '十', strokes: 12, words: '博学多才 · 广博 · 博览', tips: '左窄右宽，十字偏上挺直，右部甫字点笔勿漏，寸字横画舒展平托。' }
+  // 任务 3：各年级真实大纲生字生词库 (10字左右带拼音田字格)
+  gradeWordBank: {
+    '低段': [
+      { char: '晨', pinyin: 'chén', word: '早晨' }, { char: '霞', pinyin: 'xiá', word: '晚霞' },
+      { char: '碧', pinyin: 'bì', word: '碧绿' }, { char: '翠', pinyin: 'cuì', word: '翠竹' },
+      { char: '荷', pinyin: 'hé', word: '荷花' }, { char: '清', pinyin: 'qīng', word: '清新' },
+      { char: '润', pinyin: 'rùn', word: '滋润' }, { char: '暖', pinyin: 'nuǎn', word: '温暖' },
+      { char: '飘', pinyin: 'piāo', word: '飘落' }, { char: '舞', pinyin: 'wǔ', word: '飞舞' }
+    ],
+    '中段': [
+      { char: '雄', pinyin: 'xióng', word: '雄伟' }, { char: '伟', pinyin: 'wěi', word: '丰功伟绩' },
+      { char: '博', pinyin: 'bó', word: '博大精深' }, { char: '览', pinyin: 'lǎn', word: '阅览' },
+      { char: '凝', pinyin: 'níng', word: '凝结' }, { char: '释', pinyin: 'shì', word: '解释' },
+      { char: '慎', pinyin: 'shèn', word: '审慎' }, { char: '恒', pinyin: 'héng', word: '持之以恒' },
+      { char: '践', pinyin: 'jiàn', word: '实践' }, { char: '笃', pinyin: 'dǔ', word: '笃行' }
+    ],
+    '高段': [
+      { char: '沧', pinyin: 'cāng', word: '沧海一粟' }, { char: '桑', pinyin: 'sāng', word: '饱经沧桑' },
+      { char: '砥', pinyin: 'dǐ', word: '砥砺' }, { char: '砺', pinyin: 'lì', word: '砥砺前行' },
+      { char: '睿', pinyin: 'ruì', word: '睿智' }, { char: '韬', pinyin: 'tāo', word: '韬光养晦' },
+      { char: '略', pinyin: 'lüè', word: '战略' }, { char: '宏', pinyin: 'hóng', word: '宏观' },
+      { char: '邃', pinyin: 'suì', word: '深邃' }, { char: '卓', pinyin: 'zhuó', word: '卓尔不群' }
+    ]
+  },
+
+  // 任务 2：阅读素材库 (1~2年级名著白话文，3年级以上真实新闻深度特稿)
+  readingArticles: [
+    {
+      id: 'r_junior_1',
+      forJunior: true, // 供低年级
+      title: '《西游记》精选：美猴王出世寻仙道',
+      content: '东胜神洲傲来国海中，有一座花果山。那座山正当顶上，有一块仙石。一日仙石迸裂，产一石卵，化作一个石猴。五官俱备，四肢皆全，拜了四方，目运两道神光，射冲斗府。石猴与群猴在山中游玩，发现了水帘洞，被众猴尊为“美猴王”。美猴王虽在山中快乐逍遥，却忧虑有朝一日年老身亡，于是立志远涉重洋，拜师学道，寻求长生不老与通天本领。',
+      questions: [
+        { type: 'choice', q: '美猴王出生在什么地方？', options: ['A. 东海龙宫', 'B. 花果山顶仙石', 'C. 五指山下', 'D. 昆仑仙境'], ans: 'B' },
+        { type: 'fill', q: '美猴王之所以立志出海拜师，是因为他忧虑有朝一日____。', ans: '年老身亡' }
+      ]
+    },
+    {
+      id: 'r_senior_1',
+      forJunior: false, // 供高年级
+      title: '真实时事：我国深中通道海底沉管隧道攻克世界工程难关',
+      content: '深中通道是连接深圳与中山的跨海巨型工程。其中海底隧道长约6.8公里，由32个巨大钢壳沉管和1个最终接头拼接而成，每个标准沉管重达8万吨！工程师们采用了具有自主知识产权的智能浇筑与北斗高精度毫米级水下对接技术。在深水暗流复杂海况下，实现了沉管“深海穿针”，成功打通了珠江口东西两岸交通黄金动脉。',
+      questions: [
+        { type: 'choice', q: '深中通道海底沉管对接利用了哪种导航系统实现毫米级定位？', options: ['A. GPS系统', 'B. 北斗卫星导航系统', 'C. 声呐浮标', 'D. 惯性雷达'], ans: 'B' },
+        { type: 'fill', q: '深中通道海底沉管隧道全长约____公里。', ans: '6.8' }
+      ]
+    }
   ],
 
-  // 各年级奥数精选题库 (题干、官方标准解答、错因剖析)
-  olympiadBank: {
+  // 任务 5：真题奥数题库 (原题 + 解答提示 + 逐步详解 + 举一反三变式题)
+  olympiadCurriculum: {
     '小学1年级': {
-      title: '排队找位置趣题',
-      question: '小朋友们排成一队做早操，从前面数，小诺排在第 7 个；从后面数，小诺排在第 8 个。请问这一队一共有多少个小朋友？',
-      solution: '【标准解法】：\n从前往后数包含小诺一次，从后往前数又包含小诺一次，小诺被重复数了 2 次。\n算式：7 + 8 - 1 = 14（人）。\n答：这一队一共有 14 个小朋友。',
-      analysis: '【常见错因】：孩子容易直接把 7 + 8 = 15 相加，忘记了小诺自己被算了两次，必须减去重复计算的 1 次。'
+      title: '排队找位置与重叠问题',
+      question: '小朋友排队领书，从前往后数小诺排在第 8 个，从后往前数小诺排在第 9 个。请问这一排一共有多少个小朋友？',
+      hint: '数了两次小诺本人！画图看看小诺被算了多少遍？',
+      solution: '第一步：从前往后数包含小诺（8人）；\n第二步：从后往前数又包含小诺（9人）；\n第三步：小诺被多加了1次，因此必须减去：8 + 9 - 1 = 16（人）。\n答：一排共有 16 个小朋友。',
+      variant: '【举一反三变式题】：小威排队打饭，从左数排第 6，从右数排第 7，这一队共有多少人？\n答：6 + 7 - 1 = 12人。'
     },
     '小学2年级': {
-      title: '锯木头与楼梯间隔',
-      question: '木工师傅把一根长木头锯成 6 段，每锯断一次需要花 4 分钟。请问木工师傅锯完这根木头一共需要多少分钟？',
-      solution: '【标准解法】：\n锯成 6 段只需要锯 6 - 1 = 5 次。\n算式：5 × 4 = 20（分钟）。\n答：一共需要 20 分钟。',
-      analysis: '【常见错因】：孩子常常直接拿 6 × 4 = 24，忽略了“段数与次数差 1”的植树原理，最后一段自然成型不需要锯。'
+      title: '间隔问题与锯木头时间',
+      question: '一根木料锯成 5 段需要 16 分钟。如果改成锯成 8 段，需要多少分钟？',
+      hint: '锯成5段需要锯几刀？每锯一刀要花几分钟？',
+      solution: '第一步：锯成 5 段只需要锯 5 - 1 = 4 次；\n第二步：每次用时 16 ÷ 4 = 4 分钟；\n第三步：锯成 8 段需要锯 8 - 1 = 7 次；\n第四步：总时间 7 × 4 = 28 分钟。\n答：需要 28 分钟。',
+      variant: '【举一反三变式题】：把一根铁丝剪成 4 段要 6 分钟，剪成 7 段要多少分钟？\n答：剪3次用6分即2分/次，剪6次用 6×2 = 12分钟。'
     },
     '小学3年级': {
-      title: '经典和倍问题',
-      question: '文具店里，书包和钢笔的价格之和是 120 元，已知书包的价格正好是钢笔价格的 5 倍。请问书包和钢笔各多少元？',
-      solution: '【标准解法】：\n把钢笔价格看作 1 份，书包价格就是 5 份，一共是 1 + 5 = 6 份。\n每份（钢笔）：120 ÷ 6 = 20（元）。\n书包价格：20 × 5 = 100（元）。\n答：书包 100 元，钢笔 20 元。',
-      analysis: '【常见错因】：容易忘记加上钢笔自己的那 1 份，直接拿 120 除以 5，导致结果出现小数且不符合总价 120 的题意。'
+      title: '和倍问题与等量代换',
+      question: '果园里桃树和梨树一共 180 棵，已知桃树的棵数是梨树的 2 倍。桃树和梨树各有多少棵？',
+      hint: '把梨树当作 1 份，桃树是 2 份，总共是多少份？',
+      solution: '第一步：梨树看作 1 份，桃树为 2 份，总份数 = 1 + 2 = 3 份；\n第二步：梨树（1份）= 180 ÷ 3 = 60 棵；\n第三步：桃树（2份）= 60 × 2 = 120 棵。\n答：桃树 120 棵，梨树 60 棵。',
+      variant: '【举一反三变式题】：书店运来科技书和故事书共 240 本，科技书是故事书的 3 倍，两种书各多少本？\n答：故事书 240÷(1+3)=60本，科技书 60×3=180本。'
     },
     '小学4年级': {
-      title: '经典鸡兔同笼题',
-      question: '农场草地上有鸡和兔子共 35 只，脚一共有 94 只。请问草地上鸡和兔子各有多少只？',
-      solution: '【标准假设法】：\n假设全部都是鸡，那么应该有脚：35 × 2 = 70（只）。\n实际多出脚数：94 - 70 = 24（只）。\n每把一只鸡换成兔子多 4 - 2 = 2 只脚。\n兔子数量：24 ÷ 2 = 12（只）。\n鸡的数量：35 - 12 = 23（只）。\n答：鸡有 23 只，兔子有 12 只。',
-      analysis: '【常见错因】：混淆了假设对象，假设全是鸡算出来多余的脚除以差，求出的是兔子数；反之假设全是兔求出的才是鸡。'
+      title: '差倍问题与年龄难题',
+      question: '今年爸爸 38 岁，儿子 10 岁。多少年前爸爸的年龄正好是儿子的 5 倍？',
+      hint: '无论过了多少年，爸爸和儿子的年龄差始终不变！先算出差是多少？',
+      solution: '第一步：年龄差永远不变：38 - 10 = 28 岁；\n第二步：当爸爸是儿子5倍时，相差 5 - 1 = 4 份；\n第三步：那时儿子的年龄：28 ÷ 4 = 7 岁；\n第四步：距今年数：10 - 7 = 3 年前。\n答：3 年前爸爸年龄是儿子的 5 倍。',
+      variant: '【举一反三变式题】：妈妈今年 36 岁，女儿 12 岁，几年前妈妈年龄是女儿的 4 倍？\n答：差24岁，24÷(4-1)=8岁，12-8=4年前。'
     },
     '小学5年级': {
-      title: '火车过桥与行程速度',
-      question: '一列客车长 200 米，以每秒 25 米的速度穿过一座长 1800 米的大桥。请问这列客车从车头上桥到车尾完全离桥，一共需要多少秒？',
-      solution: '【标准解法】：\n火车过桥的完全路程 = 桥长 + 车长 = 1800 + 200 = 2000（米）。\n所需时间 = 路程 ÷ 速度 = 2000 ÷ 25 = 80（秒）。\n答：一共需要 80 秒。',
-      analysis: '【常见错因】：只计算了桥长 1800 米除以 25，忽略了完全离桥必须加上火车自身的车长。'
+      title: '相遇问题与行程相向',
+      question: '甲乙两车分别从相距 480 千米的两地同时相向而行，甲车每小时行 55 千米，乙车每小时行 65 千米。两车出发几小时后相遇？',
+      hint: '两车一小时一共走多少路程（速度和）？',
+      solution: '第一步：计算两车速度和：55 + 65 = 120 千米/小时；\n第二步：相遇时间 = 总路程 ÷ 速度和 = 480 ÷ 120 = 4 小时。\n答：4 小时后两车相遇。',
+      variant: '【举一反三变式题】：两列火车相距 600 公里相对开出，快车每小时 80 公里，慢车每小时 70 公里，几小时相遇？\n答：600÷(80+70) = 4小时。'
     },
     '小学6年级': {
-      title: '工程与合作效率逆推',
-      question: '一项研学营地工程，甲队单独做需要 12 天完成，乙队单独做需要 15 天完成。现在两队合作 4 天后，剩下的工程由乙队单独做，乙队还需要几天做完？',
-      solution: '【标准解法】：\n设总工作量为 1。甲队效率 1/12，乙队效率 1/15。\n两队合作4天完成：(1/12 + 1/15) × 4 = (9/60) × 4 = 36/60 = 3/5。\n剩下工作量：1 - 3/5 = 2/5。\n乙队所需天数：(2/5) ÷ (1/15) = (2/5) × 15 = 6（天）。\n答：乙队还需要 6 天做完。',
-      analysis: '【常见错因】：分数通分计算失误，或者在算剩余天数时误除以甲乙合作效率。'
-    },
-    '默认': {
-      title: '趣味逆向还原思维题',
-      question: '一个数先加上 5，再乘以 5，然后减去 5，最后除以 5，得到的结果正好是 5。请问这个数最初是多少？',
-      solution: '【逆推还原法】：\n从最后一步倒着算：\n最后结果是 5，除以 5 前是：5 × 5 = 25。\n减去 5 前是：25 + 5 = 30。\n乘以 5 前是：30 ÷ 5 = 6。\n加上 5 前是：6 - 5 = 1。\n答：这个数最初是 1。',
-      analysis: '【常见错因】：顺着列代数方程容易粗心，用逆推法（乘变除、加变减）最快且不容易算错。'
+      title: '浓度配比与十字交叉法',
+      question: '把浓度为 20% 的盐水 300 克，与浓度为 5% 的盐水混合成浓度为 14% 的盐水，需要浓度 5% 的盐水多少克？',
+      hint: '计算前后纯盐的总质量不变！或者设未知数方程。',
+      solution: '第一步：设需 5% 盐水 x 克；\n第二步：列纯盐守恒方程：300 × 20% + 5%·x = (300 + x) × 14%；\n第三步：化简：60 + 0.05x = 42 + 0.14x；\n第四步：0.09x = 18，解得 x = 200 克。\n答：需要 5% 的盐水 200 克。',
+      variant: '【举一反三变式题】：浓度30%盐水200克与10%盐水混合配成18%盐水，需要10%盐水多少克？\n答：(200×30% + 0.1x) = (200+x)×0.18，解得 x = 300克。'
     }
   },
 
-  // 9 大真实新闻与权威知识领域
-  knowledgeTopics: [
-    { id: 'news', name: '真实新闻', icon: '📰' },
-    { id: 'military', name: '国防军事', icon: '🪖' },
-    { id: 'tech', name: '前沿科技', icon: '🔬' },
-    { id: 'history', name: '华夏历史', icon: '📜' },
-    { id: 'lego', name: '机械积木', icon: '🧱' },
-    { id: 'literature', name: '经典文学', icon: '📚' },
-    { id: 'astronomy', name: '宇宙太空', icon: '🌌' },
-    { id: 'dinosaurs', name: '史前恐龙', icon: '🦖' },
-    { id: 'nature', name: '神奇自然', icon: '🌿' }
+  // 任务 6~11：全国大纲标准词汇组（每组 5 词，打通听说读写背与阅读完形）
+  englishWordPacks: [
+    {
+      packId: 'pack_1',
+      words: [
+        { word: 'explore', phonetic: '/ɪkˈsplɔːr/', meaning: '探索，勘探', collocations: 'explore the space (探索太空), explore the world (探索世界)', img: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=300&q=80' },
+        { word: 'courage', phonetic: '/ˈkɜːrɪdʒ/', meaning: '勇气，胆量', collocations: 'have the courage to (有勇气去做...), take courage (鼓起勇气)', img: 'https://images.unsplash.com/photo-1519834785169-98be25ec3f84?w=300&q=80' },
+        { word: 'curious', phonetic: '/ˈkjʊriəs/', meaning: '好奇的，求知欲强的', collocations: 'be curious about (对...感到好奇)', img: 'https://images.unsplash.com/photo-1516627145497-ae6968895b74?w=300&q=80' },
+        { word: 'protect', phonetic: '/prəˈtekt/', meaning: '保护，保卫', collocations: 'protect nature (保护自然), protect eyesight (保护视力)', img: 'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=300&q=80' },
+        { word: 'achieve', phonetic: '/əˈtʃiːv/', meaning: '实现，达到', collocations: 'achieve a goal (实现目标), achieve success (取得成功)', img: 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=300&q=80' }
+      ],
+      // 任务 7 朗读示范句
+      sentences: [
+        'We should explore the wonderful world bravely.',
+        'It takes great courage to tell the truth.',
+        'Children are always curious about new things.',
+        'We must take action to protect our environment.',
+        'Work hard and you will achieve your big dream.'
+      ],
+      // 任务 8 挑一句结构造句
+      sentenceForStructure: {
+        original: 'Work hard and you will achieve your big dream.',
+        prompt: '请用 "Work hard and you will achieve..." 表达你自己的奋斗目标！'
+      },
+      // 任务 9 挑一句英译中
+      sentenceForTranslation: {
+        en: 'Children with courage are always curious to explore the unknown world.',
+        hint: '关键词：courage(勇气), curious(好奇), explore(探索), unknown(未知)',
+        cnReference: '有勇气的孩子们总是充满好奇地去探索未知的世界。'
+      },
+      // 任务 10 阅读理解
+      readingComp: {
+        passage: 'Young scientists always have strong curious minds. They want to explore nature and deep oceans. Sometimes, danger is on the road, but with enough courage, they can overcome difficulties. When they protect wildlife and achieve great discoveries, the whole world becomes better.',
+        questions: [
+          { q: '1. What do young scientists want to explore?', options: ['A. Only classrooms', 'B. Nature and deep oceans', 'C. Video games'], ans: 'B' },
+          { q: '2. What helps scientists overcome difficulties?', options: ['A. Courage', 'B. Money', 'C. Luck'], ans: 'A' },
+          { q: '3. What happens when they achieve great discoveries?', options: ['A. Nature is broken', 'B. The world becomes better', 'C. Nothing changes'], ans: 'B' }
+        ]
+      },
+      // 任务 11 完形填空
+      clozeTest: {
+        passage: 'To become a good explorer, one must be ___1___ about everything. It takes true ___2___ to face storms. When we learn to ___3___ the animals, we ___4___ real harmony with nature.',
+        blanks: [
+          { num: 1, options: ['A. curious', 'B. angry', 'C. tired'], ans: 'A' },
+          { num: 2, options: ['A. clock', 'B. courage', 'C. candy'], ans: 'B' },
+          { num: 3, options: ['A. protect', 'B. forget', 'C. break'], ans: 'A' },
+          { num: 4, options: ['A. lose', 'B. achieve', 'C. stop'], ans: 'B' }
+        ]
+      }
+    }
   ],
 
-  // 每天每类一条权威真实新闻与硬核事实
-  dailyRealNewsArticles: {
-    news: {
-      category: '📰 真实时事新闻',
-      title: '国产C919大型客机规模化商业运营突破千万人次',
-      summary: '我国自主研制的C919大飞机已在多条国内主流干线航线常态化运行，各项安全指标与燃油经济性经受住了高密度商业飞行的全方位考验。',
-      fullContent: {
-        background: '中国商飞C919飞机不仅是现代航空工业的集大成者，更标志着我国具备了按照国际适航标准研制大型干线客机的完整能力。从机翼尖端的超临界机翼设计，到先进机载航空电子系统集成，全部实现了自主可控。',
-        principle: '超临界机翼与传统机翼相比，能把巡航马赫数提高到0.78以上，大幅延缓激波产生，使飞机在万米高空飞行时阻力降低5%，单次航程能节约几吨昂贵的航空煤油！',
-        thinking: '为什么造一架大飞机能带动全国成百上千家高端装备制造企业共同进步？如果你是飞机总设计师，你会最优先攻克哪个零件？'
-      }
-    },
-    military: {
-      category: '🪖 国防军事特稿',
-      title: '电磁弹射利剑入阵：中国第三艘航母福建舰深蓝试航突破',
-      summary: '福建舰配备全球先进的电磁弹射与电磁拦阻装置，可使新型隐身舰载机和固定翼预警机在数秒内以极高频次升空作战，实现战略飞跃。',
-      fullContent: {
-        background: '传统航母大多依赖滑跃甲板或复杂高维护的蒸汽弹射。福建舰采用先进的综合电力推进和电磁弹射轨道，弹射力量大小可以线性精确调节，从几吨的无人侦察机到30多吨的重型歼击机均可平稳弹射。',
-        principle: '电磁弹射器利用强大的脉冲电磁洛伦兹力推动滑块高速前进，原理类似于磁悬浮列车的高推力线性感应电机，能在短短百米距离内将重达数十吨的战机瞬间加速到每小时250公里！',
-        thinking: '相比于冒热气的蒸汽弹射，电磁弹射为什么能够更保护战机寿命？这背后体现了中国电力电子技术的什么优势？'
-      }
-    },
-    tech: {
-      category: '🔬 前沿科技前哨',
-      title: '深海万米无声传奇：“奋斗者”号马里亚纳海沟深渊科考新发现',
-      summary: '中国全海深载人潜水器“奋斗者”号在世界最深海沟海底展开多批次连续潜航作业，带回大量未知深渊微生物和地质岩心样品。',
-      fullContent: {
-        background: '在万米深渊的马里亚纳海沟底部，水温仅有1至4摄氏度，且周围漆黑冰冷，海水静水压高达110兆帕，相当于一台重型卡车压在一个指甲盖大小的面积上。',
-        principle: '“奋斗者”号能抗住如此极压，核心在于中国科学家自主研制的新型高强高韧钛合金载人球舱，采用了极致精密的电子束焊接工艺，使得整个耐压球体没有一丝微观瑕疵。',
-        thinking: '在没有阳光的万米漆黑深海中，如果不能进行光合作用，那里的奇异生物究竟靠吃什么能量存活繁衍呢？'
-      }
-    },
-    history: {
-      category: '📜 华夏文明纪实',
-      title: '重见天日的吉光片羽：三星堆青铜神树与黄金面具跨千年对话',
-      summary: '三星堆遗址出土的3.96米青铜神树、金杖与太阳轮器具，实证了3000多年前古蜀文明与黄河流域中原殷商文明彼此紧密交流、交相辉映的恢宏篇章。',
-      fullContent: {
-        background: '三星堆遗址位于四川广汉。考古学家通过高科技碳14测年和超微痕迹分析，确认其祭祀坑埋藏于商代晚期。青铜神树分为三层九枝，每枝上伫立着神鸟，形象印证了古籍中十日神话与扶桑树的传说。',
-        principle: '商代蜀人掌握了先进的泥范分铸法和铜铅锡黄金配比合金技术，神树的底座、树干和枝头神鸟是先分别铸造，再用液态青铜焊接浇注成一体，技术极为高超。',
-        thinking: '古蜀人在没有现代吊车和电动工具的时代，是怎样把近4米高、沉重无比的青铜树精准树立在宗庙大殿之中的？'
-      }
-    },
-    lego: {
-      category: '🧱 机械与积木力学',
-      title: '乐高机械组核心密码：差速器如何拯救汽车拐弯时的打滑？',
-      summary: '通过机械积木拼装差速器齿轮箱，直观揭示为什么汽车在拐弯时外侧轮胎转速必须快于内侧轮胎，这是一项改变了人类交通史的机械天才发明。',
-      fullContent: {
-        background: '如果一辆四轮小车左右两个轮子用一根死轴刚性连在一起，小车直线跑很稳，但一拐弯外轮跑弧线长、内轮跑弧线短，就会造成一侧轮胎在地上剧烈摩擦打滑，无法顺利转弯。',
-        principle: '差速器内部由行星齿轮和太阳齿轮组成。直行时整个齿轮箱一体旋转；拐弯时行星齿轮开始自转，自动将多余的转速分配给阻力较小的外侧车轮，达成平滑转弯！',
-        thinking: '如果在冰雪路面上汽车有一个轮子悬空打滑了，传统的差速器反而会让悬空的轮子疯转，你知道越野车是用什么装置把差速器“锁住”的吗？'
-      }
-    },
-    literature: {
-      category: '📚 经典文学之美',
-      title: '两岸猿声啼不住：李白《早发白帝城》背后的地理险峰与快意人生',
-      summary: '重温诗仙李白逆境获赦顺江而下一日千里的壮丽画卷，读懂盛唐诗歌背后的三峡地质裂隙与中国文人豁达浪漫的胸襟。',
-      fullContent: {
-        background: '唐肃宗乾元二年，李白因受牵连被流放夜郎，行至巫山白帝城时突然收到朝廷大赦的公文。惊喜交加的李白立刻乘舟顺流返回江陵，在轻舟穿行于巫山高耸绝壁之间写下了这首千古绝唱。',
-        principle: '长江三峡是典型的喀斯特峡谷地貌，由于流水长年累月强烈侵蚀下切，两岸山势如斧劈刀削般陡峭险峻，水流落差极大，在丰水期行船如飞箭离弦，真真切切是“一日还”！',
-        thinking: '试着朗读这首诗，你能从急促欢快的平仄韵律里，体会出李白当时怎样如释重负、重新拥抱自由的豪迈心情吗？'
-      }
-    },
-    astronomy: {
-      category: '🌌 宇宙太空深空',
-      title: '穿透百亿光年的迷雾：韦伯太空望远镜窥见宇宙大爆炸后的黎明',
-      summary: '人类部署在日地拉格朗日L2点的詹姆斯·韦伯空间望远镜，利用红外超深空相机观测到了宇宙诞生仅仅3亿年时的原始婴儿星系。',
-      fullContent: {
-        background: '宇宙大爆炸发生在约138亿年前。最初的几亿年被称为“黑暗时代”，没有恒星照亮。韦伯望远镜配备了巨大的镀金铍金属折叠主镜和网球场大小的五层遮阳罩，能保持在零下233度的极寒环境下工作。',
-        principle: '因为宇宙在不断膨胀，早期星系发出的微弱可见光在百亿年的长途奔袭中，波长被拉长成了红外线（红移现象）。普通光学望远镜什么都看不见，唯有超高灵敏度的红外望远镜才能捕捉到它们。',
-        thinking: '当我们望向130亿光年外的星系时，我们看到的其实是它现在的样子，还是它130亿年前的样子？'
-      }
-    },
-    dinosaurs: {
-      category: '🦖 史前恐龙王国',
-      title: '披羽巨兽的震撼化石：中国辽宁发现9米体长“华丽羽王龙”',
-      summary: '我国辽宁热河生物群发掘出迄今为止体型最大的带羽毛恐龙化石，彻底改写了世界古生物界对暴龙超科家族演化史的科学认知。',
-      fullContent: {
-        background: '长期以来，人们以为只有像始祖鸟那样的小型恐龙才有羽毛，大型暴龙都是粗糙坚硬的蜥蜴鳞片。徐星院士团队在辽宁北票发现的三具华丽羽王龙骨骼化石上，清晰印证了全身密布的原始丝状羽毛痕迹。',
-        principle: '华丽羽王龙生活在早白垩世较为寒冷的高纬度森林环境中，这些羽毛并不是为了飞行，而是像我们冬天的羽绒服一样，用来锁住体温保持恒定代谢的保温装置！',
-        thinking: '既然霸王龙的祖先都长着羽毛，那现代在农家院里走来走去的小鸡和麻雀，到底算不算真正的“恐龙”呢？'
-      }
-    },
-    nature: {
-      category: '🌿 神奇大自然生态',
-      title: '森林地下的互联网：树木如何通过真菌菌丝网络悄悄说悄悄话？',
-      summary: '生态学家发现整座森林地表下方存在着一个由真菌构成的庞大互联网络（Wood Wide Web），大树不仅能互相借养料，还能在遭遇害虫时互相拉响警报！',
-      fullContent: {
-        background: '走在幽静的森林里，你以为每棵大树都是孤军奋战的竞争者？科学家用放射性碳同位素示踪实验证明，母树会通过土壤地下的菌根网络，给阳光不足被遮挡的幼苗主动输送葡萄糖养分！',
-        principle: '真菌需要树木光合作用制造的碳水化合物，而树木需要真菌从深层土壤里高效吸收的矿物质磷和水分。当某棵树被害虫咬噬时，会释放防御电信号与挥发物，通过菌丝通知方圆百米的其他同伴提前合成单宁酸抵御害虫！',
-        thinking: '大自然中的植物没有神经系统，却能通过化学与电信号互通有无，这种共生互助给人类社会带来了什么启迪？'
-      }
-    }
-  },
-
-  // 默认可增删的特权商城商品
+  // 默认可增删商品
   defaultShopItems: [
     { id: 'item_1', icon: '🧹', name: '周六免做家务券', desc: '周末免洗碗或扫地一次', cost: 15 },
     { id: 'item_2', icon: '🎬', name: '电影/游乐园门票', desc: '自选周末电影一场或游乐场畅玩', cost: 50 },
