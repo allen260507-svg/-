@@ -1,4 +1,4 @@
-// 家庭研学中枢 - Vue 3 控制器 (带防空容错、强制初始化学生、真实加分与多附件)
+// 家庭研学中枢 - Vue 3 控制器 (强制防空保护，确保4个学生和家长卡片完整渲染)
 const { createApp, ref, computed, onMounted, onUnmounted } = Vue;
 
 createApp({
@@ -9,20 +9,17 @@ createApp({
     const selectedAuthUser = ref(null);
     const enteredPin = ref('');
 
-    // 全局弹窗控制
     const showSettings = ref(false);
     const showAssignModal = ref(false);
     const showPointModal = ref(false);
     const showDayDetailModal = ref(false);
     const showAddShopItemModal = ref(false);
 
-    // 大转盘游戏化弹窗与状态
     const showWheelModal = ref(false);
     const isSpinning = ref(false);
     const wheelTargetTask = ref(null);
     const wheelRotationDeg = ref(0);
 
-    // 13 个任务专属弹窗
     const showHomeworkModal = ref(false);
     const showReadingModal = ref(false);
     const showCalligraphyModal = ref(false);
@@ -38,12 +35,10 @@ createApp({
     const showSchoolErrorModal = ref(false);
     const showBookReadingModal = ref(false);
 
-    // 家长总控弹窗
     const showParentResetPinModal = ref(false);
     const parentTargetStudent = ref(null);
     const parentNewPinInput = ref('');
 
-    // 研学计时器
     const activeTimingTaskId = ref(null);
     const taskTimerSeconds = ref(0);
     const isTimerRunning = ref(false);
@@ -66,15 +61,10 @@ createApp({
       return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
     };
 
-    // 原生 Web Audio 合成音效
     let audioCtx = null;
     const getAudioContext = () => {
-      if (!audioCtx) {
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      }
-      if (audioCtx.state === 'suspended') {
-        audioCtx.resume();
-      }
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
       return audioCtx;
     };
 
@@ -113,13 +103,13 @@ createApp({
       } catch (e) {}
     };
 
-    // 系统配置与基础数据 (硬编码防空兜底：确保 4 个学生绝不丢失)
     const config = ref({
       siliconKey: localStorage.getItem('cfg_silicon') || '',
       upstashUrl: localStorage.getItem('cfg_upstash_url') || '',
       upstashToken: localStorage.getItem('cfg_upstash_token') || ''
     });
 
+    // 强制保证 4 个学生绝不丢失的默认备份
     const defaultStudentsBackup = [
       { id: 'nuo', name: '诺', grade: '小学5年级', points: 8, avatar: '🐱', avatarImg: '', pin: '1234', totalStudyMinutes: 35, medals: { gold: 1, silver: 2, bronze: 4, fourth: 5 } },
       { id: 'wei', name: '威', grade: '小学4年级', points: 24, avatar: '🦁', avatarImg: '', pin: '1234', totalStudyMinutes: 68, medals: { gold: 3, silver: 4, bronze: 2, fourth: 1 } },
@@ -127,28 +117,28 @@ createApp({
       { id: 'dai', name: '黛', grade: '小学6年级', points: 42, avatar: '🔭', avatarImg: '', pin: '1234', totalStudyMinutes: 110, medals: { gold: 6, silver: 2, bronze: 1, fourth: 0 } }
     ];
 
-    const savedStudents = localStorage.getItem('study_os_students');
-    let parsedStudents = null;
+    let validStudents = defaultStudentsBackup;
     try {
-      parsedStudents = savedStudents ? JSON.parse(savedStudents) : null;
+      const saved = localStorage.getItem('study_os_students');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          validStudents = parsed;
+        }
+      }
     } catch (e) {
-      parsedStudents = null;
+      validStudents = defaultStudentsBackup;
     }
-    const students = ref((parsedStudents && parsedStudents.length > 0) ? parsedStudents : defaultStudentsBackup);
+    const students = ref(validStudents);
 
     const currentStudentId = ref('nuo');
     const baseTasks = ref(window.StudyData.baseTasks);
     const customTasks = ref(JSON.parse(localStorage.getItem('study_os_custom_tasks') || '[]'));
     const newTask = ref({ targetStudentId: 'ALL', title: '', duration: '15分钟', points: 3 });
 
-    const savedCheckins = localStorage.getItem('study_os_checkins');
-    const checkins = ref(savedCheckins ? JSON.parse(savedCheckins) : {});
-
-    const savedErrors = localStorage.getItem('study_os_errors');
-    const errors = ref(savedErrors ? JSON.parse(savedErrors) : []);
-
-    const savedShop = localStorage.getItem('study_os_shop');
-    const shopItems = ref(savedShop ? JSON.parse(savedShop) : window.StudyData.defaultShopItems);
+    const checkins = ref(JSON.parse(localStorage.getItem('study_os_checkins') || '{}'));
+    const errors = ref(JSON.parse(localStorage.getItem('study_os_errors') || '[]'));
+    const shopItems = ref(JSON.parse(localStorage.getItem('study_os_shop') || JSON.stringify(window.StudyData.defaultShopItems)));
 
     const newShopItem = ref({ icon: '🎁', name: '', desc: '', cost: 20 });
     const targetPointStudent = ref(null);
@@ -177,7 +167,6 @@ createApp({
       return [...personalCustom, ...filteredBase];
     });
 
-    // 表单状态
     const hwForm = ref({ yuwen: '', shuxue: '', yingyu: '', durationMinutes: 35, mode: 'direct' });
     const hwPhotos = ref([]);
 
