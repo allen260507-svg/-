@@ -1,4 +1,4 @@
-// 家庭研学中枢 - Vue 3 控制器 (实现多附件无限累加、历史数据完整回显、即时批改对错与防覆盖)
+// 家庭研学中枢 - Vue 3 控制器 (带防空容错、强制初始化学生、真实加分与多附件)
 const { createApp, ref, computed, onMounted, onUnmounted } = Vue;
 
 createApp({
@@ -113,15 +113,28 @@ createApp({
       } catch (e) {}
     };
 
-    // 系统配置与基础数据
+    // 系统配置与基础数据 (硬编码防空兜底：确保 4 个学生绝不丢失)
     const config = ref({
       siliconKey: localStorage.getItem('cfg_silicon') || '',
       upstashUrl: localStorage.getItem('cfg_upstash_url') || '',
       upstashToken: localStorage.getItem('cfg_upstash_token') || ''
     });
 
+    const defaultStudentsBackup = [
+      { id: 'nuo', name: '诺', grade: '小学5年级', points: 8, avatar: '🐱', avatarImg: '', pin: '1234', totalStudyMinutes: 35, medals: { gold: 1, silver: 2, bronze: 4, fourth: 5 } },
+      { id: 'wei', name: '威', grade: '小学4年级', points: 24, avatar: '🦁', avatarImg: '', pin: '1234', totalStudyMinutes: 68, medals: { gold: 3, silver: 4, bronze: 2, fourth: 1 } },
+      { id: 'yi',  name: '奕', grade: '小学2年级', points: 15, avatar: '🐼', avatarImg: '', pin: '1234', totalStudyMinutes: 42, medals: { gold: 2, silver: 3, bronze: 5, fourth: 2 } },
+      { id: 'dai', name: '黛', grade: '小学6年级', points: 42, avatar: '🔭', avatarImg: '', pin: '1234', totalStudyMinutes: 110, medals: { gold: 6, silver: 2, bronze: 1, fourth: 0 } }
+    ];
+
     const savedStudents = localStorage.getItem('study_os_students');
-    const students = ref(savedStudents ? JSON.parse(savedStudents) : window.StudyData.defaultStudents);
+    let parsedStudents = null;
+    try {
+      parsedStudents = savedStudents ? JSON.parse(savedStudents) : null;
+    } catch (e) {
+      parsedStudents = null;
+    }
+    const students = ref((parsedStudents && parsedStudents.length > 0) ? parsedStudents : defaultStudentsBackup);
 
     const currentStudentId = ref('nuo');
     const baseTasks = ref(window.StudyData.baseTasks);
@@ -164,9 +177,9 @@ createApp({
       return [...personalCustom, ...filteredBase];
     });
 
-    // 各任务绑定表单状态
+    // 表单状态
     const hwForm = ref({ yuwen: '', shuxue: '', yingyu: '', durationMinutes: 35, mode: 'direct' });
-    const hwPhotos = ref([]); // 多附件数组
+    const hwPhotos = ref([]);
 
     const currentReadingArticle = computed(() => {
       const isJunior = studentGradeNumber.value <= 2;
@@ -177,7 +190,7 @@ createApp({
     const readingScore = ref(0);
 
     const calligraphyPack = computed(() => window.StudyData.calligraphyPack);
-    const calligraphyPhotos = ref([]); // 多附件数组
+    const calligraphyPhotos = ref([]);
 
     const mathProblems = ref([]);
     const mathSubmitted = ref(false);
@@ -193,13 +206,13 @@ createApp({
       return curriculum['小学3年级'];
     });
     const olympiadStage = ref('problem');
-    const olympiadPhotos = ref([]); // 多附件数组
+    const olympiadPhotos = ref([]);
 
     const todayWordPack = computed(() => window.StudyData.englishWordPacks[0]);
     const dictationStep = ref(0);
     const dictationCountdown = ref(20);
     const dictationTimer = ref(null);
-    const dictationPhotos = ref([]); // 多附件数组
+    const dictationPhotos = ref([]);
 
     const structureUserInput = ref('');
     const userTranslationInput = ref('');
@@ -223,7 +236,6 @@ createApp({
       }
     };
 
-    // 持久化存储
     const persistAll = async () => {
       localStorage.setItem('study_os_students', JSON.stringify(students.value));
       localStorage.setItem('study_os_checkins', JSON.stringify(checkins.value));
@@ -247,13 +259,11 @@ createApp({
       if (!current.doneTaskIds.includes(taskId)) {
         current.doneTaskIds.push(taskId);
       }
-      // 多附件累加保存，不清空旧附件
       if (files && files.length > 0) {
         if (!current.attachments) current.attachments = {};
         const existing = current.attachments[taskId] || [];
         current.attachments[taskId] = [...existing, ...files];
       }
-      // 保存具体的作答payload以便二次回显
       if (payloadData) {
         if (!current.payloads) current.payloads = {};
         current.payloads[taskId] = payloadData;
@@ -268,13 +278,12 @@ createApp({
 
       const allT = [...baseTasks.value, ...customTasks.value];
       const taskObj = allT.find(t => t.id === taskId);
-      if (taskObj && !current.doneTaskIds.includes(taskId)) {
+      if (taskObj) {
         currentStudent.value.points += taskObj.points;
       }
       persistAll();
     };
 
-    // 作弊大转盘
     const getStudentMandatoryTaskIds = (sId) => {
       if (sId === 'nuo') return [4, 5];
       if (sId === 'wei') return [2, 5, 4];
@@ -333,7 +342,6 @@ createApp({
       }
     };
 
-    // 点击进入任务：自动回显之前已保存的作答和多附件
     const openTaskInteractive = (task) => {
       startTaskTimer(task.id);
       const k = `${currentStudentId.value}_2026-09-04`;
@@ -399,7 +407,6 @@ createApp({
       }
     };
 
-    // 多附件累加处理 (绝不覆盖之前选的)
     const handleMultiFiles = (e, targetRef) => {
       const files = Array.from(e.target.files);
       files.forEach(f => {
@@ -407,7 +414,6 @@ createApp({
         r.onload = ev => targetRef.value.push({ name: f.name, dataUrl: ev.target.result, size: f.size, type: f.type });
         r.readAsDataURL(f);
       });
-      // 清空 input 允许连续选择同名文件
       e.target.value = '';
     };
 
@@ -421,7 +427,6 @@ createApp({
       triggerLuckyWheel();
     };
 
-    // 阅读理解 3 道真题即时判分，错题进复仇本
     const submitReadingQuiz = () => {
       if (Object.keys(readingUserChoices.value).length < 3) {
         return alert('请先答完所有 3 道真题！');
@@ -461,7 +466,6 @@ createApp({
       alert('🎉 生字临摹打卡成功 (+2分)！');
     };
 
-    // 口算即时判分
     const submitMathDrill = () => {
       let r = 0;
       mathProblems.value.forEach(p => {
@@ -520,7 +524,7 @@ createApp({
             playDictationWord();
           } else {
             clearInterval(dictationTimer.value);
-            alert('5个单词朗读完毕！上传多张默写照片即可完成。');
+            alert('5个单词朗读完毕！上传默写照片即可完成。');
           }
         }
       }, 1000);
@@ -574,7 +578,6 @@ createApp({
       }
     };
 
-    // PIN 登录
     const openPinModal = (user) => { selectedAuthUser.value = user; enteredPin.value = ''; showPinModal.value = true; };
     const pressPin = (num) => {
       if (enteredPin.value.length < 4) {
@@ -681,7 +684,7 @@ createApp({
     const isDone = (id) => (checkins.value[`${currentStudentId.value}_2026-09-04`]?.doneTaskIds || []).includes(id);
     const isHomeworkDone = computed(() => (checkins.value[`${currentStudentId.value}_2026-09-04`]?.doneTaskIds || []).includes(1));
     const totalTaskCount = computed(() => allTodayTasks.value.length);
-    const todayDoneCount = computed(() => (checkins.value[`${currentStudentId.value}_2026-09-04`]?.doneTaskIds || []).includes(id));
+    const todayDoneCount = computed(() => (checkins.value[`${currentStudentId.value}_2026-09-04`]?.doneTaskIds || []).length);
     const studentErrors = computed(() => errors.value.filter(e => e.studentId === currentStudentId.value && !e.resolved));
 
     const saveConfig = () => {
