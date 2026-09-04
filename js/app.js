@@ -1,4 +1,4 @@
-// 家庭研学中枢 - Vue 3 控制器 (含原生 Web Audio 音效、作弊大转盘、低年级英语过滤)
+// 家庭研学中枢 - Vue 3 控制器 (含真实积分动态累加、本地持久化与云同步)
 const { createApp, ref, computed, onMounted, onUnmounted } = Vue;
 
 createApp({
@@ -66,7 +66,7 @@ createApp({
       return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
     };
 
-    // 原生 Web Audio API 合成音效 (零加载风险，秒响无报错)
+    // 原生 Web Audio API 合成音效
     let audioCtx = null;
     const getAudioContext = () => {
       if (!audioCtx) {
@@ -97,7 +97,7 @@ createApp({
     const playFanfareSuccess = () => {
       try {
         const ctx = getAudioContext();
-        const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+        const notes = [523.25, 659.25, 783.99, 1046.50];
         notes.forEach((freq, i) => {
           const osc = ctx.createOscillator();
           const gain = ctx.createGain();
@@ -113,22 +113,30 @@ createApp({
       } catch (e) {}
     };
 
-    // 系统配置与基础数据
+    // 系统配置与基础数据 (优先从 localStorage 读取真实持久化数据)
     const config = ref({
       siliconKey: localStorage.getItem('cfg_silicon') || '',
       upstashUrl: localStorage.getItem('cfg_upstash_url') || '',
       upstashToken: localStorage.getItem('cfg_upstash_token') || ''
     });
 
-    const students = ref(window.StudyData.defaultStudents);
+    const savedStudents = localStorage.getItem('study_os_students');
+    const students = ref(savedStudents ? JSON.parse(savedStudents) : window.StudyData.defaultStudents);
+
     const currentStudentId = ref('nuo');
     const baseTasks = ref(window.StudyData.baseTasks);
-    const customTasks = ref([]);
+    const customTasks = ref(JSON.parse(localStorage.getItem('study_os_custom_tasks') || '[]'));
     const newTask = ref({ targetStudentId: 'ALL', title: '', duration: '15分钟', points: 3 });
 
-    const checkins = ref({});
-    const errors = ref([]);
-    const shopItems = ref(window.StudyData.defaultShopItems);
+    const savedCheckins = localStorage.getItem('study_os_checkins');
+    const checkins = ref(savedCheckins ? JSON.parse(savedCheckins) : {});
+
+    const savedErrors = localStorage.getItem('study_os_errors');
+    const errors = ref(savedErrors ? JSON.parse(savedErrors) : []);
+
+    const savedShop = localStorage.getItem('study_os_shop');
+    const shopItems = ref(savedShop ? JSON.parse(savedShop) : window.StudyData.defaultShopItems);
+
     const newShopItem = ref({ icon: '🎁', name: '', desc: '', cost: 20 });
     const targetPointStudent = ref(null);
     const customPointAmount = ref(10);
@@ -139,7 +147,7 @@ createApp({
     // 4 人全员奥运领奖台排序
     const rankedStudents = computed(() => [...students.value].sort((a, b) => b.points - a.points));
 
-    // 计算当前学生年级数字 (用于小学三年级以下过滤英语深度作业)
+    // 计算当前学生年级数字
     const studentGradeNumber = computed(() => {
       const g = currentStudent.value.grade || '';
       if (g.includes('1年级')) return 1;
@@ -151,7 +159,7 @@ createApp({
       return 7;
     });
 
-    // 动态生成今日任务清单 (3年级以下自动剔除高阶英语阅读、完形与造句翻译)
+    // 动态生成今日任务清单
     const allTodayTasks = computed(() => {
       const gNum = studentGradeNumber.value;
       const filteredBase = baseTasks.value.filter(t => (t.minGrade || 1) <= gNum);
@@ -174,7 +182,7 @@ createApp({
     const readingSubmitted = ref(false);
     const readingScore = ref(0);
 
-    // 任务 3: 练字 (一次3字)
+    // 任务 3: 练字
     const calligraphyPack = computed(() => window.StudyData.calligraphyPack);
     const calligraphyPhotos = ref([]);
 
@@ -229,7 +237,26 @@ createApp({
       }
     };
 
-    // 记录任务完成
+    // ================== 关键：本地与云端双重持久化存储函数 ==================
+    const persistAll = async () => {
+      localStorage.setItem('study_os_students', JSON.stringify(students.value));
+      localStorage.setItem('study_os_checkins', JSON.stringify(checkins.value));
+      localStorage.setItem('study_os_errors', JSON.stringify(errors.value));
+      localStorage.setItem('study_os_shop', JSON.stringify(shopItems.value));
+      localStorage.setItem('study_os_custom_tasks', JSON.stringify(customTasks.value));
+
+      if (window.StudyDB && config.value.upstashUrl) {
+        await window.StudyDB.save(config.value.upstashUrl, config.value.upstashToken, {
+          students: students.value,
+          checkins: checkins.value,
+          errors: errors.value,
+          shopItems: shopItems.value,
+          customTasks: customTasks.value
+        });
+      }
+    };
+
+    // 记录任务完成 (动态累加真实积分)
     const recordTaskDone = (taskId, files = [], extraMinutes = 0) => {
       const k = `${currentStudentId.value}_2026-09-04`;
       let current = checkins.value[k];
@@ -254,17 +281,13 @@ createApp({
       const allT = [...baseTasks.value, ...customTasks.value];
       const taskObj = allT.find(t => t.id === taskId);
       if (taskObj) {
-        currentStudent.value.points += taskObj.points;
+        currentStudent.value.points += taskObj.points; // 真实动态加分
       }
-      syncToCloud();
+      persistAll(); // 持久化存储
     };
 
-    // ================== 大转盘作弊算法与游戏化触发 ==================
+    // 作弊大转盘判定
     const getStudentMandatoryTaskIds = (sId) => {
-      // 诺：口算(4)、奥数(5)
-      // 威：阅读(2)、奥数(5)、口算(4)
-      // 奕：口算(4)、奥数(5)
-      // 黛：口算(4)、阅读(2)
       if (sId === 'nuo') return [4, 5];
       if (sId === 'wei') return [2, 5, 4];
       if (sId === 'yi')  return [4, 5];
@@ -286,36 +309,27 @@ createApp({
       const k = `${sId}_2026-09-04`;
       const doneIds = checkins.value[k]?.doneTaskIds || [];
       const mandatoryIds = getStudentMandatoryTaskIds(sId);
-
-      // 寻找该学生尚未完成的必做科目 (作弊锁定)
       const unfinishedMandatory = mandatoryIds.filter(id => !doneIds.includes(id));
 
       let targetId = null;
       if (unfinishedMandatory.length > 0) {
-        // 必做科目未完成，强制命中必做科目之一
         targetId = unfinishedMandatory[Math.floor(Math.random() * unfinishedMandatory.length)];
       } else {
-        // 必做科目全部达成，随机抽取任意一个尚未完成的今日任务
         const unfinishedAll = allTodayTasks.value.filter(t => !doneIds.includes(t.id) && t.id !== 1);
         if (unfinishedAll.length > 0) {
           targetId = unfinishedAll[Math.floor(Math.random() * unfinishedAll.length)].id;
         } else {
-          // 全部任务完成
           targetId = allTodayTasks.value[1].id;
         }
       }
 
       const targetObj = allTodayTasks.value.find(t => t.id === targetId) || allTodayTasks.value[1];
 
-      // 物理旋转与音效节奏控制
-      let currentDeg = 0;
-      const extraLaps = 5 * 360; // 转 5 整圈
+      const extraLaps = 5 * 360;
       const finalDeg = extraLaps + Math.floor(Math.random() * 360);
       wheelRotationDeg.value = finalDeg;
 
-      let tickTimer = setInterval(() => {
-        playWheelTick();
-      }, 120);
+      let tickTimer = setInterval(() => { playWheelTick(); }, 120);
 
       setTimeout(() => {
         clearInterval(tickTimer);
@@ -332,7 +346,7 @@ createApp({
       }
     };
 
-    // 路由分发 (做完的点击依然支持回看修改)
+    // 任务点击路由分发
     const openTaskInteractive = (task) => {
       startTaskTimer(task.id);
       if (task.id === 1) {
@@ -375,7 +389,6 @@ createApp({
       }
     };
 
-    // 任务 1 提交 -> 触发大转盘
     const handleHwMultiPhotos = (e) => {
       const files = Array.from(e.target.files);
       files.forEach(f => {
@@ -385,14 +398,12 @@ createApp({
       });
     };
 
-    const submitSchoolHomework = async () => {
+    const submitSchoolHomework = () => {
       recordTaskDone(1, hwPhotos.value, hwForm.value.durationMinutes);
       showHomeworkModal.value = false;
-      // 提交完学校作业，立刻进入游戏化幸运大转盘！
-      triggerLuckyWheel();
+      triggerLuckyWheel(); // 触发作弊大转盘
     };
 
-    // 任务 2 提交 (3道真题当场判分)
     const submitReadingQuiz = () => {
       if (Object.keys(readingUserChoices.value).length < 3) {
         return alert('请先答完所有 3 道真题！');
@@ -406,7 +417,6 @@ createApp({
       recordTaskDone(2, [], 20);
     };
 
-    // 任务 3 练字
     const handleCalligraphyPhotos = (e) => {
       const files = Array.from(e.target.files);
       files.forEach(f => {
@@ -418,10 +428,9 @@ createApp({
     const submitCalligraphy = () => {
       recordTaskDone(3, calligraphyPhotos.value, 10);
       showCalligraphyModal.value = false;
-      alert('🎉 3 个生字规范练写 10 遍打卡成功 (+2分)！');
+      alert('🎉 3 个生字规范练写打卡成功 (+2分)！');
     };
 
-    // 任务 4 口算 (一屏全览无滚动条)
     const submitMathDrill = () => {
       let r = 0;
       mathProblems.value.forEach(p => {
@@ -435,7 +444,7 @@ createApp({
             studentAnswer: String(p.userAns || '未作答'),
             correctAnswer: String(p.ans),
             errorType: '口算失误',
-            analysis: '进退位计算失误，需加强心算对齐',
+            analysis: '计算失误，需加强心算对齐',
             date: '2026-09-04',
             resolved: false
           });
@@ -452,7 +461,6 @@ createApp({
       }
     };
 
-    // 任务 5 奥数
     const handleOlympiadPhotos = (e) => {
       const files = Array.from(e.target.files);
       files.forEach(f => {
@@ -465,10 +473,9 @@ createApp({
     const completeOlympiad = () => {
       recordTaskDone(5, olympiadPhotos.value, 15);
       showOlympiadModal.value = false;
-      alert('🎉 奥数逻辑思维挑战打卡成功 (+3分)！');
+      alert('🎉 奥数思维挑战打卡成功 (+3分)！');
     };
 
-    // 任务 6 单词与 20 秒听写
     const startDictationMode = () => {
       showWordModal.value = false;
       showDictationModal.value = true;
@@ -507,14 +514,12 @@ createApp({
       alert('🎉 记单词与默写达标完成！');
     };
 
-    // 任务 9 英译中 (提交后揭晓参考译文)
     const submitTranslation = () => {
       if (!userTranslationInput.value.trim()) return alert('请先输入你的中文翻译！');
       translationSubmitted.value = true;
       recordTaskDone(9);
     };
 
-    // 任务 12 错题录入
     const submitSchoolError = () => {
       if (!newSchoolError.value.question.trim()) return alert('请输入错题题目！');
       errors.value.unshift({
@@ -533,7 +538,6 @@ createApp({
       alert('🎉 错题已沉淀入复仇错题本！');
     };
 
-    // 任务 13 伴读
     const submitBookReading = () => {
       if (!bookForm.value.bookName.trim()) return alert('请输入阅读书名！');
       recordTaskDone(13, [], bookForm.value.duration || 20);
@@ -547,11 +551,11 @@ createApp({
         e.resolved = true;
         currentStudent.value.points += 4;
         alert('🎉 成功复仇错题，奖励双倍积分 (+4分)！');
-        syncToCloud();
+        persistAll();
       }
     };
 
-    // PIN 解锁登录
+    // PIN 登录与管理
     const openPinModal = (user) => { selectedAuthUser.value = user; enteredPin.value = ''; showPinModal.value = true; };
     const pressPin = (num) => {
       if (enteredPin.value.length < 4) {
@@ -573,13 +577,12 @@ createApp({
     const switchToUser = (u) => { currentLoggedInUser.value = u; if (u.id !== 'parent') currentStudentId.value = u.id; };
     const logout = () => { currentLoggedInUser.value = null; };
 
-    // 家长总控重置密码
     const openParentResetPin = (st) => { parentTargetStudent.value = st; parentNewPinInput.value = ''; showParentResetPinModal.value = true; };
     const confirmParentResetPin = () => {
-      if (!parentNewPinInput.value || parentNewPinInput.value.length !== 4) return alert('请输入 4 位纯数字密码！');
+      if (!parentNewPinInput.value || parentNewPinInput.value.length !== 4) return alert('请输入 4 位密码！');
       if (parentTargetStudent.value) parentTargetStudent.value.pin = parentNewPinInput.value;
       showParentResetPinModal.value = false;
-      syncToCloud();
+      persistAll();
       alert('🎉 密码重置成功！');
     };
 
@@ -588,8 +591,8 @@ createApp({
       if (targetPointStudent.value) {
         targetPointStudent.value.points += customPointAmount.value;
         showPointModal.value = false;
-        syncToCloud();
-        alert('🎉 积分调整成功！');
+        persistAll(); // 关键修复：加减分后立刻持久化存储，刷新不丢失！
+        alert('🎉 积分调整成功，已实时保存！');
       }
     };
 
@@ -598,46 +601,44 @@ createApp({
       if (!newTask.value.title.trim()) return alert('请输入任务名称！');
       customTasks.value.unshift({ id: 'ct_' + Date.now(), title: newTask.value.title, points: 3, isCustom: true, code: '特派', category: '加练', icon: '📌', duration: '15分钟', criteria: '按要求完成', minGrade: 1 });
       showAssignModal.value = false;
+      persistAll();
       alert('🎉 临时任务已下发！');
     };
 
-    // 头像修改
     const handleAvatarChange = (e) => {
       const file = e.target.files[0];
       if (!file) return;
       const r = new FileReader();
       r.onload = ev => {
         currentStudent.value.avatarImg = ev.target.result;
-        syncToCloud();
+        persistAll();
         alert('🎉 头像修改成功！');
       };
       r.readAsDataURL(file);
     };
 
-    // 商城操作
     const confirmAddShopItem = () => {
       if (!newShopItem.value.name.trim()) return alert('请输入商品名称！');
       shopItems.value.unshift({ id: 'item_' + Date.now(), ...newShopItem.value });
       showAddShopItemModal.value = false;
-      syncToCloud();
+      persistAll();
     };
     const deleteShopItem = (item) => {
       if (confirm(`确定下架【${item.name}】吗？`)) {
         shopItems.value = shopItems.value.filter(i => i.id !== item.id);
-        syncToCloud();
+        persistAll();
       }
     };
     const redeemShopItem = (item) => {
       if (currentStudent.value.points >= item.cost) {
         currentStudent.value.points -= item.cost;
         alert(`🎉 成功兑换【${item.name}】！`);
-        syncToCloud();
+        persistAll();
       } else {
         alert('积分不足，继续努力！');
       }
     };
 
-    // 日历单日明细与图表统计
     const getStudentDoneCount = (sId) => (checkins.value[`${sId}_2026-09-04`]?.doneTaskIds || []).length;
     const getDayDoneCount = (day) => (day === 4 ? todayDoneCount.value : Math.min(allTodayTasks.value.length, day * 2 + 3));
     const openDayDetailModal = (y, m, d) => {
@@ -646,7 +647,6 @@ createApp({
       showDayDetailModal.value = true;
     };
 
-    // 柱状图下方 7 天详细统计表数据
     const past7DaysData = computed(() => {
       return [
         { date: '2026-08-29', tasks: 11, points: 26, duration: 95, status: '达标全勤' },
@@ -665,33 +665,11 @@ createApp({
     const todayDoneCount = computed(() => (checkins.value[`${currentStudentId.value}_2026-09-04`]?.doneTaskIds || []).length);
     const studentErrors = computed(() => errors.value.filter(e => e.studentId === currentStudentId.value && !e.resolved));
 
-    // 云同步
-    const syncToCloud = async () => {
-      if (window.StudyDB && config.value.upstashUrl) {
-        await window.StudyDB.save(config.value.upstashUrl, config.value.upstashToken, {
-          students: students.value, checkins: checkins.value, errors: errors.value, shopItems: shopItems.value
-        });
-      }
-    };
-
-    const loadFromCloud = async () => {
-      if (window.StudyDB && config.value.upstashUrl) {
-        const data = await window.StudyDB.load(config.value.upstashUrl, config.value.upstashToken);
-        if (data) {
-          if (data.students) students.value = data.students;
-          if (data.checkins) checkins.value = data.checkins;
-          if (data.errors) errors.value = data.errors;
-          if (data.shopItems) shopItems.value = data.shopItems;
-        }
-      }
-    };
-
     const saveConfig = () => {
       localStorage.setItem('cfg_silicon', config.value.siliconKey);
       localStorage.setItem('cfg_upstash_url', config.value.upstashUrl);
       localStorage.setItem('cfg_upstash_token', config.value.upstashToken);
       showSettings.value = false;
-      loadFromCloud();
       alert('配置保存成功！');
     };
 
@@ -716,7 +694,6 @@ createApp({
 
     onMounted(() => {
       window.addEventListener('keydown', handleGlobalKeyDown);
-      if (config.value.upstashUrl) loadFromCloud();
     });
 
     onUnmounted(() => {
@@ -750,7 +727,7 @@ createApp({
       showAssignModal, newTask, openAssignModal, confirmAssignTask,
       shopItems, showAddShopItemModal, newShopItem, confirmAddShopItem, deleteShopItem, redeemShopItem,
       showDayDetailModal, selectedDetailDateStr, currentDayDetailDoneCount, openDayDetailModal, getDayDoneCount, getStudentDoneCount, past7DaysData,
-      showSettings, config, saveConfig, syncToCloud, handleAvatarChange
+      showSettings, config, saveConfig, persistAll, handleAvatarChange
     };
   }
 }).mount('#app');
