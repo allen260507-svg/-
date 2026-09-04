@@ -3,477 +3,550 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>家庭学习管家 - 旗舰中枢版</title>
+  <title>家庭学习管家 - 旗舰研学系统</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
   <style>
     body {
-      background-color: #f8fafc;
+      background-color: #f1f5f9;
       color: #0f172a;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Segoe UI", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
     }
-    .custom-scrollbar::-webkit-scrollbar { width: 4px; height: 4px; }
-    .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-    .card-shadow { box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04), 0 1px 2px -1px rgba(0, 0, 0, 0.02); }
+    .cinema-bg {
+      background: radial-gradient(circle at top, #1e293b 0%, #0a0f1d 70%, #020617 100%);
+    }
+    .profile-card:hover {
+      transform: translateY(-8px) scale(1.03);
+      box-shadow: 0 20px 35px -10px rgba(16, 185, 129, 0.25), 0 0 20px 2px rgba(56, 189, 248, 0.15);
+    }
+    .custom-scrollbar::-webkit-scrollbar { width: 5px; height: 5px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 6px; }
   </style>
 </head>
 <body class="h-screen w-screen overflow-hidden flex flex-col antialiased">
-  <div id="app" class="h-full flex flex-col flex-1 overflow-hidden">
+  <div id="app" class="h-full flex flex-col flex-1 overflow-hidden select-none">
 
-    <!-- 顶栏：极简沉浸式控制台 -->
-    <header class="h-13 bg-white border-b border-slate-200/90 px-4 flex items-center justify-between flex-shrink-0 z-20">
-      <div class="flex items-center space-x-3">
-        <div class="flex items-center space-x-2">
-          <div class="w-7 h-7 rounded-lg bg-slate-900 flex items-center justify-center text-emerald-400 font-black text-xs shadow-sm">
-            学
-          </div>
-          <span class="font-black text-xs tracking-tight text-slate-800 hidden sm:inline">学习中枢</span>
+    <!-- ========================================================================= -->
+    <!-- 场景一：顶级极简酷炫开机首屏 (Netflix / Apple 风格档案选择器) -->
+    <!-- ========================================================================= -->
+    <div v-if="!currentLoggedInUser" class="cinema-bg h-full w-full flex flex-col items-center justify-between p-6 md:p-12 relative overflow-hidden">
+      <!-- 背景科幻光晕 -->
+      <div class="absolute w-[600px] h-[600px] bg-emerald-500/10 rounded-full blur-3xl pointer-events-none -top-48 -left-48"></div>
+      <div class="absolute w-[600px] h-[600px] bg-indigo-500/10 rounded-full blur-3xl pointer-events-none -bottom-48 -right-48"></div>
+
+      <!-- 顶标 -->
+      <div class="flex items-center space-x-3 z-10">
+        <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-emerald-500 to-cyan-500 flex items-center justify-center text-white font-black text-lg shadow-lg shadow-emerald-500/30">
+          学
+        </div>
+        <div>
+          <h1 class="text-lg font-black tracking-wider text-white">STUDY OS</h1>
+          <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">家庭数字化智能研学系统</p>
+        </div>
+      </div>
+
+      <!-- 中间：档案选择区 -->
+      <div class="w-full max-w-5xl z-10 text-center space-y-8">
+        <div>
+          <h2 class="text-3xl md:text-4xl font-black text-white tracking-tight">请选择进入研学档案</h2>
+          <p class="text-xs md:text-sm text-slate-400 mt-2 font-medium">独立记录 · 智能排产 · 错题复仇 · 现实特权兑换</p>
         </div>
 
-        <div class="h-4 w-px bg-slate-200 hidden sm:block"></div>
-
-        <!-- 四个孩子胶囊切换器 -->
-        <div class="flex items-center bg-slate-100 p-0.5 rounded-lg">
-          <button 
+        <!-- 4位学生 + 1个家长席位卡片 -->
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-6 px-4">
+          <!-- 4位学生卡片 -->
+          <div 
             v-for="st in students" 
             :key="st.id" 
-            @click="switchStudent(st.id)"
-            :class="currentStudentId === st.id ? 'bg-white text-slate-900 shadow-xs font-black' : 'text-slate-500 hover:text-slate-800 font-medium'"
-            class="px-2.5 py-1 text-xs rounded-md transition flex items-center space-x-1"
+            @click="openPinModal(st)"
+            class="profile-card bg-slate-800/60 backdrop-blur-md border border-slate-700/80 rounded-2xl p-5 flex flex-col items-center justify-between cursor-pointer transition-all duration-300 group"
           >
-            <span>{{ st.avatar }}</span>
-            <span>{{ st.name }}</span>
-            <span v-if="getPendingErrorCount(st.id) > 0" class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
-          </button>
-        </div>
-
-        <!-- 年级与教材选择 -->
-        <div class="flex items-center space-x-1 bg-slate-50 border border-slate-200/80 rounded-lg px-2 py-0.5">
-          <span class="text-[10px] text-slate-400 font-bold">人教版</span>
-          <select 
-            v-model="currentStudent.grade" 
-            @change="syncToCloud"
-            class="bg-transparent text-xs font-bold text-slate-700 outline-none cursor-pointer"
-          >
-            <option v-for="g in gradeList" :key="g" :value="g">{{ g }}</option>
-          </select>
-        </div>
-      </div>
-
-      <!-- 右侧：功能视图 + 家长管理入口 -->
-      <div class="flex items-center space-x-2">
-        <!-- 导航标签 -->
-        <div class="flex bg-slate-100 p-0.5 rounded-lg text-xs font-bold">
-          <button @click="activeTab = 'today'" :class="activeTab === 'today' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-500 hover:text-slate-700'" class="px-2.5 py-1 rounded-md transition">今日看板</button>
-          <button @click="activeTab = 'records'" :class="activeTab === 'records' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-500 hover:text-slate-700'" class="px-2.5 py-1 rounded-md transition">月度打卡</button>
-          <button @click="activeTab = 'errors'" :class="activeTab === 'errors' ? 'bg-white text-rose-700 shadow-xs' : 'text-slate-500 hover:text-slate-700'" class="px-2.5 py-1 rounded-md transition flex items-center">
-            <span>错题复仇</span>
-            <span v-if="studentErrors.length > 0" class="ml-1 px-1 bg-rose-500 text-white text-[9px] rounded-full">{{ studentErrors.length }}</span>
-          </button>
-          <button @click="activeTab = 'rewards'" :class="activeTab === 'rewards' ? 'bg-white text-amber-700 shadow-xs' : 'text-slate-500 hover:text-slate-700'" class="px-2.5 py-1 rounded-md transition">积分商城</button>
-        </div>
-
-        <div class="h-4 w-px bg-slate-200"></div>
-
-        <!-- 【核心入口 1】：家长全景查看大盘 -->
-        <button 
-          @click="showParentModal = true" 
-          class="px-2.5 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200/80 rounded-lg text-xs font-bold transition flex items-center space-x-1"
-          title="查看4个孩子今日全貌对比"
-        >
-          <span>👨‍👩‍👦</span>
-          <span class="hidden md:inline">家长全景</span>
-        </button>
-
-        <!-- 积分 -->
-        <div class="flex items-center space-x-1 px-2 py-1 bg-amber-50/80 border border-amber-200/60 rounded-lg text-xs font-black text-amber-700">
-          <span>⚡</span>
-          <span>{{ currentStudent.points }}</span>
-        </div>
-
-        <!-- 设置 -->
-        <button @click="showSettings = true" class="w-7 h-7 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition" title="配置密钥">
-          ⚙️
-        </button>
-      </div>
-    </header>
-
-    <!-- 主工作区 -->
-    <main class="flex-1 flex flex-col p-3 md:p-3.5 overflow-hidden">
-      
-      <!-- ================= 页面 1：今日实战看板 (一屏无滚轮) ================= -->
-      <div v-if="activeTab === 'today'" class="h-full flex flex-col flex-1 overflow-hidden space-y-2.5">
-        
-        <!-- 首屏顶部轻量操作与规则条 -->
-        <div class="bg-white border border-slate-200/80 rounded-xl px-3.5 py-2 flex flex-wrap items-center justify-between gap-2 card-shadow flex-shrink-0">
-          <div class="flex items-center space-x-3 text-xs">
-            <span class="font-black text-slate-800 flex items-center space-x-1">
-              <span>🎯</span>
-              <span>{{ currentStudent.name }}的今日任务</span>
-            </span>
-            <span class="text-slate-300">|</span>
-            <span class="text-slate-500">
-              进度：<strong class="text-slate-900 font-black">{{ todayDoneCount }}</strong> / {{ totalTaskCount }} 项
-            </span>
-            <span class="text-slate-300">|</span>
-            <span class="text-emerald-700 font-bold">已赚 +{{ todayPoints }} 分</span>
-          </div>
-
-          <div class="flex items-center space-x-2">
-            <!-- 规则指示胶囊 -->
-            <div 
-              class="px-2 py-0.5 rounded-full text-[11px] font-bold flex items-center space-x-1 border transition"
-              :class="isHomeworkDone ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-amber-50 text-amber-800 border-amber-200 animate-pulse'"
-            >
-              <span>{{ isHomeworkDone ? '●' : '🔒' }}</span>
-              <span>{{ isHomeworkDone ? '学校作业已过审 · 全科自由开放' : '强制规则：学校作业先过审，其他项目锁定' }}</span>
+            <div class="w-20 h-20 md:w-24 md:h-24 rounded-2xl bg-gradient-to-br from-slate-700 to-slate-800 flex items-center justify-center text-4xl md:text-5xl shadow-inner border border-slate-600/50 group-hover:border-emerald-400/80 transition relative">
+              <span>{{ st.avatar }}</span>
+              <span v-if="getPendingErrorCount(st.id) > 0" class="absolute -top-1 -right-1 px-2 py-0.5 bg-rose-500 text-white text-[10px] font-black rounded-full shadow-md">
+                {{ getPendingErrorCount(st.id) }}错
+              </span>
             </div>
-
-            <!-- 【核心入口 2】：家长快捷布置临时任务 -->
-            <button 
-              @click="openAssignModal" 
-              class="px-2.5 py-0.5 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-xs font-bold flex items-center space-x-1 transition shadow-xs"
-            >
-              <span>➕</span>
-              <span>布置临时任务</span>
-            </button>
+            <div class="mt-4 text-center">
+              <div class="text-lg md:text-xl font-black text-white group-hover:text-emerald-400 transition">{{ st.name }}</div>
+              <div class="text-xs text-slate-400 mt-0.5 font-bold">{{ st.grade }}</div>
+            </div>
+            <div class="mt-3 w-full pt-2 border-t border-slate-700/50 flex justify-between items-center text-[11px] font-bold">
+              <span class="text-slate-400">今日：{{ getStudentDoneCount(st.id) }}/{{ totalTaskCount }}</span>
+              <span class="text-amber-400">⚡ {{ st.points }}分</span>
+            </div>
           </div>
-        </div>
 
-        <!-- 任务矩阵：3列自适应网格，15项基础 + 临时任务一屏呈现 -->
-        <div class="flex-1 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 overflow-y-auto custom-scrollbar pr-0.5">
-          
-          <!-- 任务单元卡片 -->
+          <!-- 家长督导总控卡片 -->
           <div 
-            v-for="task in allTodayTasks" 
-            :key="task.id"
-            :class="[
-              isDone(task.id) ? 'bg-emerald-50/40 border-emerald-200/90' : 'bg-white border-slate-200/80 hover:border-slate-300',
-              task.isCustom ? 'ring-1 ring-indigo-300 bg-indigo-50/20' : '',
-              task.id === 1 && !isHomeworkDone ? 'ring-2 ring-amber-400/80 border-amber-300' : '',
-              'rounded-xl border p-2 flex items-center justify-between transition-all duration-150 card-shadow'
-            ]"
+            @click="openPinModal(parentProfile)"
+            class="profile-card bg-indigo-950/40 backdrop-blur-md border border-indigo-700/60 rounded-2xl p-5 flex flex-col items-center justify-between cursor-pointer transition-all duration-300 group"
           >
-            <div class="flex items-center space-x-2 min-w-0 flex-1 mr-2">
+            <div class="w-20 h-20 md:w-24 md:h-24 rounded-2xl bg-gradient-to-br from-indigo-800 to-indigo-950 flex items-center justify-center text-4xl md:text-5xl shadow-inner border border-indigo-500/50 group-hover:border-indigo-400 transition">
+              <span>🛡️</span>
+            </div>
+            <div class="mt-4 text-center">
+              <div class="text-lg md:text-xl font-black text-indigo-300 group-hover:text-indigo-200 transition">家长总控</div>
+              <div class="text-xs text-indigo-400/80 mt-0.5 font-bold">巡查与派发</div>
+            </div>
+            <div class="mt-3 w-full pt-2 border-t border-indigo-800/40 text-center text-[11px] font-bold text-indigo-300">
+              全景监控大盘
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 底部版权与配置钥匙 -->
+      <div class="z-10 flex items-center space-x-4 text-xs font-bold text-slate-500">
+        <span>● 2026 人教版体系</span>
+        <span>•</span>
+        <button @click="showSettings = true" class="hover:text-slate-300 transition">⚙️ 云端与密钥设置</button>
+      </div>
+    </div>
+
+
+    <!-- ========================================================================= -->
+    <!-- 场景二：各自专属研学工作台 (大字号、高清晰、一屏掌控) -->
+    <!-- ========================================================================= -->
+    <div v-else class="h-full flex flex-col flex-1 overflow-hidden">
+      
+      <!-- 顶栏：清晰易读、支持随时退出 -->
+      <header class="h-15 bg-white border-b border-slate-200 px-4 md:px-6 flex items-center justify-between flex-shrink-0 z-20 shadow-xs">
+        <div class="flex items-center space-x-3">
+          <!-- 当前使用者大头像与信息 -->
+          <div class="w-9 h-9 rounded-xl bg-slate-900 flex items-center justify-center text-xl shadow-sm">
+            {{ currentLoggedInUser.avatar }}
+          </div>
+          <div>
+            <div class="flex items-center space-x-2">
+              <span class="text-base font-black text-slate-900">{{ currentLoggedInUser.name }}</span>
+              <span class="text-xs px-2 py-0.5 rounded bg-slate-100 font-black text-slate-600">{{ currentLoggedInUser.grade || '总控端' }}</span>
+              <span class="text-xs px-2 py-0.5 rounded bg-emerald-50 text-emerald-800 font-bold border border-emerald-200/60">人教版</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 导航菜单 -->
+        <div class="flex items-center space-x-2">
+          <!-- 视图切换标签 -->
+          <div class="flex bg-slate-100 p-1 rounded-xl text-xs font-black">
+            <button @click="activeTab = 'today'" :class="activeTab === 'today' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-800'" class="px-3 py-1.5 rounded-lg transition">任务看板</button>
+            <button @click="activeTab = 'records'" :class="activeTab === 'records' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-800'" class="px-3 py-1.5 rounded-lg transition">打卡日历</button>
+            <button @click="activeTab = 'errors'" :class="activeTab === 'errors' ? 'bg-white text-rose-700 shadow-sm' : 'text-slate-500 hover:text-slate-800'" class="px-3 py-1.5 rounded-lg transition flex items-center">
+              <span>错题复仇</span>
+              <span v-if="studentErrors.length > 0" class="ml-1.5 px-1.5 py-0.2 bg-rose-500 text-white text-[10px] rounded-full">{{ studentErrors.length }}</span>
+            </button>
+            <button @click="activeTab = 'rewards'" :class="activeTab === 'rewards' ? 'bg-white text-amber-700 shadow-sm' : 'text-slate-500 hover:text-slate-800'" class="px-3 py-1.5 rounded-lg transition">特权商城</button>
+          </div>
+
+          <div class="h-5 w-px bg-slate-200 mx-1"></div>
+
+          <!-- 家长全景入口 -->
+          <button @click="showParentModal = true" class="px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 rounded-lg text-xs font-black transition flex items-center space-x-1">
+            <span>👨‍👩‍👦</span>
+            <span>家长全景</span>
+          </button>
+
+          <!-- 积分显示 -->
+          <div class="flex items-center space-x-1 px-3 py-1.5 bg-amber-50 border border-amber-200 rounded-lg text-xs font-black text-amber-700">
+            <span>⚡</span>
+            <span>{{ currentStudent.points }} 积分</span>
+          </div>
+
+          <!-- 退出切换账号按钮 -->
+          <button @click="logout" class="px-3 py-1.5 bg-slate-100 hover:bg-rose-50 hover:text-rose-700 text-slate-600 rounded-lg text-xs font-bold transition flex items-center space-x-1" title="返回主界面换人">
+            <span>🚪</span>
+            <span>退出档案</span>
+          </button>
+        </div>
+      </header>
+
+      <!-- 工作区主体 -->
+      <main class="flex-1 flex flex-col p-4 overflow-hidden">
+        
+        <!-- 【视图 1：今日看板】 字体大幅加大，条目分明清晰 -->
+        <div v-if="activeTab === 'today'" class="h-full flex flex-col flex-1 overflow-hidden space-y-3">
+          
+          <!-- 顶栏状态与家长临时派单入口 -->
+          <div class="bg-white border border-slate-200 rounded-xl px-4 py-2.5 flex flex-wrap items-center justify-between gap-3 shadow-xs flex-shrink-0">
+            <div class="flex items-center space-x-3 text-sm">
+              <span class="font-black text-slate-900 flex items-center space-x-1.5">
+                <span class="text-base">📅</span>
+                <span>今日研学实战</span>
+              </span>
+              <span class="text-slate-300">|</span>
+              <span class="text-slate-600 font-bold">
+                已达标 <span class="text-slate-900 font-black text-base">{{ todayDoneCount }}</span> / {{ totalTaskCount }} 项
+              </span>
+              <span class="text-slate-300">|</span>
+              <span class="text-emerald-700 font-black">今日累计 +{{ todayPoints }} 积分</span>
+            </div>
+
+            <div class="flex items-center space-x-3">
+              <!-- 强约束规则胶囊 -->
               <div 
-                class="w-8 h-8 rounded-lg flex items-center justify-center font-black text-xs flex-shrink-0"
-                :class="[
-                  isDone(task.id) ? 'bg-emerald-600 text-white' : (task.isCustom ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600')
-                ]"
+                class="px-3 py-1 rounded-full text-xs font-black flex items-center space-x-1.5 border transition"
+                :class="isHomeworkDone ? 'bg-emerald-50 text-emerald-800 border-emerald-200' : 'bg-amber-50 text-amber-900 border-amber-300 animate-pulse'"
               >
-                {{ task.icon }}
+                <span>{{ isHomeworkDone ? '●' : '🔒' }}</span>
+                <span>{{ isHomeworkDone ? '学校作业已审校过关 · 全科目开放' : '强制铁律：学校作业必须先通过，其余科目锁定' }}</span>
               </div>
-              <div class="min-w-0 flex-1">
-                <div class="flex items-center space-x-1 leading-none">
-                  <span v-if="task.isCustom" class="text-[9px] font-bold px-1 py-0.2 rounded bg-indigo-100 text-indigo-700 flex-shrink-0">临时加练</span>
-                  <span v-else class="text-[9px] font-bold px-1 py-0.2 rounded bg-slate-100 text-slate-500 flex-shrink-0">{{ task.code }}</span>
-                  <span class="text-[9px] font-bold text-slate-400 truncate">{{ task.category }}</span>
-                  <span class="text-[9px] text-amber-600 font-bold flex-shrink-0">+{{ task.points }}分</span>
+
+              <!-- 布置临时任务入口 -->
+              <button @click="openAssignModal" class="px-3 py-1 bg-slate-900 hover:bg-black text-white rounded-lg text-xs font-black flex items-center space-x-1.5 transition shadow-sm">
+                <span>➕</span>
+                <span>布置临时任务</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- 任务列表核心网格：大字体、高清晰度、拒绝微缩字 -->
+          <div class="flex-1 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 overflow-y-auto custom-scrollbar pr-1">
+            <div 
+              v-for="task in allTodayTasks" 
+              :key="task.id"
+              :class="[
+                isDone(task.id) ? 'bg-emerald-50/50 border-emerald-300/80 shadow-xs' : 'bg-white border-slate-200 hover:border-slate-300 hover:shadow-sm',
+                task.isCustom ? 'border-indigo-200 bg-indigo-50/20' : '',
+                task.id === 1 && !isHomeworkDone ? 'ring-2 ring-amber-400 border-amber-300' : '',
+                'rounded-xl border p-3.5 flex items-center justify-between transition-all duration-150'
+              ]"
+            >
+              <!-- 任务主体信息：加大加粗 -->
+              <div class="flex items-center space-x-3 min-w-0 flex-1 mr-3">
+                <div 
+                  class="w-10 h-10 rounded-xl flex items-center justify-center font-black text-base flex-shrink-0"
+                  :class="[
+                    isDone(task.id) ? 'bg-emerald-600 text-white' : (task.isCustom ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-700')
+                  ]"
+                >
+                  {{ task.icon }}
                 </div>
-                <div class="text-xs font-bold text-slate-800 truncate mt-1">{{ task.title }}</div>
-                <div class="text-[10px] text-slate-400 truncate mt-0.5">{{ task.criteria }}</div>
+                
+                <div class="min-w-0 flex-1 space-y-0.5">
+                  <div class="flex items-center space-x-2">
+                    <span v-if="task.isCustom" class="text-xs font-black px-1.5 py-0.2 rounded bg-indigo-100 text-indigo-700">临时任务</span>
+                    <span v-else class="text-xs font-bold px-1.5 py-0.2 rounded bg-slate-100 text-slate-600">{{ task.code }} · {{ task.category }}</span>
+                    <span class="text-xs font-black text-amber-700">+{{ task.points }}分</span>
+                    <span class="text-xs text-slate-400 font-medium">({{ task.duration }})</span>
+                  </div>
+                  <!-- 大字号标题 -->
+                  <div class="text-sm md:text-base font-black text-slate-900 truncate" :title="task.title">
+                    {{ task.title }}
+                  </div>
+                  <!-- 清晰验收描述 -->
+                  <div class="text-xs text-slate-500 font-medium truncate" :title="task.criteria">
+                    验收：{{ task.criteria }}
+                  </div>
+                </div>
+              </div>
+
+              <!-- 右侧动作按钮：大点击面积 -->
+              <div class="flex-shrink-0">
+                <span v-if="isDone(task.id)" class="px-3.5 py-2 text-xs font-black text-emerald-800 bg-emerald-100 rounded-lg flex items-center space-x-1">
+                  <span>✓</span>
+                  <span>已达标</span>
+                </span>
+
+                <button 
+                  v-else-if="!isHomeworkDone && task.id !== 1" 
+                  disabled 
+                  class="px-3 py-2 text-xs font-black text-slate-400 bg-slate-100 rounded-lg cursor-not-allowed border border-slate-200"
+                >
+                  先做作业
+                </button>
+
+                <!-- 作业入口：真 AI 视觉批改 -->
+                <button 
+                  v-else-if="task.id === 1" 
+                  @click="openHomeworkModal" 
+                  class="px-4 py-2 text-xs font-black text-white bg-slate-900 hover:bg-black rounded-lg shadow-sm active:scale-95 transition"
+                >
+                  📸 拍照交作业
+                </button>
+
+                <!-- 口算入口：0成本学段自适应 -->
+                <button 
+                  v-else-if="task.id === 4" 
+                  @click="startMathDrill" 
+                  class="px-4 py-2 text-xs font-black text-white bg-slate-800 hover:bg-slate-900 rounded-lg shadow-sm active:scale-95 transition"
+                >
+                  ⚡ 开始口算
+                </button>
+
+                <!-- 常规与临时任务标记 -->
+                <button 
+                  v-else 
+                  @click="finishTask(task)" 
+                  class="px-3 py-2 text-xs font-black text-slate-700 bg-slate-100 hover:bg-emerald-600 hover:text-white rounded-lg border border-slate-200 active:scale-95 transition"
+                >
+                  完成打卡
+                </button>
               </div>
             </div>
-
-            <!-- 右侧动作按钮 -->
-            <div class="flex-shrink-0">
-              <span v-if="isDone(task.id)" class="px-2 py-1 text-[11px] font-bold text-emerald-700 bg-emerald-100/70 rounded-md">✓ 完成</span>
-              
-              <!-- 锁定状态 -->
-              <button 
-                v-else-if="!isHomeworkDone && task.id !== 1" 
-                disabled 
-                class="px-2 py-1 text-[11px] font-bold text-slate-400 bg-slate-100 rounded-md cursor-not-allowed border border-slate-200/50"
-              >
-                先做作业
-              </button>
-
-              <!-- 任务1：AI视觉识别作业 -->
-              <button 
-                v-else-if="task.id === 1" 
-                @click="openHomeworkModal" 
-                class="px-2.5 py-1 text-[11px] font-black text-white bg-slate-900 hover:bg-black rounded-md shadow-xs active:scale-95 transition"
-              >
-                拍照交作业
-              </button>
-
-              <!-- 任务4：口算闯关 -->
-              <button 
-                v-else-if="task.id === 4" 
-                @click="startMathDrill" 
-                class="px-2.5 py-1 text-[11px] font-black text-white bg-slate-800 hover:bg-slate-900 rounded-md shadow-xs active:scale-95 transition"
-              >
-                开始口算
-              </button>
-
-              <!-- 常规或临时任务标记 -->
-              <button 
-                v-else 
-                @click="finishTask(task)" 
-                class="px-2 py-1 text-[11px] font-bold text-slate-700 bg-slate-100 hover:bg-emerald-600 hover:text-white rounded-md border border-slate-200 active:scale-95 transition"
-              >
-                标记达标
-              </button>
-            </div>
           </div>
         </div>
-      </div>
 
-      <!-- ================= 页面 2：月度打卡日历 ================= -->
-      <div v-if="activeTab === 'records'" class="h-full flex flex-col flex-1 bg-white border border-slate-200/90 rounded-xl p-3.5 overflow-hidden card-shadow">
-        <div class="flex justify-between items-center pb-2 border-b border-slate-100 flex-shrink-0">
-          <div class="flex items-center space-x-2">
-            <span class="text-sm font-black text-slate-800">{{ currentStudent.name }} · 2026年9月打卡日历</span>
+        <!-- 【视图 2：打卡日历】 -->
+        <div v-if="activeTab === 'records'" class="h-full flex flex-col flex-1 bg-white border border-slate-200 rounded-xl p-4 overflow-hidden">
+          <div class="flex justify-between items-center pb-3 border-b border-slate-100 flex-shrink-0">
+            <h3 class="text-base font-black text-slate-800">{{ currentStudent.name }} · 2026年9月打卡战报</h3>
+            <span class="text-xs bg-emerald-50 text-emerald-800 border border-emerald-200 px-3 py-1 rounded-lg font-black">
+              🌸 本月达标全勤：{{ monthFlowerCount }} 天
+            </span>
           </div>
-          <div class="text-xs text-emerald-800 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-md font-bold">
-            🌸 本月达标：{{ monthFlowerCount }} 天
+          <div class="grid grid-cols-7 gap-2 text-center text-xs font-black text-slate-400 py-3 flex-shrink-0">
+            <div>一</div><div>二</div><div>三</div><div>四</div><div>五</div><div>六</div><div>日</div>
           </div>
-        </div>
-        <div class="grid grid-cols-7 gap-1 text-center text-xs font-bold text-slate-400 py-2 flex-shrink-0">
-          <div>一</div><div>二</div><div>三</div><div>四</div><div>五</div><div>六</div><div>日</div>
-        </div>
-        <div class="grid grid-cols-7 gap-1 flex-1 overflow-y-auto">
-          <div v-for="b in 1" :key="'bl'+b"></div>
-          <div v-for="day in 30" :key="day" class="border border-slate-100 rounded-lg p-1 flex flex-col justify-between bg-slate-50/50">
-            <span class="text-[10px] font-bold text-slate-500">{{ day }}</span>
-            <div class="text-center">
-              <span v-if="day <= 4 && isDayPassed(day)" class="text-sm">🌸</span>
-              <span v-else-if="day <= 4" class="text-xs font-black text-rose-500">✕</span>
-              <span v-else class="text-slate-300 font-bold text-xs">·</span>
-            </div>
-            <div class="text-[8px] text-slate-400 text-center">
-              <span v-if="day <= 4">√{{ getDayDoneCount(day) }}</span>
-              <span v-else>未来</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- ================= 页面 3：错题复仇战役 ================= -->
-      <div v-if="activeTab === 'errors'" class="h-full flex flex-col flex-1 bg-white border border-slate-200/90 rounded-xl p-3.5 overflow-hidden card-shadow">
-        <div class="flex justify-between items-center pb-2 border-b border-slate-100 flex-shrink-0">
-          <h3 class="text-sm font-black text-slate-800">⚔️ {{ currentStudent.name }} 的错题复仇本 (做对奖励双倍积分)</h3>
-        </div>
-        <div class="flex-1 overflow-y-auto space-y-2 mt-2 pr-1 custom-scrollbar">
-          <div v-if="studentErrors.length === 0" class="h-full flex items-center justify-center text-xs text-slate-400">
-            🎉 当前没有任何积压错题，状态极佳！
-          </div>
-          <div v-for="err in studentErrors" :key="err.id" class="p-3 rounded-xl border border-rose-100 bg-rose-50/30 flex flex-col md:flex-row justify-between gap-2">
-            <div class="space-y-1 text-xs">
-              <div class="flex items-center space-x-2">
-                <span class="px-1.5 py-0.2 bg-rose-100 text-rose-700 rounded text-[9px] font-bold">{{ err.errorType || '解析' }}</span>
-                <span class="text-slate-400 text-[10px]">{{ err.date }} 录入</span>
+          <div class="grid grid-cols-7 gap-2 flex-1 overflow-y-auto">
+            <div v-for="b in 1" :key="'bl'+b"></div>
+            <div v-for="day in 30" :key="day" class="border border-slate-100 rounded-xl p-2 flex flex-col justify-between bg-slate-50/50">
+              <span class="text-xs font-bold text-slate-500">{{ day }}</span>
+              <div class="text-center my-1">
+                <span v-if="day <= 4 && isDayPassed(day)" class="text-lg">🌸</span>
+                <span v-else-if="day <= 4" class="text-sm font-black text-rose-500">✕</span>
+                <span v-else class="text-slate-300 font-bold">·</span>
               </div>
-              <div class="font-bold text-slate-800">{{ err.question }}</div>
-              <div class="text-slate-500 text-[11px]">作答：<span class="text-rose-600 font-bold">{{ err.studentAnswer }}</span> | 标准：<span class="text-emerald-700 font-bold">{{ err.correctAnswer }}</span></div>
-              <div class="bg-white/90 p-2 rounded-lg border border-slate-100 text-slate-600 text-[11px]">💡 {{ err.analysis }}</div>
-            </div>
-            <div class="flex items-center">
-              <button @click="resolveError(err.id)" class="px-3 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-xs font-bold whitespace-nowrap shadow-xs">
-                已弄懂，复仇 (+4分)
-              </button>
+              <div class="text-[10px] text-slate-400 text-center font-bold">
+                <span v-if="day <= 4">√{{ getDayDoneCount(day) }} 项</span>
+                <span v-else>未来</span>
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
-      <!-- ================= 页面 4：现实特权兑换 ================= -->
-      <div v-if="activeTab === 'rewards'" class="h-full flex flex-col flex-1 bg-white border border-slate-200/90 rounded-xl p-3.5 overflow-hidden card-shadow">
-        <div class="pb-2 border-b border-slate-100 flex-shrink-0">
-          <h3 class="text-sm font-black text-slate-800">🎁 现实特权兑换商店</h3>
-        </div>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-3 flex-shrink-0">
-          <div v-for="item in shopItems" :key="item.name" class="p-3.5 border border-slate-200/80 rounded-xl bg-slate-50/50 flex flex-col justify-between">
-            <div>
-              <div class="font-bold text-xs text-slate-800">{{ item.name }}</div>
-              <div class="text-[10px] text-slate-500 mt-0.5">{{ item.desc }}</div>
+        <!-- 【视图 3：错题复仇本】 -->
+        <div v-if="activeTab === 'errors'" class="h-full flex flex-col flex-1 bg-white border border-slate-200 rounded-xl p-4 overflow-hidden">
+          <div class="pb-3 border-b border-slate-100 flex-shrink-0">
+            <h3 class="text-base font-black text-slate-800">⚔️ {{ currentStudent.name }} 的错题复仇本</h3>
+            <p class="text-xs text-slate-400 mt-0.5">做错不可耻，弄懂就是进步！复仇成功奖励双倍积分。</p>
+          </div>
+          <div class="flex-1 overflow-y-auto space-y-3 mt-3 pr-1 custom-scrollbar">
+            <div v-if="studentErrors.length === 0" class="h-full flex items-center justify-center text-sm font-bold text-slate-400">
+              🎉 没有任何积压错题，保持良好势头！
             </div>
-            <div class="mt-3 flex justify-between items-center">
-              <span class="text-xs font-black text-amber-600">{{ item.cost }} 积分</span>
-              <button @click="redeem(item)" class="px-3 py-1 bg-slate-800 hover:bg-slate-900 text-white text-[11px] font-bold rounded-lg shadow-xs">兑换</button>
+            <div v-for="err in studentErrors" :key="err.id" class="p-4 rounded-xl border border-rose-100 bg-rose-50/30 flex flex-col md:flex-row justify-between gap-3">
+              <div class="space-y-1 text-xs md:text-sm">
+                <div class="flex items-center space-x-2">
+                  <span class="px-2 py-0.5 bg-rose-100 text-rose-700 rounded text-xs font-black">{{ err.errorType || '解析' }}</span>
+                  <span class="text-slate-400 text-xs">{{ err.date }} 录入</span>
+                </div>
+                <div class="font-black text-slate-900 text-sm md:text-base">{{ err.question }}</div>
+                <div class="text-slate-600 text-xs">作答：<span class="text-rose-600 font-black">{{ err.studentAnswer }}</span> | 标准：<span class="text-emerald-700 font-black">{{ err.correctAnswer }}</span></div>
+                <div class="bg-white p-2.5 rounded-lg border border-slate-200/80 text-slate-700 text-xs">
+                  💡 错因剖析：{{ err.analysis }}
+                </div>
+              </div>
+              <div class="flex items-center">
+                <button @click="resolveError(err.id)" class="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-xs font-black whitespace-nowrap shadow-sm">
+                  已弄懂，复仇 (+4分)
+                </button>
+              </div>
             </div>
           </div>
         </div>
+
+        <!-- 【视图 4：特权商城】 -->
+        <div v-if="activeTab === 'rewards'" class="h-full flex flex-col flex-1 bg-white border border-slate-200 rounded-xl p-4 overflow-hidden">
+          <div class="pb-3 border-b border-slate-100 flex-shrink-0">
+            <h3 class="text-base font-black text-slate-800">🎁 现实特权兑换商店</h3>
+            <p class="text-xs text-slate-400 mt-0.5">积分不能凭空产生，认真做作业换取自主支配特权。</p>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4 flex-shrink-0">
+            <div v-for="item in shopItems" :key="item.name" class="p-4 border border-slate-200 rounded-xl bg-slate-50/50 flex flex-col justify-between">
+              <div>
+                <div class="font-black text-sm text-slate-900">{{ item.name }}</div>
+                <div class="text-xs text-slate-500 mt-1 font-medium">{{ item.desc }}</div>
+              </div>
+              <div class="mt-4 flex justify-between items-center">
+                <span class="text-sm font-black text-amber-600">⚡ {{ item.cost }} 积分</span>
+                <button @click="redeem(item)" class="px-4 py-1.5 bg-slate-900 hover:bg-black text-white text-xs font-black rounded-lg shadow-sm">
+                  立即兑换
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </main>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- 弹窗组件：荧光 PIN 密码锁、家长大盘、AI批改、口算、设置 -->
+    <!-- ========================================================================= -->
+
+    <!-- 【弹窗：PIN 密码键盘】 -->
+    <div v-if="showPinModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 z-50">
+      <div class="bg-slate-900 border border-slate-700/80 rounded-3xl max-w-xs w-full p-6 text-center space-y-4 shadow-2xl">
+        <div class="w-16 h-16 rounded-2xl bg-slate-800 flex items-center justify-center text-4xl mx-auto shadow-inner border border-slate-700">
+          {{ selectedAuthUser?.avatar }}
+        </div>
+        <div>
+          <h3 class="text-lg font-black text-white">解锁 {{ selectedAuthUser?.name }} 的档案</h3>
+          <p class="text-xs text-slate-400 mt-1 font-medium">请输入 4 位通行密码 (默认: 1234)</p>
+        </div>
+
+        <!-- 密码小圆点 -->
+        <div class="flex justify-center space-x-3 py-2">
+          <div v-for="i in 4" :key="i" class="w-3 h-3 rounded-full transition-all duration-200" :class="enteredPin.length >= i ? 'bg-emerald-400 scale-110 shadow-lg shadow-emerald-400/50' : 'bg-slate-700'"></div>
+        </div>
+
+        <!-- 荧光数字键盘 -->
+        <div class="grid grid-cols-3 gap-2 text-white font-black text-lg pt-2">
+          <button v-for="n in [1,2,3,4,5,6,7,8,9]" :key="n" @click="pressPin(n)" class="h-12 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 transition">
+            {{ n }}
+          </button>
+          <button @click="clearPin" class="h-12 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold active:scale-95 transition text-slate-400">清空</button>
+          <button @click="pressPin(0)" class="h-12 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 transition">0</button>
+          <button @click="showPinModal = false" class="h-12 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold active:scale-95 transition text-rose-400">取消</button>
+        </div>
       </div>
+    </div>
 
-    </main>
-
-    <!-- 【弹窗 1：家长全景查看大盘】 -->
-    <div v-if="showParentModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4 z-50">
-      <div class="bg-white rounded-2xl max-w-2xl w-full p-5 space-y-4 shadow-2xl border border-slate-200">
+    <!-- 【弹窗：家长全景查看大盘】 -->
+    <div v-if="showParentModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50">
+      <div class="bg-white rounded-2xl max-w-3xl w-full p-6 space-y-4 shadow-2xl border border-slate-200">
         <div class="flex justify-between items-center border-b border-slate-100 pb-3">
           <div class="flex items-center space-x-2">
-            <span class="text-base">👨‍👩‍👦</span>
-            <h3 class="text-sm font-black text-slate-800">家长监控看板 · 4人今日全貌对比</h3>
+            <span class="text-xl">👨‍👩‍👦</span>
+            <h3 class="text-base font-black text-slate-900">家长监控看板 · 4人今日全貌对比</h3>
           </div>
-          <button @click="showParentModal = false" class="text-slate-400 hover:text-slate-600 font-bold">✕</button>
+          <button @click="showParentModal = false" class="text-slate-400 hover:text-slate-600 font-bold text-lg">✕</button>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div 
-            v-for="st in students" 
-            :key="st.id" 
-            class="p-3.5 rounded-xl border border-slate-200/80 bg-slate-50/50 flex flex-col justify-between"
-          >
+          <div v-for="st in students" :key="st.id" class="p-4 rounded-xl border border-slate-200 bg-slate-50/50 flex flex-col justify-between">
             <div>
               <div class="flex justify-between items-center">
                 <div class="flex items-center space-x-2">
-                  <span class="text-base">{{ st.avatar }}</span>
-                  <span class="font-black text-sm text-slate-800">{{ st.name }}</span>
-                  <span class="text-[10px] text-slate-500 font-medium">({{ st.grade }})</span>
+                  <span class="text-xl">{{ st.avatar }}</span>
+                  <span class="font-black text-base text-slate-900">{{ st.name }}</span>
+                  <span class="text-xs text-slate-500 font-bold">({{ st.grade }})</span>
                 </div>
                 <span class="text-xs font-black text-amber-600">⚡ {{ st.points }}分</span>
               </div>
 
               <!-- 进度条 -->
               <div class="mt-3">
-                <div class="flex justify-between text-[10px] font-bold mb-1">
-                  <span class="text-slate-500">今日完成率</span>
-                  <span class="text-slate-800">{{ getStudentDoneCount(st.id) }} / {{ totalTaskCount }} 项</span>
+                <div class="flex justify-between text-xs font-black mb-1">
+                  <span class="text-slate-500">今日完成</span>
+                  <span class="text-slate-900">{{ getStudentDoneCount(st.id) }} / {{ totalTaskCount }} 项</span>
                 </div>
                 <div class="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
-                  <div 
-                    class="h-full bg-emerald-600 rounded-full transition-all duration-300"
-                    :style="{ width: (getStudentDoneCount(st.id) / totalTaskCount * 100) + '%' }"
-                  ></div>
+                  <div class="h-full bg-emerald-600 rounded-full" :style="{ width: (getStudentDoneCount(st.id) / totalTaskCount * 100) + '%' }"></div>
                 </div>
               </div>
 
-              <!-- 状态指标 -->
-              <div class="grid grid-cols-2 gap-2 mt-3 pt-2 border-t border-slate-200/60 text-[11px]">
-                <div>
-                  <span class="text-slate-400">学校作业：</span>
-                  <span :class="isStudentHwDone(st.id) ? 'text-emerald-700 font-bold' : 'text-rose-600 font-bold'">
-                    {{ isStudentHwDone(st.id) ? '✓ 已完成' : '✕ 待提交' }}
-                  </span>
-                </div>
-                <div>
-                  <span class="text-slate-400">待改错题：</span>
-                  <span :class="getPendingErrorCount(st.id) > 0 ? 'text-rose-600 font-bold' : 'text-slate-600 font-bold'">
-                    {{ getPendingErrorCount(st.id) }} 题
-                  </span>
-                </div>
+              <div class="grid grid-cols-2 gap-2 mt-3 pt-2 border-t border-slate-200/80 text-xs">
+                <div>作业：<span :class="isStudentHwDone(st.id) ? 'text-emerald-700 font-black' : 'text-rose-600 font-black'">{{ isStudentHwDone(st.id) ? '✓ 已完成' : '✕ 待做' }}</span></div>
+                <div>错题：<span :class="getPendingErrorCount(st.id) > 0 ? 'text-rose-600 font-black' : 'text-slate-600 font-bold'">{{ getPendingErrorCount(st.id) }} 题待改</span></div>
               </div>
             </div>
 
             <div class="mt-3 pt-2">
-              <button 
-                @click="switchStudent(st.id); showParentModal = false;" 
-                class="w-full py-1 bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 text-xs font-bold rounded-lg transition"
-              >
-                切换到该学生界面
+              <button @click="switchToUser(st); showParentModal = false;" class="w-full py-1.5 bg-white hover:bg-slate-100 text-slate-800 border border-slate-200 text-xs font-black rounded-lg transition">
+                进入该档案
               </button>
             </div>
           </div>
         </div>
 
         <div class="pt-2 text-right">
-          <button @click="showParentModal = false" class="px-4 py-1.5 bg-slate-900 text-white rounded-lg text-xs font-bold">关闭</button>
+          <button @click="showParentModal = false" class="px-5 py-2 bg-slate-900 text-white rounded-lg text-xs font-bold">关闭</button>
         </div>
       </div>
     </div>
 
-    <!-- 【弹窗 2：布置临时任务】 -->
-    <div v-if="showAssignModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4 z-50">
-      <div class="bg-white rounded-2xl max-w-sm w-full p-5 space-y-3.5 shadow-2xl border border-slate-200">
-        <div class="flex justify-between items-center border-b border-slate-100 pb-2">
-          <h3 class="text-sm font-black text-slate-800">➕ 布置今日临时任务</h3>
-          <button @click="showAssignModal = false" class="text-slate-400 hover:text-slate-600 font-bold">✕</button>
-        </div>
-
+    <!-- 【弹窗：布置临时任务】 -->
+    <div v-if="showAssignModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50">
+      <div class="bg-white rounded-2xl max-w-sm w-full p-5 space-y-3 shadow-2xl border border-slate-200">
+        <h3 class="text-sm font-black text-slate-800">➕ 布置今日临时任务</h3>
         <div class="space-y-2.5 text-xs">
           <div>
-            <label class="block font-bold text-slate-600 mb-1">指派给谁：</label>
-            <select v-model="newTask.targetStudentId" class="w-full border border-slate-200 rounded-lg p-2 font-bold text-slate-700 outline-none">
+            <label class="block font-bold text-slate-600 mb-1">指派给：</label>
+            <select v-model="newTask.targetStudentId" class="w-full border rounded-lg p-2 font-black text-slate-800">
               <option value="ALL">📢 全体学生 (诺、威、奕、黛)</option>
               <option v-for="st in students" :key="st.id" :value="st.id">{{ st.avatar }} {{ st.name }}</option>
             </select>
           </div>
-
           <div>
             <label class="block font-bold text-slate-600 mb-1">任务名称：</label>
-            <input v-model="newTask.title" placeholder="例如：精读英语课文、擦书桌、跳绳1000次" class="w-full border border-slate-200 rounded-lg p-2 font-bold text-slate-800 outline-none">
+            <input v-model="newTask.title" placeholder="如：精读英语课文、背诵古诗、跳绳" class="w-full border rounded-lg p-2 font-bold">
           </div>
-
           <div class="grid grid-cols-2 gap-2">
             <div>
-              <label class="block font-bold text-slate-600 mb-1">建议用时：</label>
-              <input v-model="newTask.duration" placeholder="例如：15分钟" class="w-full border border-slate-200 rounded-lg p-2 outline-none">
+              <label class="block font-bold text-slate-600 mb-1">用时：</label>
+              <input v-model="newTask.duration" class="w-full border rounded-lg p-2 font-bold">
             </div>
             <div>
               <label class="block font-bold text-slate-600 mb-1">奖励积分：</label>
-              <input v-model.number="newTask.points" type="number" class="w-full border border-slate-200 rounded-lg p-2 font-bold text-amber-700 outline-none">
+              <input v-model.number="newTask.points" type="number" class="w-full border rounded-lg p-2 font-black text-amber-700">
             </div>
           </div>
-
           <div>
             <label class="block font-bold text-slate-600 mb-1">验收标准：</label>
-            <input v-model="newTask.criteria" placeholder="例如：背诵给家长听 / 拍照上传" class="w-full border border-slate-200 rounded-lg p-2 outline-none">
+            <input v-model="newTask.criteria" class="w-full border rounded-lg p-2 font-bold">
           </div>
         </div>
-
         <div class="flex space-x-2 pt-2">
           <button @click="showAssignModal = false" class="flex-1 py-2 border rounded-xl text-xs font-bold text-slate-500">取消</button>
-          <button @click="confirmAssignTask" class="flex-1 py-2 bg-slate-900 text-white rounded-xl text-xs font-bold">确定下发任务</button>
+          <button @click="confirmAssignTask" class="flex-1 py-2 bg-slate-900 text-white rounded-xl text-xs font-black">立即下发</button>
         </div>
       </div>
     </div>
 
-    <!-- 【弹窗 3：拍照批改作业】 -->
-    <div v-if="showHomeworkModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4 z-50">
+    <!-- 【弹窗：拍照作业批改】 -->
+    <div v-if="showHomeworkModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50">
       <div class="bg-white rounded-2xl max-w-sm w-full p-5 space-y-3 shadow-2xl border border-slate-200">
         <h3 class="text-sm font-black text-slate-800">📸 提交学校作业 (人教版 AI 视觉审校)</h3>
-        <p class="text-[11px] text-slate-400">对着作业平整拍照，AI 老师自动挑错并沉淀错题。</p>
+        <p class="text-xs text-slate-500">对着平整拍照，AI 将逐题分析错题归入复仇本。</p>
         <input type="file" accept="image/*" @change="handleImageSelected" class="w-full text-xs text-slate-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-slate-900 file:text-white cursor-pointer">
-        <div v-if="gradingStatus" class="p-2.5 rounded-lg bg-amber-50 text-amber-800 text-xs font-bold text-center animate-pulse">{{ gradingStatus }}</div>
+        <div v-if="gradingStatus" class="p-3 rounded-lg bg-amber-50 text-amber-900 text-xs font-black text-center animate-pulse">{{ gradingStatus }}</div>
         <div class="flex space-x-2 pt-2">
           <button @click="showHomeworkModal = false" class="flex-1 py-2 border rounded-xl text-xs font-bold text-slate-500">取消</button>
-          <button :disabled="!selectedImageBase64 || isGrading" @click="submitHomeworkToAI" class="flex-1 py-2 bg-emerald-700 text-white rounded-xl text-xs font-bold disabled:opacity-40">开始 AI 批改</button>
+          <button :disabled="!selectedImageBase64 || isGrading" @click="submitHomeworkToAI" class="flex-1 py-2 bg-emerald-700 text-white rounded-xl text-xs font-black disabled:opacity-40">开始 AI 批改</button>
         </div>
       </div>
     </div>
 
-    <!-- 【弹窗 4：口算闯关】 -->
-    <div v-if="showMathModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4 z-50">
+    <!-- 【弹窗：口算闯关】 -->
+    <div v-if="showMathModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50">
       <div class="bg-white rounded-2xl max-w-sm w-full p-5 space-y-3 shadow-2xl border border-slate-200">
         <h3 class="text-sm font-black text-slate-800">⚡ {{ currentStudent.grade }} · 10道口算快练</h3>
-        <div class="space-y-1.5 max-h-56 overflow-y-auto pr-1 custom-scrollbar">
-          <div v-for="(p, i) in mathProblems" :key="i" class="flex items-center justify-between text-xs py-1 border-b border-slate-50">
-            <span class="font-bold text-slate-700">{{ p.expr }}</span>
-            <input v-model.number="p.userAns" type="number" step="0.1" class="w-20 border border-slate-200 rounded-lg p-1 text-center font-bold text-xs">
+        <div class="space-y-2 max-h-60 overflow-y-auto pr-1 custom-scrollbar">
+          <div v-for="(p, i) in mathProblems" :key="i" class="flex items-center justify-between text-sm py-1.5 border-b border-slate-50">
+            <span class="font-black text-slate-800">{{ p.expr }}</span>
+            <input v-model.number="p.userAns" type="number" step="0.1" class="w-24 border border-slate-200 rounded-lg p-1.5 text-center font-black text-sm">
           </div>
         </div>
         <div class="flex space-x-2 pt-2">
           <button @click="showMathModal = false" class="flex-1 py-2 border rounded-xl text-xs font-bold text-slate-500">退出</button>
-          <button @click="submitMathDrill" class="flex-1 py-2 bg-slate-900 text-white rounded-xl text-xs font-bold">提交判分</button>
+          <button @click="submitMathDrill" class="flex-1 py-2 bg-slate-900 text-white rounded-xl text-xs font-black">提交判分</button>
         </div>
       </div>
     </div>
 
-    <!-- 【弹窗 5：系统设置】 -->
-    <div v-if="showSettings" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4 z-50">
+    <!-- 【弹窗：设置密钥】 -->
+    <div v-if="showSettings" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50">
       <div class="bg-white rounded-2xl max-w-md w-full p-5 space-y-3 shadow-2xl border border-slate-200">
-        <div class="flex justify-between items-center">
-          <h3 class="text-sm font-black text-slate-800">⚙️ 核心密钥与同步配置</h3>
-          <button @click="showSettings = false" class="text-slate-400 hover:text-slate-600 font-bold">✕</button>
-        </div>
+        <h3 class="text-sm font-black text-slate-800">⚙️ 核心密钥与同步配置</h3>
         <div class="space-y-2.5 text-xs">
           <div>
             <label class="block font-bold text-slate-600 mb-1">硅基流动 AI 密钥 (sk-...)</label>
-            <input v-model="config.siliconKey" type="password" class="w-full border border-slate-200 rounded-lg p-2 font-mono text-xs">
+            <input v-model="config.siliconKey" type="password" class="w-full border rounded-lg p-2 font-mono">
           </div>
           <div>
             <label class="block font-bold text-slate-600 mb-1">Upstash REST URL</label>
-            <input v-model="config.upstashUrl" type="text" class="w-full border border-slate-200 rounded-lg p-2 font-mono text-xs">
+            <input v-model="config.upstashUrl" type="text" class="w-full border rounded-lg p-2 font-mono">
           </div>
           <div>
             <label class="block font-bold text-slate-600 mb-1">Upstash REST TOKEN</label>
-            <input v-model="config.upstashToken" type="password" class="w-full border border-slate-200 rounded-lg p-2 font-mono text-xs">
+            <input v-model="config.upstashToken" type="password" class="w-full border rounded-lg p-2 font-mono">
           </div>
         </div>
         <div class="pt-2 flex space-x-2">
           <button @click="showSettings = false" class="flex-1 py-2 border rounded-xl text-xs font-bold text-slate-500">取消</button>
-          <button @click="saveConfig" class="flex-1 py-2 bg-slate-900 text-white rounded-xl text-xs font-bold">保存并连接</button>
+          <button @click="saveConfig" class="flex-1 py-2 bg-slate-900 text-white rounded-xl text-xs font-black">保存连接</button>
         </div>
       </div>
     </div>
@@ -490,18 +563,19 @@
 
     createApp({
       setup() {
+        const currentLoggedInUser = ref(null);
         const activeTab = ref('today');
+        const showPinModal = ref(false);
+        const selectedAuthUser = ref(null);
+        const enteredPin = ref('');
+
         const showSettings = ref(false);
         const showHomeworkModal = ref(false);
         const showMathModal = ref(false);
         const showParentModal = ref(false);
         const showAssignModal = ref(false);
 
-        const gradeList = [
-          '小学1年级', '小学2年级', '小学3年级', '小学4年级', '小学5年级', '小学6年级',
-          '初中7年级', '初中8年级', '初中9年级',
-          '高中1年级', '高中2年级', '高中3年级'
-        ];
+        const parentProfile = { id: 'parent', name: '家长督导', avatar: '🛡️', grade: '总控管理员', pin: '8888' };
 
         const config = ref({
           siliconKey: localStorage.getItem('cfg_silicon') || '',
@@ -510,43 +584,34 @@
         });
 
         const students = ref([
-          { id: 'nuo', name: '诺', grade: '小学5年级', points: 8, avatar: '🐱' },
-          { id: 'wei', name: '威', grade: '小学4年级', points: 24, avatar: '威' },
-          { id: 'yi',  name: '奕', grade: '小学2年级', points: 15, avatar: '奕' },
-          { id: 'dai', name: '黛', grade: '小学6年级', points: 42, avatar: '🔭' }
+          { id: 'nuo', name: '诺', grade: '小学5年级', points: 8, avatar: '🐱', pin: '1234' },
+          { id: 'wei', name: '威', grade: '小学4年级', points: 24, avatar: '🦁', pin: '1234' },
+          { id: 'yi',  name: '奕', grade: '小学2年级', points: 15, avatar: '🐼', pin: '1234' },
+          { id: 'dai', name: '黛', grade: '小学6年级', points: 42, avatar: '🔭', pin: '1234' }
         ]);
         const currentStudentId = ref('nuo');
 
-        // 原版 15 项基础任务
+        // 原版 15 项基础任务（清晰大字版）
         const baseTasks = ref([
-          { id: 1, code: '01', category: '第一优先', icon: '作', title: '登记并完成学校家庭作业', duration: '35分', points: 3, criteria: '语数英要求+困难记录' },
-          { id: 2, code: '02', category: '语文', icon: '读', title: '每日新闻阅读与综合题', duration: '30分', points: 3, criteria: '计时≥30分+问答' },
-          { id: 3, code: '03', category: '语文', icon: '字', title: '每日练字拍照打卡', duration: '10分', points: 2, criteria: '年级指定字帖+拍照' },
-          { id: 4, code: '04', category: '数学', icon: '口', title: '每日10道年级口算', duration: '8分', points: 2, criteria: '在线即时自动判分' },
-          { id: 5, code: '05', category: '数学', icon: '数', title: '每日一道年级奥数题', duration: '10分', points: 3, criteria: '逐级进阶+错因解析' },
-          { id: 6, code: '06', category: '英语', icon: '词', title: '画面记忆5词+造句+手写', duration: '18分', points: 3, criteria: '5造句+朗读+默写' },
-          { id: 7, code: '07', category: '英语', icon: '说', title: '自己说5个英语句子', duration: '6分', points: 2, criteria: '5句文字+录音' },
-          { id: 8, code: '08', category: '英语', icon: '写', title: '每日一句：从结构到表达', duration: '5分', points: 2, criteria: '3分独立思考+自动判' },
-          { id: 9, code: '09', category: '英语', icon: '译', title: '每日一句：英译中', duration: '5分', points: 2, criteria: '分级提示+提交译文' },
-          { id: 10, code: '10', category: '英语', icon: '阅', title: '年级小阅读理解', duration: '10分', points: 2, criteria: '短文+考试题3题' },
-          { id: 11, code: '11', category: '英语', icon: '填', title: '每日英语完形填空', duration: '8分', points: 2, criteria: '语境及语法综合判断' },
-          { id: 12, code: '12', category: '综合', icon: '错', title: '当日错题消化与复盘', duration: '15分', points: 2, criteria: '错因分析+红笔订正' },
-          { id: 13, code: '13', category: '阅读', icon: '书', title: '整本书伴读与思考', duration: '20分', points: 2, criteria: '阅读时长+情节复述' },
-          { id: 14, code: '14', category: '体能', icon: '动', title: '跳绳或户外体能运动', duration: '20分', points: 2, criteria: '跳绳500次或户外活动' },
-          { id: 15, code: '15', category: '习惯', icon: '整', title: '整理书包与明日准备', duration: '5分', points: 1, criteria: '书包整洁+削铅笔' }
+          { id: 1, code: '01', category: '第一优先', icon: '作', title: '登记并完成学校家庭作业', duration: '35分钟', points: 3, criteria: '语数英要求 + 困难处理记录' },
+          { id: 2, code: '02', category: '语文', icon: '读', title: '每日新闻阅读与综合题', duration: '30分钟', points: 3, criteria: '真实计时≥30分钟 + 问答' },
+          { id: 3, code: '03', category: '语文', icon: '字', title: '每日练字拍照打卡', duration: '10分钟', points: 2, criteria: '年级指定字帖 + 拍照上传' },
+          { id: 4, code: '04', category: '数学', icon: '口', title: '每日10道年级口算', duration: '8分钟', points: 2, criteria: '在线即时自动判分' },
+          { id: 5, code: '05', category: '数学', icon: '数', title: '每日一道年级奥数题', duration: '10分钟', points: 3, criteria: '逐级进阶 + 错因归因解析' },
+          { id: 6, code: '06', category: '英语', icon: '词', title: '画面记忆5词 + 造句 + 手写', duration: '18分钟', points: 3, criteria: '5造句 + 系统朗读 + 默写' },
+          { id: 7, code: '07', category: '英语', icon: '说', title: '自己说5个英语句子', duration: '6分钟', points: 2, criteria: '5句文字 + 录音' },
+          { id: 8, code: '08', category: '英语', icon: '写', title: '每日一句：从结构到表达', duration: '5分钟', points: 2, criteria: '3分钟独立思考 + 自动判定' },
+          { id: 9, code: '09', category: '英语', icon: '译', title: '每日一句：英译中', duration: '5分钟', points: 2, criteria: '分级提示 + 提交译文' },
+          { id: 10, code: '10', category: '英语', icon: '阅', title: '年级小阅读理解', duration: '10分钟', points: 2, criteria: '短文 + 考试题3题' },
+          { id: 11, code: '11', category: '英语', icon: '填', title: '每日英语完形填空', duration: '8分钟', points: 2, criteria: '语境及语法综合判断' },
+          { id: 12, code: '12', category: '综合', icon: '错', title: '当日错题消化与复盘', duration: '15分钟', points: 2, criteria: '错因说明 + 红笔订正' },
+          { id: 13, code: '13', category: '阅读', icon: '书', title: '整本书伴读与思考', duration: '20分钟', points: 2, criteria: '阅读时长 + 情节复述' },
+          { id: 14, code: '14', category: '体能', icon: '动', title: '跳绳或户外体能运动', duration: '20分钟', points: 2, criteria: '跳绳500次或户外活动' },
+          { id: 15, code: '15', category: '习惯', icon: '整', title: '整理书包与明日准备', duration: '5分钟', points: 1, criteria: '书包整洁 + 削铅笔' }
         ]);
 
-        // 家长布置的临时任务池
         const customTasks = ref([]);
-
-        // 新建临时任务表单
-        const newTask = ref({
-          targetStudentId: 'ALL',
-          title: '',
-          duration: '15分钟',
-          points: 3,
-          criteria: '家长当面抽查 / 拍照确认'
-        });
+        const newTask = ref({ targetStudentId: 'ALL', title: '', duration: '15分钟', points: 3, criteria: '家长当面抽查 / 拍照确认' });
 
         const checkins = ref({});
         const errors = ref([]);
@@ -557,11 +622,52 @@
           { name: '自选图书/心愿盲盒', desc: '50元以内自选物品', cost: 80 }
         ];
 
-        const currentStudent = computed(() => students.value.find(s => s.id === currentStudentId.value) || students.value[0]);
+        // 身份认证与密码
+        const openPinModal = (user) => {
+          selectedAuthUser.value = user;
+          enteredPin.value = '';
+          showPinModal.value = true;
+        };
+
+        const pressPin = (num) => {
+          if (enteredPin.value.length < 4) {
+            enteredPin.value += num;
+            if (enteredPin.value.length === 4) {
+              const expectedPin = selectedAuthUser.value.pin || '1234';
+              if (enteredPin.value === expectedPin) {
+                switchToUser(selectedAuthUser.value);
+                showPinModal.value = false;
+              } else {
+                alert('密码错误，请重新输入！');
+                enteredPin.value = '';
+              }
+            }
+          }
+        };
+
+        const clearPin = () => { enteredPin.value = ''; };
+
+        const switchToUser = (user) => {
+          if (user.id === 'parent') {
+            currentLoggedInUser.value = parentProfile;
+            showParentModal.value = true;
+          } else {
+            currentLoggedInUser.value = user;
+            currentStudentId.value = user.id;
+          }
+        };
+
+        const logout = () => {
+          currentLoggedInUser.value = null;
+        };
+
+        const currentStudent = computed(() => {
+          return students.value.find(s => s.id === currentStudentId.value) || students.value[0];
+        });
+
         const todayKey = computed(() => `${currentStudentId.value}_2026-09-04`);
         const todayDoneIds = computed(() => checkins.value[todayKey.value] || []);
         
-        // 聚合当前学生能看到的所有任务（15 项基础 + 指派给他的临时任务）
         const allTodayTasks = computed(() => {
           const personalCustom = customTasks.value.filter(t => t.targetStudentId === 'ALL' || t.targetStudentId === currentStudentId.value);
           return [...baseTasks.value, ...personalCustom];
@@ -578,9 +684,6 @@
         const getStudentDoneCount = (sId) => (checkins.value[`${sId}_2026-09-04`] || []).length;
         const isStudentHwDone = (sId) => (checkins.value[`${sId}_2026-09-04`] || []).includes(1);
 
-        const switchStudent = (id) => { currentStudentId.value = id; };
-
-        // 任务完成逻辑
         const finishTask = (task) => {
           if (!checkins.value[todayKey.value]) checkins.value[todayKey.value] = [];
           if (!checkins.value[todayKey.value].includes(task.id)) {
@@ -590,24 +693,20 @@
           }
         };
 
-        // 家长下发临时任务
         const openAssignModal = () => {
           newTask.value.title = '';
           showAssignModal.value = true;
         };
 
         const confirmAssignTask = () => {
-          if (!newTask.value.title.trim()) {
-            alert('请输入任务名称！');
-            return;
-          }
+          if (!newTask.value.title.trim()) return alert('请输入任务名称！');
           customTasks.value.push({
             id: 'ct_' + Date.now(),
             code: '加',
             category: '临时任务',
             icon: '⚡',
             title: newTask.value.title.trim(),
-            duration: newTask.value.duration || '15分',
+            duration: newTask.value.duration || '15分钟',
             points: newTask.value.points || 3,
             criteria: newTask.value.criteria || '家长抽查',
             targetStudentId: newTask.value.targetStudentId,
@@ -615,7 +714,7 @@
           });
           showAssignModal.value = false;
           syncToCloud();
-          alert('临时任务下发成功，各设备已实时同步！');
+          alert('临时任务下发成功，已实时同步！');
         };
 
         // 口算引擎
@@ -652,7 +751,7 @@
 
         const openHomeworkModal = () => {
           if (!config.value.siliconKey) {
-            alert('请先在右上角 ⚙️ 填入硅基流动 AI 密钥！');
+            alert('请先在设置 ⚙️ 里填入硅基流动 AI 密钥！');
             showSettings.value = true;
             return;
           }
@@ -663,16 +762,16 @@
 
         const submitHomeworkToAI = async () => {
           isGrading.value = true;
-          gradingStatus.value = 'AI 逐题深度扫描中...';
+          gradingStatus.value = 'AI 逐题深度扫描分析中...';
           try {
             const res = await window.StudyAI.gradeHomework(config.value.siliconKey, selectedImageBase64.value);
             if (res.errors && res.errors.length > 0) {
               res.errors.forEach(err => {
                 errors.value.unshift({ id: Date.now() + Math.random(), studentId: currentStudentId.value, ...err, date: '2026-09-04', resolved: false });
               });
-              alert(`批改完毕！共 ${res.total} 题，发现 ${res.errors.length} 处错题，已压入复仇本。作业过审打卡！`);
+              alert(`批改完毕！共 ${res.total} 题，发现 ${res.errors.length} 处错题已压入复仇本，作业打卡通过！`);
             } else {
-              alert(`全部 ${res.total} 题解答正确！满分通过！`);
+              alert(`太棒了！全部 ${res.total} 题解答正确！满分通过！`);
             }
             finishTask(baseTasks.value[0]);
             showHomeworkModal.value = false;
@@ -748,12 +847,14 @@
         });
 
         return {
-          activeTab, showSettings, showHomeworkModal, showMathModal, showParentModal, showAssignModal,
-          config, students, currentStudentId, currentStudent, gradeList,
+          currentLoggedInUser, activeTab, showPinModal, selectedAuthUser, enteredPin,
+          parentProfile, openPinModal, pressPin, clearPin, switchToUser, logout,
+          showSettings, showHomeworkModal, showMathModal, showParentModal, showAssignModal,
+          config, students, currentStudentId, currentStudent,
           baseTasks, customTasks, newTask, allTodayTasks, totalTaskCount,
           checkins, errors, shopItems, isHomeworkDone, todayDoneCount, todayPoints, isDone,
           studentErrors, getPendingErrorCount, getStudentDoneCount, isStudentHwDone,
-          switchStudent, finishTask, openAssignModal, confirmAssignTask,
+          finishTask, openAssignModal, confirmAssignTask,
           mathProblems, startMathDrill, submitMathDrill,
           selectedImageBase64, gradingStatus, isGrading, handleImageSelected,
           openHomeworkModal, submitHomeworkToAI, resolveError, redeem, saveConfig, syncToCloud,
