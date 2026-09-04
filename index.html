@@ -49,10 +49,10 @@
   <div id="app" class="h-full flex flex-col flex-1 overflow-hidden">
 
     <!-- ========================================================================= -->
-    <!-- 场景一：全新明亮阳光研学首屏 (微动漂浮趣味图元，极简清爽明快) -->
+    <!-- 场景一：明亮阳光研学首屏 (微动漂浮趣味图元，极简清爽明快) -->
     <!-- ========================================================================= -->
     <div v-if="!currentLoggedInUser" class="h-full w-full flex flex-col items-center justify-between p-6 md:p-10 relative overflow-hidden">
-      <!-- 动态浮动明亮彩色图元 (太阳、彩虹、火箭、画板等) -->
+      <!-- 动态浮动明亮彩色图元 -->
       <div class="absolute top-12 left-16 text-4xl opacity-75 float-item-1 pointer-events-none">☀️</div>
       <div class="absolute top-16 right-24 text-4xl opacity-75 float-item-2 pointer-events-none">🌈</div>
       <div class="absolute bottom-20 left-20 text-3xl opacity-75 float-item-3 pointer-events-none">🚀</div>
@@ -88,7 +88,7 @@
           </p>
         </div>
 
-        <!-- 卡片矩阵 (白玉拟物透光卡片) -->
+        <!-- 卡片矩阵 -->
         <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-5 px-3">
           <div 
             v-for="st in students" 
@@ -287,7 +287,6 @@
             <div class="flex items-center space-x-2">
               <span class="text-base md:text-lg font-black text-slate-900">{{ currentLoggedInUser.name }}</span>
               
-              <!-- 年级自主选择并自动记住 -->
               <select 
                 v-model="currentStudent.grade" 
                 @change="onStudentGradeChange" 
@@ -338,7 +337,7 @@
       <!-- 主视图区域 -->
       <main class="flex-1 flex flex-col overflow-hidden">
         
-        <!-- 【视图 1：今日任务】 -->
+        <!-- 【视图 1：今日任务】 (已装配小学生超爱的大号趣味图标) -->
         <div v-if="activeTab === 'today'" class="h-full flex flex-col flex-1 overflow-hidden space-y-2.5">
           <div class="glass-light rounded-xl px-4 py-2.5 flex flex-wrap items-center justify-between gap-3 shadow-sm flex-shrink-0">
             <div class="flex items-center space-x-3 text-sm font-bold">
@@ -365,7 +364,7 @@
             </div>
           </div>
 
-          <!-- 任务矩阵 -->
+          <!-- 任务矩阵 (大字号 + 小学生趣味徽章) -->
           <div class="flex-1 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2.5 overflow-y-auto custom-scrollbar pr-1">
             <div 
               v-for="task in allTodayTasks" 
@@ -374,14 +373,17 @@
                 isDone(task.id) ? 'bg-emerald-50/90 border-emerald-400/80 shadow-xs' : 'glass-light border-slate-200/80 hover:border-slate-300 hover:shadow-md',
                 task.isCustom ? 'border-indigo-300 bg-indigo-50/70' : '',
                 task.id === 1 && !isHomeworkDone ? 'ring-2 ring-amber-500 border-amber-400' : '',
-                'rounded-2xl border p-3.5 flex items-center justify-between transition-all duration-150'
+                'rounded-2xl border p-3 flex items-center justify-between transition-all duration-150'
               ]"
             >
-              <div class="flex items-center space-x-3 min-w-0 flex-1 mr-3">
+              <div class="flex items-center space-x-3 min-w-0 flex-1 mr-2.5">
+                <!-- 小学生趣味大号图标徽章 -->
                 <div 
-                  class="w-11 h-11 rounded-xl flex items-center justify-center font-black text-base flex-shrink-0"
+                  class="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl flex-shrink-0 transition-transform duration-200 shadow-2xs"
                   :class="[
-                    isDone(task.id) ? 'bg-emerald-600 text-white' : (task.isCustom ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-700')
+                    isDone(task.id) 
+                      ? 'bg-emerald-100 ring-2 ring-emerald-400/80' 
+                      : (task.isCustom ? 'bg-indigo-100 ring-1 ring-indigo-300' : 'bg-slate-100/90 hover:scale-105')
                   ]"
                 >
                   {{ task.icon }}
@@ -445,18 +447,15 @@
           </div>
         </div>
 
-        <!-- 【视图 2：打卡月历 (支持动态筛选不同月份、精确展示月份与日历)】 -->
+        <!-- 【视图 2：打卡月历】 -->
         <div v-if="activeTab === 'records'" class="h-full flex flex-col flex-1 glass-light rounded-2xl p-4 overflow-hidden shadow-sm border border-slate-200/80 space-y-3">
           
-          <!-- 月份筛选器与统计徽章栏 -->
           <div class="flex flex-wrap items-center justify-between gap-3 pb-2 border-b border-slate-200/80 flex-shrink-0">
-            <!-- 月份导航器 -->
             <div class="flex items-center space-x-2">
               <button @click="prevCalendarMonth" class="px-2.5 py-1 bg-white hover:bg-slate-100 border border-slate-200 rounded-lg text-xs font-black text-slate-700 transition">
                 ◀ 上个月
               </button>
               
-              <!-- 显式写明当前月份 -->
               <div class="flex items-center space-x-1.5 px-3 py-1 bg-indigo-50 border border-indigo-200 rounded-lg">
                 <span class="text-sm font-black text-indigo-950">{{ selectedCalYear }}年 {{ selectedCalMonth }}月</span>
               </div>
@@ -465,13 +464,11 @@
                 下个月 ▶
               </button>
 
-              <!-- 年月下拉直选 -->
               <select v-model="selectedCalMonth" class="bg-white border border-slate-200 rounded-lg px-2 py-1 text-xs font-black text-slate-700 outline-none cursor-pointer">
                 <option v-for="m in 12" :key="m" :value="m">{{ m }}月</option>
               </select>
             </div>
 
-            <!-- 本月达标与全勤统计 -->
             <div class="flex items-center space-x-2 text-xs font-black">
               <span class="bg-emerald-50 text-emerald-800 border border-emerald-200 px-3 py-1 rounded-lg">
                 🌸 本月达标：{{ calMonthFlowerCount }} 天
@@ -482,17 +479,13 @@
             </div>
           </div>
 
-          <!-- 日历星期行 -->
           <div class="grid grid-cols-7 gap-2 text-center text-xs font-black text-slate-400 py-1 flex-shrink-0">
             <div class="text-rose-500">周一</div><div>周二</div><div>周三</div><div>周四</div><div>周五</div><div>周六</div><div class="text-rose-500">周日</div>
           </div>
 
-          <!-- 动态排盘日历格子 (自动计算月份天数与偏置) -->
           <div class="grid grid-cols-7 gap-2 flex-1 overflow-y-auto custom-scrollbar pr-1">
-            <!-- 空白占位偏置 -->
             <div v-for="b in calMonthStartOffset" :key="'blank_'+b" class="h-20 bg-slate-50/40 rounded-xl border border-dashed border-slate-200/50"></div>
             
-            <!-- 每月实际天数格子 -->
             <div 
               v-for="day in calMonthTotalDays" 
               :key="'day_'+day" 
@@ -572,10 +565,10 @@
           </div>
         </div>
 
-        <!-- 【视图 5：学生个人中心 (自选领域每日新知 + 小测复盘成长记录 + 积分流水)】 -->
+        <!-- 【视图 5：学生个人中心】 -->
         <div v-if="activeTab === 'profile'" class="h-full flex flex-col flex-1 glass-light rounded-2xl p-4 overflow-hidden shadow-sm border border-slate-200/80 space-y-3">
           
-          <!-- 【核心新特性】：每日自选领域新知卡片 -->
+          <!-- 每日自选新知 -->
           <div class="bg-gradient-to-r from-amber-50 via-indigo-50 to-purple-50 border border-indigo-100 rounded-2xl p-3.5 flex-shrink-0 shadow-xs space-y-2">
             <div class="flex flex-wrap items-center justify-between gap-2">
               <div class="flex items-center space-x-2">
@@ -586,14 +579,12 @@
                 </span>
               </div>
 
-              <!-- 切换下一条新知按钮 -->
               <button @click="nextKnowledgeFact" class="px-2.5 py-1 bg-white hover:bg-slate-50 border border-indigo-200 rounded-lg text-xs font-black text-indigo-700 transition flex items-center space-x-1 shadow-2xs">
                 <span>🎲</span>
                 <span>换一条新知</span>
               </button>
             </div>
 
-            <!-- 领域自主选择胶囊标签 -->
             <div class="flex flex-wrap items-center gap-1.5 pt-1">
               <span class="text-xs text-slate-500 font-bold mr-1">感兴趣的领域：</span>
               <button 
@@ -607,17 +598,15 @@
               </button>
             </div>
 
-            <!-- 当日趣味科普文案展示 -->
             <div class="p-3 bg-white/90 rounded-xl border border-indigo-100/80 text-xs md:text-sm text-slate-800 font-bold leading-relaxed flex items-start space-x-2">
               <span class="text-base text-amber-500 flex-shrink-0">✨</span>
               <span>{{ currentDailyKnowledgeFact }}</span>
             </div>
           </div>
 
-          <!-- 成长记录双栏排盘 -->
+          <!-- 成长记录双栏 -->
           <div class="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-3.5 overflow-hidden">
             
-            <!-- 左侧：小测成绩与心得体会 -->
             <div class="flex flex-col border border-slate-200 rounded-xl p-3 bg-white overflow-hidden shadow-2xs">
               <div class="flex justify-between items-center mb-2 flex-shrink-0">
                 <span class="text-xs font-black text-slate-700 flex items-center space-x-1">
@@ -665,7 +654,6 @@
               </div>
             </div>
 
-            <!-- 右侧：积分流水明细 -->
             <div class="flex flex-col border border-slate-200 rounded-xl p-3 bg-white overflow-hidden shadow-2xs">
               <div class="flex justify-between items-center mb-2 flex-shrink-0">
                 <span class="text-xs font-black text-slate-700 flex items-center space-x-1">
@@ -704,7 +692,7 @@
 
 
     <!-- ========================================================================= -->
-    <!-- 模态弹窗系统 (全键盘输入支持、按 ESC 退出) -->
+    <!-- 模态弹窗系统 -->
     <!-- ========================================================================= -->
 
     <!-- 【弹窗：小测成绩与心得登记】 -->
@@ -1060,11 +1048,11 @@
         const viewingTaskTitle = ref('');
         const viewingStudentName = ref('');
 
-        // 【打卡月历筛选器状态】
+        // 月历状态
         const selectedCalYear = ref(2026);
-        const selectedCalMonth = ref(9); // 默认 9 月
+        const selectedCalMonth = ref(9);
 
-        // 7 大自选领域趣味科学知识库
+        // 7 大趣味知识库
         const knowledgeTopics = [
           { id: 'astronomy', name: '宇宙天文', icon: '🌌' },
           { id: 'dinosaurs', name: '恐龙史前', icon: '🦖' },
@@ -1122,7 +1110,6 @@
 
         const currentKnowledgeIndex = ref(0);
 
-        // 年级完整列表
         const gradeList = [
           '小学1年级', '小学2年级', '小学3年级', '小学4年级', '小学5年级', '小学6年级',
           '初中7年级', '初中8年级', '初中9年级',
@@ -1157,23 +1144,23 @@
           reflection: ''
         });
 
-        // 基础 15 项任务
+        // 基础 15 项任务：全面装配小学生超爱的大号趣味图标
         const baseTasks = ref([
-          { id: 1, code: '01', category: '第一优先', icon: '作', title: '登记并完成学校家庭作业', duration: '35分钟', points: 3, criteria: '语数英要求 + 困难处理记录' },
-          { id: 2, code: '02', category: '语文', icon: '读', title: '每日新闻阅读与综合题', duration: '30分钟', points: 3, criteria: '真实计时≥30分钟 + 问答' },
-          { id: 3, code: '03', category: '语文', icon: '字', title: '每日练字拍照打卡', duration: '10分钟', points: 2, criteria: '年级指定字帖 + 拍照上传' },
-          { id: 4, code: '04', category: '数学', icon: '口', title: '每日10道年级口算', duration: '8分钟', points: 2, criteria: '在线即时自动判分' },
-          { id: 5, code: '05', category: '数学', icon: '数', title: '每日一道年级奥数题', duration: '10分钟', points: 3, criteria: '逐级进阶 + 错因归因解析' },
-          { id: 6, code: '06', category: '英语', icon: '词', title: '画面记忆5词 + 造句 + 手写', duration: '18分钟', points: 3, criteria: '5造句 + 系统朗读 + 默写' },
-          { id: 7, code: '07', category: '英语', icon: '说', title: '自己说5个英语句子', duration: '6分钟', points: 2, criteria: '5句文字 + 录音' },
-          { id: 8, code: '08', category: '英语', icon: '写', title: '每日一句：从结构到表达', duration: '5分钟', points: 2, criteria: '3分钟独立思考 + 自动判定' },
-          { id: 9, code: '09', category: '英语', icon: '译', title: '每日一句：英译中', duration: '5分钟', points: 2, criteria: '分级提示 + 提交译文' },
-          { id: 10, code: '10', category: '英语', icon: '阅', title: '年级小阅读理解', duration: '10分钟', points: 2, criteria: '短文 + 考试题3题' },
-          { id: 11, code: '11', category: '英语', icon: '填', title: '每日英语完形填空', duration: '8分钟', points: 2, criteria: '语境及语法综合判断' },
-          { id: 12, code: '12', category: '综合', icon: '错', title: '当日错题消化与复盘', duration: '15分钟', points: 2, criteria: '错因说明 + 红笔订正' },
-          { id: 13, code: '13', category: '阅读', icon: '书', title: '整本书伴读与思考', duration: '20分钟', points: 2, criteria: '阅读时长 + 情节复述' },
-          { id: 14, code: '14', category: '体能', icon: '动', title: '跳绳或户外体能运动', duration: '20分钟', points: 2, criteria: '跳绳500次或户外活动' },
-          { id: 15, code: '15', category: '习惯', icon: '整', title: '整理书包与明日准备', duration: '5分钟', points: 1, criteria: '书包整洁 + 削铅笔' }
+          { id: 1, code: '01', category: '第一优先', icon: '🎒', title: '登记并完成学校家庭作业', duration: '35分钟', points: 3, criteria: '语数英要求 + 困难处理记录' },
+          { id: 2, code: '02', category: '语文', icon: '🔍', title: '每日新闻阅读与综合题', duration: '30分钟', points: 3, criteria: '真实计时≥30分钟 + 问答' },
+          { id: 3, code: '03', category: '语文', icon: '✍️', title: '每日练字拍照打卡', duration: '10分钟', points: 2, criteria: '年级指定字帖 + 拍照上传' },
+          { id: 4, code: '04', category: '数学', icon: '⚡', title: '每日10道年级口算', duration: '8分钟', points: 2, criteria: '在线即时自动判分' },
+          { id: 5, code: '05', category: '数学', icon: '🧩', title: '每日一道年级奥数题', duration: '10分钟', points: 3, criteria: '逐级进阶 + 错因归因解析' },
+          { id: 6, code: '06', category: '英语', icon: '🔤', title: '画面记忆5词 + 造句 + 手写', duration: '18分钟', points: 3, criteria: '5造句 + 系统朗读 + 默写' },
+          { id: 7, code: '07', category: '英语', icon: '🎙️', title: '自己说5个英语句子', duration: '6分钟', points: 2, criteria: '5句文字 + 录音' },
+          { id: 8, code: '08', category: '英语', icon: '🌟', title: '每日一句：从结构到表达', duration: '5分钟', points: 2, criteria: '3分钟独立思考 + 自动判定' },
+          { id: 9, code: '09', category: '英语', icon: '🧭', title: '每日一句：英译中', duration: '5分钟', points: 2, criteria: '分级提示 + 提交译文' },
+          { id: 10, code: '10', category: '英语', icon: '📖', title: '年级小阅读理解', duration: '10分钟', points: 2, criteria: '短文 + 考试题3题' },
+          { id: 11, code: '11', category: '英语', icon: '🕵️', title: '每日英语完形填空', duration: '8分钟', points: 2, criteria: '语境及语法综合判断' },
+          { id: 12, code: '12', category: '综合', icon: '⚔️', title: '当日错题消化与复盘', duration: '15分钟', points: 2, criteria: '错因说明 + 红笔订正' },
+          { id: 13, code: '13', category: '阅读', icon: '🏰', title: '整本书伴读与思考', duration: '20分钟', points: 2, criteria: '阅读时长 + 情节复述' },
+          { id: 14, code: '14', category: '体能', icon: '🚀', title: '跳绳或户外体能运动', duration: '20分钟', points: 2, criteria: '跳绳500次或户外活动' },
+          { id: 15, code: '15', category: '习惯', icon: '🛸', title: '整理书包与明日准备', duration: '5分钟', points: 1, criteria: '书包整洁 + 削铅笔' }
         ]);
 
         const customTasks = ref([]);
@@ -1196,16 +1183,14 @@
             title,
             change,
             balance: newBalance,
-            time: '2026-09-04 12:58'
+            time: '2026-09-04 13:01'
           });
         };
 
-        // 学生年级自主选择并保存
         const onStudentGradeChange = () => {
           syncToCloud();
         };
 
-        // 学生自选新知领域
         const selectStudentTopic = (topicId) => {
           currentStudent.value.favoriteTopic = topicId;
           currentKnowledgeIndex.value = 0;
@@ -1227,7 +1212,6 @@
           currentKnowledgeIndex.value++;
         };
 
-        // 小测登记
         const openQuizModal = () => {
           newQuiz.value.title = '';
           newQuiz.value.score = null;
@@ -1262,7 +1246,6 @@
         const currentStudentQuizzes = computed(() => quizRecords.value.filter(q => q.studentId === currentStudentId.value));
         const currentStudentPointLogs = computed(() => pointLogs.value.filter(l => l.studentId === currentStudentId.value));
 
-        // 规范化打卡数据
         const getStudentCheckinObj = (sId) => {
           const k = `${sId}_2026-09-04`;
           const val = checkins.value[k];
@@ -1315,7 +1298,6 @@
           return found ? found.title : `任务 #${tId}`;
         };
 
-        // 认证与密码
         const openPinModal = (user) => {
           selectedAuthUser.value = user;
           enteredPin.value = '';
@@ -1400,7 +1382,6 @@
 
         const studentErrors = computed(() => errors.value.filter(e => e.studentId === currentStudentId.value && !e.resolved));
 
-        // 打卡写入 + 流水记录
         const recordTaskDone = (taskId, files = []) => {
           const k = todayKey.value;
           let current = checkins.value[k];
@@ -1425,7 +1406,6 @@
           syncToCloud();
         };
 
-        // 通用打卡弹窗
         const genericTaskFiles = ref([]);
         const openTaskSubmitModal = (task) => {
           currentActiveTask.value = task;
@@ -1456,7 +1436,6 @@
           alert('打卡达标成功！');
         };
 
-        // 作业批改
         const uploadedHomeworkFiles = ref([]);
         const gradingStatus = ref('');
         const isGrading = ref(false);
@@ -1524,7 +1503,6 @@
           }
         };
 
-        // 家长自定义加减积分
         const openPointAdjustModal = (st) => {
           targetPointStudent.value = st;
           customPointAmount.value = 10;
@@ -1548,7 +1526,6 @@
           alert(`已为 ${targetPointStudent.value.name} ${delta > 0 ? '增加' : '扣除'} ${Math.abs(delta)} 积分！`);
         };
 
-        // 临时任务
         const openAssignModal = () => {
           newTask.value.title = '';
           showAssignModal.value = true;
@@ -1573,7 +1550,6 @@
           alert('任务下发成功，支持上传各类多媒体附件打卡！');
         };
 
-        // 口算引擎
         const mathProblems = ref([]);
         const startMathDrill = () => {
           mathProblems.value = window.StudyMath.generateDrill(currentStudent.value.grade);
@@ -1614,15 +1590,12 @@
           }
         };
 
-        // 【打卡月历计算引擎】
         const calMonthTotalDays = computed(() => {
           return new Date(selectedCalYear.value, selectedCalMonth.value, 0).getDate();
         });
 
         const calMonthStartOffset = computed(() => {
-          // 获取该月 1 号是星期几 (0:周日, 1:周一 ... 6:周六)
           const firstDay = new Date(selectedCalYear.value, selectedCalMonth.value - 1, 1).getDay();
-          // 转换为以周一开头的偏移量 (周一:0 ... 周日:6)
           return firstDay === 0 ? 6 : firstDay - 1;
         });
 
