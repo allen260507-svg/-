@@ -1,4 +1,4 @@
-// 家庭研学中枢 - Vue 3 控制器 (实现即时批改判分、错题自动沉淀、多附件支持与教到会为止)
+// 家庭研学中枢 - Vue 3 控制器 (实现多附件无限累加、历史数据完整回显、即时批改对错与防覆盖)
 const { createApp, ref, computed, onMounted, onUnmounted } = Vue;
 
 createApp({
@@ -164,11 +164,10 @@ createApp({
       return [...personalCustom, ...filteredBase];
     });
 
-    // 任务 1: 作业表单（支持多附件）
+    // 各任务绑定表单状态
     const hwForm = ref({ yuwen: '', shuxue: '', yingyu: '', durationMinutes: 35, mode: 'direct' });
-    const hwPhotos = ref([]);
+    const hwPhotos = ref([]); // 多附件数组
 
-    // 任务 2: 阅读与 3 道真题（当场判分，错题进复仇本）
     const currentReadingArticle = computed(() => {
       const isJunior = studentGradeNumber.value <= 2;
       return window.StudyData.readingArticles.find(a => a.forJunior === isJunior) || window.StudyData.readingArticles[0];
@@ -177,17 +176,14 @@ createApp({
     const readingSubmitted = ref(false);
     const readingScore = ref(0);
 
-    // 任务 3: 练字 (支持多附件)
     const calligraphyPack = computed(() => window.StudyData.calligraphyPack);
-    const calligraphyPhotos = ref([]);
+    const calligraphyPhotos = ref([]); // 多附件数组
 
-    // 任务 4: 口算 (当场判分，错题进复仇本)
     const mathProblems = ref([]);
     const mathSubmitted = ref(false);
     const mathPassed = ref(false);
     const mathScoreSummary = ref('');
 
-    // 任务 5: 奥数题
     const currentOlympiadData = computed(() => {
       const g = currentStudent.value.grade || '';
       const curriculum = window.StudyData.olympiadCurriculum;
@@ -197,14 +193,13 @@ createApp({
       return curriculum['小学3年级'];
     });
     const olympiadStage = ref('problem');
-    const olympiadPhotos = ref([]); // 支持多附件
+    const olympiadPhotos = ref([]); // 多附件数组
 
-    // 任务 6~11: 英语与听写（支持多附件）
     const todayWordPack = computed(() => window.StudyData.englishWordPacks[0]);
     const dictationStep = ref(0);
     const dictationCountdown = ref(20);
     const dictationTimer = ref(null);
-    const dictationPhotos = ref([]);
+    const dictationPhotos = ref([]); // 多附件数组
 
     const structureUserInput = ref('');
     const userTranslationInput = ref('');
@@ -212,9 +207,7 @@ createApp({
     const engReadingChoices = ref({});
     const clozeChoices = ref({});
 
-    // 任务 12: 错题录入
     const newSchoolError = ref({ subject: '数学', question: '', analysis: '' });
-    // 任务 13: 伴读
     const bookForm = ref({ bookName: '', pages: '', duration: 20, summary: '', nextPlan: '' });
 
     const selectedDetailDateStr = ref('');
@@ -245,19 +238,25 @@ createApp({
       }
     };
 
-    // 正式完成并打卡加分
-    const recordTaskDone = (taskId, files = [], extraMinutes = 0) => {
+    const recordTaskDone = (taskId, files = [], extraMinutes = 0, payloadData = null) => {
       const k = `${currentStudentId.value}_2026-09-04`;
       let current = checkins.value[k];
       if (!current || Array.isArray(current)) {
-        current = { doneTaskIds: Array.isArray(current) ? [...current] : [], attachments: {} };
+        current = { doneTaskIds: Array.isArray(current) ? [...current] : [], attachments: {}, payloads: {} };
       }
       if (!current.doneTaskIds.includes(taskId)) {
         current.doneTaskIds.push(taskId);
       }
+      // 多附件累加保存，不清空旧附件
       if (files && files.length > 0) {
         if (!current.attachments) current.attachments = {};
-        current.attachments[taskId] = files;
+        const existing = current.attachments[taskId] || [];
+        current.attachments[taskId] = [...existing, ...files];
+      }
+      // 保存具体的作答payload以便二次回显
+      if (payloadData) {
+        if (!current.payloads) current.payloads = {};
+        current.payloads[taskId] = payloadData;
       }
       checkins.value[k] = current;
 
@@ -269,7 +268,7 @@ createApp({
 
       const allT = [...baseTasks.value, ...customTasks.value];
       const taskObj = allT.find(t => t.id === taskId);
-      if (taskObj) {
+      if (taskObj && !current.doneTaskIds.includes(taskId)) {
         currentStudent.value.points += taskObj.points;
       }
       persistAll();
@@ -334,52 +333,73 @@ createApp({
       }
     };
 
+    // 点击进入任务：自动回显之前已保存的作答和多附件
     const openTaskInteractive = (task) => {
       startTaskTimer(task.id);
+      const k = `${currentStudentId.value}_2026-09-04`;
+      const savedRecord = checkins.value[k] || {};
+      const savedPayloads = savedRecord.payloads || {};
+      const savedAttachments = savedRecord.attachments || {};
+
       if (task.id === 1) {
-        hwPhotos.value = [];
+        hwPhotos.value = savedAttachments[1] || [];
+        if (savedPayloads[1]) hwForm.value = { ...savedPayloads[1] };
         showHomeworkModal.value = true;
       } else if (task.id === 2) {
-        readingUserChoices.value = {};
-        readingSubmitted.value = false;
+        readingUserChoices.value = savedPayloads[2] || {};
+        readingSubmitted.value = !!savedPayloads[2];
+        if (readingSubmitted.value) {
+          let r = 0;
+          currentReadingArticle.value.questions.forEach(q => {
+            if (readingUserChoices.value[q.id] === q.ans) r++;
+          });
+          readingScore.value = r;
+        }
         showReadingModal.value = true;
       } else if (task.id === 3) {
-        calligraphyPhotos.value = [];
+        calligraphyPhotos.value = savedAttachments[3] || [];
         showCalligraphyModal.value = true;
       } else if (task.id === 4) {
-        mathProblems.value = window.StudyMath.generateDrill(currentStudent.value.grade);
-        mathSubmitted.value = false;
-        mathPassed.value = false;
-        mathScoreSummary.value = '';
+        mathProblems.value = savedPayloads[4] || window.StudyMath.generateDrill(currentStudent.value.grade);
+        mathSubmitted.value = !!savedPayloads[4];
+        if (mathSubmitted.value) {
+          let r = 0;
+          mathProblems.value.forEach(p => { if (parseFloat(p.userAns) === p.ans) r++; });
+          mathPassed.value = r >= 7;
+          mathScoreSummary.value = mathPassed.value ? `🎉 上次做对 ${r}/10 题，已达标通过！` : `上次做对 ${r}/10 题，未达标，请重测！`;
+        }
         showMathModal.value = true;
       } else if (task.id === 5) {
         olympiadStage.value = 'problem';
-        olympiadPhotos.value = [];
+        olympiadPhotos.value = savedAttachments[5] || [];
         showOlympiadModal.value = true;
       } else if (task.id === 6) {
+        dictationPhotos.value = savedAttachments[6] || [];
         showWordModal.value = true;
       } else if (task.id === 7) {
         showSentenceSpeakModal.value = true;
       } else if (task.id === 8) {
+        structureUserInput.value = savedPayloads[8] || '';
         showSentenceStructureModal.value = true;
       } else if (task.id === 9) {
-        userTranslationInput.value = '';
-        translationSubmitted.value = false;
+        userTranslationInput.value = savedPayloads[9] || '';
+        translationSubmitted.value = !!savedPayloads[9];
         showTranslationModal.value = true;
       } else if (task.id === 10) {
-        engReadingChoices.value = {};
+        engReadingChoices.value = savedPayloads[10] || {};
         showEnglishReadingModal.value = true;
       } else if (task.id === 11) {
-        clozeChoices.value = {};
+        clozeChoices.value = savedPayloads[11] || {};
         showClozeModal.value = true;
       } else if (task.id === 12) {
         showSchoolErrorModal.value = true;
       } else if (task.id === 13) {
+        if (savedPayloads[13]) bookForm.value = { ...savedPayloads[13] };
         showBookReadingModal.value = true;
       }
     };
 
-    // 多附件通用处理
+    // 多附件累加处理 (绝不覆盖之前选的)
     const handleMultiFiles = (e, targetRef) => {
       const files = Array.from(e.target.files);
       files.forEach(f => {
@@ -387,15 +407,21 @@ createApp({
         r.onload = ev => targetRef.value.push({ name: f.name, dataUrl: ev.target.result, size: f.size, type: f.type });
         r.readAsDataURL(f);
       });
+      // 清空 input 允许连续选择同名文件
+      e.target.value = '';
+    };
+
+    const removeAttachment = (targetRef, index) => {
+      targetRef.value.splice(index, 1);
     };
 
     const submitSchoolHomework = () => {
-      recordTaskDone(1, hwPhotos.value, hwForm.value.durationMinutes);
+      recordTaskDone(1, hwPhotos.value, hwForm.value.durationMinutes, hwForm.value);
       showHomeworkModal.value = false;
       triggerLuckyWheel();
     };
 
-    // 阅读理解 3 道真题判分 (教到会为止：没全对提示重做，错题自动沉淀)
+    // 阅读理解 3 道真题即时判分，错题进复仇本
     const submitReadingQuiz = () => {
       if (Object.keys(readingUserChoices.value).length < 3) {
         return alert('请先答完所有 3 道真题！');
@@ -406,7 +432,6 @@ createApp({
         if (readingUserChoices.value[q.id] === q.ans) {
           right++;
         } else {
-          // 答错自动沉淀进错题复仇本
           errors.value.unshift({
             id: Date.now() + Math.random(),
             studentId: currentStudentId.value,
@@ -421,25 +446,22 @@ createApp({
         }
       });
       readingScore.value = right;
+      recordTaskDone(2, [], 20, readingUserChoices.value);
 
       if (right === 3) {
         alert('🎉 太棒了！3道阅读真题全部答对，成功通关打卡 (+3分)！');
-        recordTaskDone(2, [], 20);
       } else {
-        alert(`做对 ${right} / 3 题。有错题已自动收录至【错题复仇本】！请认真查看解析，修改后可重新提交。`);
+        alert(`做对 ${right} / 3 题。有错题已自动收录至【错题复仇本】！`);
       }
     };
 
     const submitCalligraphy = () => {
-      if (calligraphyPhotos.value.length === 0) {
-        if (!confirm('还未上传练字照片，确定直接提交打卡吗？')) return;
-      }
       recordTaskDone(3, calligraphyPhotos.value, 10);
       showCalligraphyModal.value = false;
       alert('🎉 生字临摹打卡成功 (+2分)！');
     };
 
-    // 口算判分 (不达标不给过，错题自动进复仇本)
+    // 口算即时判分
     const submitMathDrill = () => {
       let r = 0;
       mathProblems.value.forEach(p => {
@@ -463,10 +485,10 @@ createApp({
       if (r >= 7) {
         mathPassed.value = true;
         mathScoreSummary.value = `🎉 做对 ${r} / 10 题，达标通过！`;
-        recordTaskDone(4);
+        recordTaskDone(4, [], 8, mathProblems.value);
       } else {
         mathPassed.value = false;
-        mathScoreSummary.value = `做对 ${r} / 10 题，未达到 7 题达标线！错题已沉淀入复仇本，请重测一次直到会为止。`;
+        mathScoreSummary.value = `做对 ${r} / 10 题，未达到 7 题达标线！错题已沉淀入复仇本，请重测。`;
       }
     };
 
@@ -498,7 +520,7 @@ createApp({
             playDictationWord();
           } else {
             clearInterval(dictationTimer.value);
-            alert('5个单词朗读完毕！拍照上传手写默写本多附件后即可完成。');
+            alert('5个单词朗读完毕！上传多张默写照片即可完成。');
           }
         }
       }, 1000);
@@ -514,7 +536,7 @@ createApp({
     const submitTranslation = () => {
       if (!userTranslationInput.value.trim()) return alert('请先输入你的中文翻译！');
       translationSubmitted.value = true;
-      recordTaskDone(9);
+      recordTaskDone(9, [], 5, userTranslationInput.value);
     };
 
     const submitSchoolError = () => {
@@ -537,7 +559,7 @@ createApp({
 
     const submitBookReading = () => {
       if (!bookForm.value.bookName.trim()) return alert('请输入阅读书名！');
-      recordTaskDone(13, [], bookForm.value.duration || 20);
+      recordTaskDone(13, [], bookForm.value.duration || 20, bookForm.value);
       showBookReadingModal.value = false;
       alert('🎉 今日伴读计划已记录成功！');
     };
@@ -659,7 +681,7 @@ createApp({
     const isDone = (id) => (checkins.value[`${currentStudentId.value}_2026-09-04`]?.doneTaskIds || []).includes(id);
     const isHomeworkDone = computed(() => (checkins.value[`${currentStudentId.value}_2026-09-04`]?.doneTaskIds || []).includes(1));
     const totalTaskCount = computed(() => allTodayTasks.value.length);
-    const todayDoneCount = computed(() => (checkins.value[`${currentStudentId.value}_2026-09-04`]?.doneTaskIds || []).includes(id)); // 修正
+    const todayDoneCount = computed(() => (checkins.value[`${currentStudentId.value}_2026-09-04`]?.doneTaskIds || []).includes(id));
     const studentErrors = computed(() => errors.value.filter(e => e.studentId === currentStudentId.value && !e.resolved));
 
     const saveConfig = () => {
@@ -706,7 +728,7 @@ createApp({
       isTimerRunning, taskTimerSeconds, pauseTaskTimer, formatSeconds,
       showWheelModal, isSpinning, wheelTargetTask, wheelRotationDeg, startSpinWheel, openWheelSelectedTask,
       openTaskInteractive, recordTaskDone,
-      showHomeworkModal, hwForm, hwPhotos, handleMultiFiles, submitSchoolHomework,
+      showHomeworkModal, hwForm, hwPhotos, handleMultiFiles, removeAttachment, submitSchoolHomework,
       showReadingModal, currentReadingArticle, readingUserChoices, readingSubmitted, readingScore, submitReadingQuiz,
       showCalligraphyModal, calligraphyPack, calligraphyPhotos, submitCalligraphy,
       showMathModal, mathProblems, mathSubmitted, mathPassed, mathScoreSummary, submitMathDrill,
