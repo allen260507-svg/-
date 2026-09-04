@@ -1,4 +1,4 @@
-// 家庭研学中枢 - 主逻辑控制器
+// 家庭研学中枢 - Vue 3 控制器 (含原生 Web Audio 音效、作弊大转盘、低年级英语过滤)
 const { createApp, ref, computed, onMounted, onUnmounted } = Vue;
 
 createApp({
@@ -16,6 +16,12 @@ createApp({
     const showDayDetailModal = ref(false);
     const showAddShopItemModal = ref(false);
 
+    // 大转盘游戏化弹窗与状态
+    const showWheelModal = ref(false);
+    const isSpinning = ref(false);
+    const wheelTargetTask = ref(null);
+    const wheelRotationDeg = ref(0);
+
     // 13 个任务专属弹窗
     const showHomeworkModal = ref(false);
     const showReadingModal = ref(false);
@@ -32,7 +38,7 @@ createApp({
     const showSchoolErrorModal = ref(false);
     const showBookReadingModal = ref(false);
 
-    // 家长总控专属弹窗
+    // 家长总控弹窗
     const showParentResetPinModal = ref(false);
     const parentTargetStudent = ref(null);
     const parentNewPinInput = ref('');
@@ -50,16 +56,61 @@ createApp({
       if (timerInterval) clearInterval(timerInterval);
       timerInterval = setInterval(() => { taskTimerSeconds.value++; }, 1000);
     };
-
     const pauseTaskTimer = () => {
       isTimerRunning.value = false;
       if (timerInterval) clearInterval(timerInterval);
     };
-
     const formatSeconds = (sec) => {
       const m = Math.floor(sec / 60);
       const s = sec % 60;
       return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+    };
+
+    // 原生 Web Audio API 合成音效 (零加载风险，秒响无报错)
+    let audioCtx = null;
+    const getAudioContext = () => {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      return audioCtx;
+    };
+
+    const playWheelTick = () => {
+      try {
+        const ctx = getAudioContext();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(650, ctx.currentTime);
+        gain.gain.setValueAtTime(0.12, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.04);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.04);
+      } catch (e) {}
+    };
+
+    const playFanfareSuccess = () => {
+      try {
+        const ctx = getAudioContext();
+        const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+        notes.forEach((freq, i) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, ctx.currentTime + i * 0.1);
+          gain.gain.setValueAtTime(0.2, ctx.currentTime + i * 0.1);
+          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.1 + 0.35);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(ctx.currentTime + i * 0.1);
+          osc.stop(ctx.currentTime + i * 0.1 + 0.35);
+        });
+      } catch (e) {}
     };
 
     // 系统配置与基础数据
@@ -77,7 +128,6 @@ createApp({
 
     const checkins = ref({});
     const errors = ref([]);
-    const pointLogs = ref([]);
     const shopItems = ref(window.StudyData.defaultShopItems);
     const newShopItem = ref({ icon: '🎁', name: '', desc: '', cost: 20 });
     const targetPointStudent = ref(null);
@@ -89,6 +139,26 @@ createApp({
     // 4 人全员奥运领奖台排序
     const rankedStudents = computed(() => [...students.value].sort((a, b) => b.points - a.points));
 
+    // 计算当前学生年级数字 (用于小学三年级以下过滤英语深度作业)
+    const studentGradeNumber = computed(() => {
+      const g = currentStudent.value.grade || '';
+      if (g.includes('1年级')) return 1;
+      if (g.includes('2年级')) return 2;
+      if (g.includes('3年级')) return 3;
+      if (g.includes('4年级')) return 4;
+      if (g.includes('5年级')) return 5;
+      if (g.includes('6年级')) return 6;
+      return 7;
+    });
+
+    // 动态生成今日任务清单 (3年级以下自动剔除高阶英语阅读、完形与造句翻译)
+    const allTodayTasks = computed(() => {
+      const gNum = studentGradeNumber.value;
+      const filteredBase = baseTasks.value.filter(t => (t.minGrade || 1) <= gNum);
+      const personalCustom = customTasks.value.filter(t => t.targetStudentId === 'ALL' || t.targetStudentId === currentStudentId.value);
+      return [...personalCustom, ...filteredBase];
+    });
+
     // 任务 1: 作业表单
     const hwForm = ref({ yuwen: '', shuxue: '', yingyu: '', durationMinutes: 35, mode: 'direct' });
     const hwPhotos = ref([]);
@@ -97,16 +167,15 @@ createApp({
 
     // 任务 2: 阅读与 3 道真题
     const currentReadingArticle = computed(() => {
-      const g = currentStudent.value.grade || '';
-      const isJunior = g.includes('1年级') || g.includes('2年级');
+      const isJunior = studentGradeNumber.value <= 2;
       return window.StudyData.readingArticles.find(a => a.forJunior === isJunior) || window.StudyData.readingArticles[0];
     });
     const readingUserChoices = ref({});
     const readingSubmitted = ref(false);
     const readingScore = ref(0);
 
-    // 任务 3: 田字格练字 (一屏一句诗)
-    const calligraphySentenceObj = computed(() => window.StudyData.calligraphyPoem);
+    // 任务 3: 练字 (一次3字)
+    const calligraphyPack = computed(() => window.StudyData.calligraphyPack);
     const calligraphyPhotos = ref([]);
 
     // 任务 4: 口算
@@ -127,25 +196,21 @@ createApp({
     const olympiadStage = ref('problem');
     const olympiadPhotos = ref([]);
 
-    // 任务 6~11: 英语单词包与真题链
+    // 任务 6~11: 英语大纲词汇
     const todayWordPack = computed(() => window.StudyData.englishWordPacks[0]);
     const dictationStep = ref(0);
     const dictationCountdown = ref(20);
     const dictationTimer = ref(null);
     const dictationPhotos = ref([]);
 
-    // 任务 8: 造句
     const structureUserInput = ref('');
-    // 任务 9: 英译中
     const userTranslationInput = ref('');
     const translationSubmitted = ref(false);
-    // 任务 10: 英文阅读
     const engReadingChoices = ref({});
-    // 任务 11: 完形填空
     const clozeChoices = ref({});
 
     // 任务 12: 错题录入
-    const newSchoolError = ref({ subject: '数学', question: '', analysis: '', photoUrl: '' });
+    const newSchoolError = ref({ subject: '数学', question: '', analysis: '' });
     // 任务 13: 伴读
     const bookForm = ref({ bookName: '', pages: '', duration: 20, summary: '', nextPlan: '' });
 
@@ -154,12 +219,12 @@ createApp({
     const currentDayDetailDoneCount = ref(0);
 
     // 语音点读
-    const speakText = (text, lang = 'en-US') => {
+    const speakText = (text) => {
       if ('speechSynthesis' in window) {
         window.speechSynthesis.cancel();
         const u = new SpeechSynthesisUtterance(text);
-        u.lang = lang;
-        u.rate = 0.9;
+        u.lang = 'en-US';
+        u.rate = 0.88;
         window.speechSynthesis.speak(u);
       }
     };
@@ -194,7 +259,80 @@ createApp({
       syncToCloud();
     };
 
-    // 任务点击路由分发 (已完成的点击可随时回看/修改)
+    // ================== 大转盘作弊算法与游戏化触发 ==================
+    const getStudentMandatoryTaskIds = (sId) => {
+      // 诺：口算(4)、奥数(5)
+      // 威：阅读(2)、奥数(5)、口算(4)
+      // 奕：口算(4)、奥数(5)
+      // 黛：口算(4)、阅读(2)
+      if (sId === 'nuo') return [4, 5];
+      if (sId === 'wei') return [2, 5, 4];
+      if (sId === 'yi')  return [4, 5];
+      if (sId === 'dai') return [4, 2];
+      return [4, 5];
+    };
+
+    const triggerLuckyWheel = () => {
+      wheelTargetTask.value = null;
+      wheelRotationDeg.value = 0;
+      showWheelModal.value = true;
+    };
+
+    const startSpinWheel = () => {
+      if (isSpinning.value) return;
+      isSpinning.value = true;
+
+      const sId = currentStudentId.value;
+      const k = `${sId}_2026-09-04`;
+      const doneIds = checkins.value[k]?.doneTaskIds || [];
+      const mandatoryIds = getStudentMandatoryTaskIds(sId);
+
+      // 寻找该学生尚未完成的必做科目 (作弊锁定)
+      const unfinishedMandatory = mandatoryIds.filter(id => !doneIds.includes(id));
+
+      let targetId = null;
+      if (unfinishedMandatory.length > 0) {
+        // 必做科目未完成，强制命中必做科目之一
+        targetId = unfinishedMandatory[Math.floor(Math.random() * unfinishedMandatory.length)];
+      } else {
+        // 必做科目全部达成，随机抽取任意一个尚未完成的今日任务
+        const unfinishedAll = allTodayTasks.value.filter(t => !doneIds.includes(t.id) && t.id !== 1);
+        if (unfinishedAll.length > 0) {
+          targetId = unfinishedAll[Math.floor(Math.random() * unfinishedAll.length)].id;
+        } else {
+          // 全部任务完成
+          targetId = allTodayTasks.value[1].id;
+        }
+      }
+
+      const targetObj = allTodayTasks.value.find(t => t.id === targetId) || allTodayTasks.value[1];
+
+      // 物理旋转与音效节奏控制
+      let currentDeg = 0;
+      const extraLaps = 5 * 360; // 转 5 整圈
+      const finalDeg = extraLaps + Math.floor(Math.random() * 360);
+      wheelRotationDeg.value = finalDeg;
+
+      let tickTimer = setInterval(() => {
+        playWheelTick();
+      }, 120);
+
+      setTimeout(() => {
+        clearInterval(tickTimer);
+        isSpinning.value = false;
+        wheelTargetTask.value = targetObj;
+        playFanfareSuccess();
+      }, 3000);
+    };
+
+    const openWheelSelectedTask = () => {
+      showWheelModal.value = false;
+      if (wheelTargetTask.value) {
+        openTaskInteractive(wheelTargetTask.value);
+      }
+    };
+
+    // 路由分发 (做完的点击依然支持回看修改)
     const openTaskInteractive = (task) => {
       startTaskTimer(task.id);
       if (task.id === 1) {
@@ -237,7 +375,7 @@ createApp({
       }
     };
 
-    // 任务 1 提交
+    // 任务 1 提交 -> 触发大转盘
     const handleHwMultiPhotos = (e) => {
       const files = Array.from(e.target.files);
       files.forEach(f => {
@@ -248,37 +386,13 @@ createApp({
     };
 
     const submitSchoolHomework = async () => {
-      if (hwForm.value.mode === 'direct' || !config.value.siliconKey) {
-        recordTaskDone(1, hwPhotos.value, hwForm.value.durationMinutes);
-        showHomeworkModal.value = false;
-        alert('🎉 学校家庭作业登记完成并成功打卡！');
-      } else {
-        isHwGrading.value = true;
-        hwGradingStatus.value = 'AI 逐题深度质检中...';
-        try {
-          const firstImg = hwPhotos.value.find(p => p.type && p.type.startsWith('image/'));
-          const base64 = firstImg ? firstImg.dataUrl.split(',')[1] : null;
-          if (base64) {
-            const res = await window.StudyAI.gradeHomework(config.value.siliconKey, base64);
-            if (res.errors && res.errors.length > 0) {
-              res.errors.forEach(err => {
-                errors.value.unshift({ id: Date.now() + Math.random(), studentId: currentStudentId.value, ...err, date: '2026-09-04', resolved: false });
-              });
-              alert(`批改完毕！共发现 ${res.errors.length} 处错题，已自动沉淀到【错题复仇本】！`);
-            }
-          }
-        } catch (e) {
-          // 降级处理
-        } finally {
-          isHwGrading.value = false;
-          recordTaskDone(1, hwPhotos.value, hwForm.value.durationMinutes);
-          showHomeworkModal.value = false;
-          alert('🎉 作业登记打卡成功！');
-        }
-      }
+      recordTaskDone(1, hwPhotos.value, hwForm.value.durationMinutes);
+      showHomeworkModal.value = false;
+      // 提交完学校作业，立刻进入游戏化幸运大转盘！
+      triggerLuckyWheel();
     };
 
-    // 任务 2 提交 (3道真题)
+    // 任务 2 提交 (3道真题当场判分)
     const submitReadingQuiz = () => {
       if (Object.keys(readingUserChoices.value).length < 3) {
         return alert('请先答完所有 3 道真题！');
@@ -304,10 +418,10 @@ createApp({
     const submitCalligraphy = () => {
       recordTaskDone(3, calligraphyPhotos.value, 10);
       showCalligraphyModal.value = false;
-      alert('🎉 每日练字诗句临摹打卡成功 (+2分)！');
+      alert('🎉 3 个生字规范练写 10 遍打卡成功 (+2分)！');
     };
 
-    // 任务 4 口算提交
+    // 任务 4 口算 (一屏全览无滚动条)
     const submitMathDrill = () => {
       let r = 0;
       mathProblems.value.forEach(p => {
@@ -330,7 +444,7 @@ createApp({
       mathSubmitted.value = true;
       if (r >= 7) {
         mathPassed.value = true;
-        mathScoreSummary.value = `🎉 做对 ${r} / 10 题，通过达标！`;
+        mathScoreSummary.value = `🎉 做对 ${r} / 10 题，达标通过！`;
         recordTaskDone(4);
       } else {
         mathPassed.value = false;
@@ -393,9 +507,9 @@ createApp({
       alert('🎉 记单词与默写达标完成！');
     };
 
-    // 任务 9 英译中
+    // 任务 9 英译中 (提交后揭晓参考译文)
     const submitTranslation = () => {
-      if (!userTranslationInput.value.trim()) return alert('请输入你的中文翻译！');
+      if (!userTranslationInput.value.trim()) return alert('请先输入你的中文翻译！');
       translationSubmitted.value = true;
       recordTaskDone(9);
     };
@@ -427,7 +541,6 @@ createApp({
       alert('🎉 今日伴读计划已记录成功！');
     };
 
-    // 攻克错题复仇
     const resolveError = (errId) => {
       const e = errors.value.find(x => x.id === errId);
       if (e) {
@@ -438,7 +551,7 @@ createApp({
       }
     };
 
-    // PIN 登录控制
+    // PIN 解锁登录
     const openPinModal = (user) => { selectedAuthUser.value = user; enteredPin.value = ''; showPinModal.value = true; };
     const pressPin = (num) => {
       if (enteredPin.value.length < 4) {
@@ -460,10 +573,10 @@ createApp({
     const switchToUser = (u) => { currentLoggedInUser.value = u; if (u.id !== 'parent') currentStudentId.value = u.id; };
     const logout = () => { currentLoggedInUser.value = null; };
 
-    // 家长总控专属操作
+    // 家长总控重置密码
     const openParentResetPin = (st) => { parentTargetStudent.value = st; parentNewPinInput.value = ''; showParentResetPinModal.value = true; };
     const confirmParentResetPin = () => {
-      if (!parentNewPinInput.value || parentNewPinInput.value.length !== 4) return alert('请输入 4 位密码！');
+      if (!parentNewPinInput.value || parentNewPinInput.value.length !== 4) return alert('请输入 4 位纯数字密码！');
       if (parentTargetStudent.value) parentTargetStudent.value.pin = parentNewPinInput.value;
       showParentResetPinModal.value = false;
       syncToCloud();
@@ -483,7 +596,7 @@ createApp({
     const openAssignModal = () => { newTask.value.title = ''; showAssignModal.value = true; };
     const confirmAssignTask = () => {
       if (!newTask.value.title.trim()) return alert('请输入任务名称！');
-      customTasks.value.unshift({ id: 'ct_' + Date.now(), title: newTask.value.title, points: 3, isCustom: true, code: '特派', category: '加练', icon: '📌', duration: '15分钟', criteria: '按要求完成' });
+      customTasks.value.unshift({ id: 'ct_' + Date.now(), title: newTask.value.title, points: 3, isCustom: true, code: '特派', category: '加练', icon: '📌', duration: '15分钟', criteria: '按要求完成', minGrade: 1 });
       showAssignModal.value = false;
       alert('🎉 临时任务已下发！');
     };
@@ -524,20 +637,28 @@ createApp({
       }
     };
 
-    // 日历单日明细
+    // 日历单日明细与图表统计
     const getStudentDoneCount = (sId) => (checkins.value[`${sId}_2026-09-04`]?.doneTaskIds || []).length;
-    const getDayDoneCount = (day) => (day === 4 ? todayDoneCount.value : Math.min(13, day * 2 + 3));
+    const getDayDoneCount = (day) => (day === 4 ? todayDoneCount.value : Math.min(allTodayTasks.value.length, day * 2 + 3));
     const openDayDetailModal = (y, m, d) => {
       selectedDetailDateStr.value = `${y}年${m}月${d}日`;
       currentDayDetailDoneCount.value = getDayDoneCount(d);
       showDayDetailModal.value = true;
     };
 
-    // 整合今日任务
-    const allTodayTasks = computed(() => {
-      const personalCustom = customTasks.value.filter(t => t.targetStudentId === 'ALL' || t.targetStudentId === currentStudentId.value);
-      return [...personalCustom, ...baseTasks.value];
+    // 柱状图下方 7 天详细统计表数据
+    const past7DaysData = computed(() => {
+      return [
+        { date: '2026-08-29', tasks: 11, points: 26, duration: 95, status: '达标全勤' },
+        { date: '2026-08-30', tasks: 12, points: 28, duration: 105, status: '达标全勤' },
+        { date: '2026-08-31', tasks: 10, points: 24, duration: 80, status: '良好' },
+        { date: '2026-09-01', tasks: 12, points: 29, duration: 110, status: '达标全勤' },
+        { date: '2026-09-02', tasks: 11, points: 27, duration: 90, status: '达标全勤' },
+        { date: '2026-09-03', tasks: 13, points: 31, duration: 120, status: '卓越全勤' },
+        { date: '2026-09-04(今)', tasks: todayDoneCount.value, points: todayDoneCount.value * 3, duration: currentStudent.value.totalStudyMinutes || 0, status: todayDoneCount.value >= 8 ? '进行中(优秀)' : '进行中' }
+      ];
     });
+
     const isDone = (id) => (checkins.value[`${currentStudentId.value}_2026-09-04`]?.doneTaskIds || []).includes(id);
     const isHomeworkDone = computed(() => (checkins.value[`${currentStudentId.value}_2026-09-04`]?.doneTaskIds || []).includes(1));
     const totalTaskCount = computed(() => allTodayTasks.value.length);
@@ -582,6 +703,7 @@ createApp({
       showClozeModal.value = false; showSchoolErrorModal.value = false; showBookReadingModal.value = false;
       showParentResetPinModal.value = false; showAssignModal.value = false; showPointModal.value = false;
       showDayDetailModal.value = false; showAddShopItemModal.value = false; showSettings.value = false;
+      showWheelModal.value = false;
     };
 
     const handleGlobalKeyDown = (e) => {
@@ -605,13 +727,14 @@ createApp({
     return {
       currentLoggedInUser, activeTab, showPinModal, selectedAuthUser, enteredPin,
       parentProfile, openPinModal, pressPin, clearPin, switchToUser, logout,
-      students, currentStudentId, currentStudent, rankedStudents,
+      students, currentStudentId, currentStudent, rankedStudents, studentGradeNumber,
       baseTasks, customTasks, allTodayTasks, totalTaskCount, todayDoneCount, isDone, isHomeworkDone, studentErrors,
       isTimerRunning, taskTimerSeconds, pauseTaskTimer, formatSeconds,
+      showWheelModal, isSpinning, wheelTargetTask, wheelRotationDeg, startSpinWheel, openWheelSelectedTask,
       openTaskInteractive, recordTaskDone,
       showHomeworkModal, hwForm, isHwGrading, hwGradingStatus, handleHwMultiPhotos, submitSchoolHomework,
       showReadingModal, currentReadingArticle, readingUserChoices, readingSubmitted, readingScore, submitReadingQuiz,
-      showCalligraphyModal, calligraphySentenceObj, handleCalligraphyPhotos, submitCalligraphy,
+      showCalligraphyModal, calligraphyPack, calligraphyPhotos, handleCalligraphyPhotos, submitCalligraphy,
       showMathModal, mathProblems, mathSubmitted, mathPassed, mathScoreSummary, submitMathDrill,
       showOlympiadModal, currentOlympiadData, olympiadStage, handleOlympiadPhotos, nextOlympiadStage, completeOlympiad,
       showWordModal, showDictationModal, todayWordPack, dictationStep, dictationCountdown, startDictationMode, submitDictation, speakText,
@@ -626,7 +749,7 @@ createApp({
       showPointModal, targetPointStudent, customPointAmount, openPointAdjustModal, confirmCustomPointAdjust,
       showAssignModal, newTask, openAssignModal, confirmAssignTask,
       shopItems, showAddShopItemModal, newShopItem, confirmAddShopItem, deleteShopItem, redeemShopItem,
-      showDayDetailModal, selectedDetailDateStr, currentDayDetailDoneCount, openDayDetailModal, getDayDoneCount, getStudentDoneCount,
+      showDayDetailModal, selectedDetailDateStr, currentDayDetailDoneCount, openDayDetailModal, getDayDoneCount, getStudentDoneCount, past7DaysData,
       showSettings, config, saveConfig, syncToCloud, handleAvatarChange
     };
   }
