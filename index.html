@@ -11,7 +11,6 @@
       color: #0f172a;
       font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Segoe UI", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
     }
-    /* 纯代码打造的明亮阳光晨曦研学背景 */
     .bright-kids-bg {
       background: radial-gradient(circle at 50% 10%, #fffbeb 0%, #f0fdf4 35%, #e0f2fe 70%, #f8fafc 100%);
       position: relative;
@@ -31,10 +30,10 @@
     .float-item-3 { animation: gentleFloat 4.2s ease-in-out infinite 0.5s; }
 
     .glass-light {
-      background: rgba(255, 255, 255, 0.92);
+      background: rgba(255, 255, 255, 0.94);
       backdrop-filter: blur(16px);
       -webkit-backdrop-filter: blur(16px);
-      border: 1px solid rgba(255, 255, 255, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.85);
       box-shadow: 0 4px 20px -2px rgba(99, 102, 241, 0.06);
     }
     .profile-card:hover {
@@ -49,10 +48,9 @@
   <div id="app" class="h-full flex flex-col flex-1 overflow-hidden">
 
     <!-- ========================================================================= -->
-    <!-- 场景一：明亮阳光研学首屏 (微动漂浮趣味图元，极简清爽明快) -->
+    <!-- 场景一：明亮阳光研学首屏 -->
     <!-- ========================================================================= -->
     <div v-if="!currentLoggedInUser" class="h-full w-full flex flex-col items-center justify-between p-6 md:p-10 relative overflow-hidden">
-      <!-- 动态浮动明亮彩色图元 -->
       <div class="absolute top-12 left-16 text-4xl opacity-75 float-item-1 pointer-events-none">☀️</div>
       <div class="absolute top-16 right-24 text-4xl opacity-75 float-item-2 pointer-events-none">🌈</div>
       <div class="absolute bottom-20 left-20 text-3xl opacity-75 float-item-3 pointer-events-none">🚀</div>
@@ -60,7 +58,6 @@
       <div class="absolute top-1/2 left-10 text-3xl opacity-60 float-item-2 pointer-events-none">🎈</div>
       <div class="absolute top-1/3 right-12 text-3xl opacity-60 float-item-3 pointer-events-none">🪐</div>
 
-      <!-- 顶栏标识 -->
       <div class="w-full max-w-6xl flex justify-between items-center z-10">
         <div class="flex items-center space-x-3">
           <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-amber-400 via-rose-400 to-indigo-500 flex items-center justify-center text-white font-black text-xl shadow-lg shadow-amber-500/30">
@@ -68,7 +65,7 @@
           </div>
           <div>
             <h1 class="text-xl font-black tracking-wider text-slate-800">STUDY OS · 家庭研学中枢</h1>
-            <p class="text-[11px] text-indigo-600 font-bold tracking-widest">每日自律规划 · 探索无限可能</p>
+            <p class="text-[11px] text-indigo-600 font-bold tracking-widest">每日自律规划 · 探索真实世界</p>
           </div>
         </div>
 
@@ -77,18 +74,16 @@
         </button>
       </div>
 
-      <!-- 中间：档案选择区 (4学生 + 1家长总控) -->
       <div class="w-full max-w-5xl z-10 text-center space-y-7">
         <div>
           <h2 class="text-3xl md:text-5xl font-black text-slate-900 tracking-tight drop-shadow-xs">
             开启今日研学空间
           </h2>
           <p class="text-sm md:text-base text-slate-600 mt-2 font-bold tracking-wide">
-            四人独立档案 · 每日新知探索 · 智能打卡复盘 · 错题复仇
+            四人独立档案 · 真实军事/科技新闻 · 智能打卡复盘 · 错题复仇
           </p>
         </div>
 
-        <!-- 卡片矩阵 -->
         <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-5 px-3">
           <div 
             v-for="st in students" 
@@ -112,7 +107,6 @@
             </div>
           </div>
 
-          <!-- 家长总控卡片 -->
           <div 
             @click="openPinModal(parentProfile)"
             class="profile-card bg-gradient-to-b from-indigo-50 to-purple-50 rounded-3xl p-5 flex flex-col items-center justify-between cursor-pointer transition-all duration-300 group border border-indigo-200 shadow-md"
@@ -142,7 +136,6 @@
     <!-- ========================================================================= -->
     <div v-else-if="currentLoggedInUser.id === 'parent'" class="h-full flex flex-col flex-1 overflow-hidden p-3 md:p-5 space-y-3 bg-slate-900/10 backdrop-blur-xs">
       
-      <!-- 顶栏 -->
       <header class="glass-light rounded-2xl px-5 py-3 flex items-center justify-between shadow-sm flex-shrink-0">
         <div class="flex items-center space-x-3">
           <div class="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center text-2xl shadow-sm">
@@ -153,14 +146,14 @@
               <span class="text-lg font-black text-slate-900">家长督导指挥中心</span>
               <span class="text-xs px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-800 font-black">总控模式</span>
             </div>
-            <p class="text-xs text-slate-500 font-bold mt-0.5">监控诺、威、奕、黛 4 位学生的完成进度、错题、小测记录，并自定义奖惩积分</p>
+            <p class="text-xs text-slate-500 font-bold mt-0.5">监控诺、威、奕、黛 4 位学生的任务、错题、小测，派发带附件的临时任务</p>
           </div>
         </div>
 
         <div class="flex items-center space-x-3">
           <button @click="openAssignModal" class="px-3.5 py-2 bg-slate-900 hover:bg-black text-white rounded-xl text-xs font-black transition flex items-center space-x-1 shadow-md">
             <span>➕</span>
-            <span>一键派发临时任务</span>
+            <span>派发临时任务(带附件)</span>
           </button>
           <button @click="logout" class="px-3.5 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-xl text-xs font-black transition flex items-center space-x-1">
             <span>🚪</span>
@@ -169,7 +162,6 @@
         </div>
       </header>
 
-      <!-- 4 个学生的完成情况大卡片 -->
       <div class="flex-1 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3.5 overflow-y-auto custom-scrollbar">
         <div 
           v-for="st in students" 
@@ -206,7 +198,7 @@
               </span>
             </div>
 
-            <!-- 今日完成进度条 -->
+            <!-- 进度条 -->
             <div class="p-3 rounded-xl bg-slate-50 border border-slate-200/80 space-y-1.5">
               <div class="flex justify-between text-xs font-black">
                 <span class="text-slate-600">今日任务进度</span>
@@ -253,7 +245,7 @@
                       @click="viewTaskAttachments(st, tId)"
                       class="px-2 py-0.5 bg-amber-100 hover:bg-amber-200 text-amber-900 rounded font-black text-[10px]"
                     >
-                      附件({{ getTaskAttachmentCount(st.id, tId) }})
+                      学生附件({{ getTaskAttachmentCount(st.id, tId) }})
                     </button>
                     <span class="text-emerald-700 font-black">✓</span>
                   </div>
@@ -277,7 +269,6 @@
     <!-- ========================================================================= -->
     <div v-else class="h-full flex flex-col flex-1 overflow-hidden p-3 md:p-4 space-y-2.5 bg-slate-900/5 backdrop-blur-xs">
       
-      <!-- 顶栏：年级自选并永久记忆 -->
       <header class="glass-light rounded-2xl px-5 py-2.5 flex items-center justify-between shadow-sm flex-shrink-0">
         <div class="flex items-center space-x-3">
           <div class="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center text-2xl shadow-sm">
@@ -301,7 +292,6 @@
         </div>
 
         <div class="flex items-center space-x-2">
-          <!-- 导航标签 -->
           <div class="flex bg-slate-200/80 p-1 rounded-xl text-xs font-black">
             <button @click="activeTab = 'today'" :class="activeTab === 'today' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600'" class="px-3 py-1.5 rounded-lg transition">今日战报</button>
             <button @click="activeTab = 'records'" :class="activeTab === 'records' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600'" class="px-3 py-1.5 rounded-lg transition">打卡月历</button>
@@ -337,7 +327,7 @@
       <!-- 主视图区域 -->
       <main class="flex-1 flex flex-col overflow-hidden">
         
-        <!-- 【视图 1：今日任务】 (已装配小学生超爱的大号趣味图标) -->
+        <!-- 【视图 1：今日任务】 -->
         <div v-if="activeTab === 'today'" class="h-full flex flex-col flex-1 overflow-hidden space-y-2.5">
           <div class="glass-light rounded-xl px-4 py-2.5 flex flex-wrap items-center justify-between gap-3 shadow-sm flex-shrink-0">
             <div class="flex items-center space-x-3 text-sm font-bold">
@@ -364,7 +354,7 @@
             </div>
           </div>
 
-          <!-- 任务矩阵 (大字号 + 小学生趣味徽章) -->
+          <!-- 任务矩阵 -->
           <div class="flex-1 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2.5 overflow-y-auto custom-scrollbar pr-1">
             <div 
               v-for="task in allTodayTasks" 
@@ -377,7 +367,6 @@
               ]"
             >
               <div class="flex items-center space-x-3 min-w-0 flex-1 mr-2.5">
-                <!-- 小学生趣味大号图标徽章 -->
                 <div 
                   class="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl flex-shrink-0 transition-transform duration-200 shadow-2xs"
                   :class="[
@@ -401,6 +390,13 @@
                   </div>
                   <div class="text-xs text-slate-500 font-medium truncate" :title="task.criteria">
                     验收：{{ task.criteria }}
+                  </div>
+                  <!-- 家长派发的附件查看入口 -->
+                  <div v-if="task.parentAttachments && task.parentAttachments.length > 0" class="pt-0.5">
+                    <button @click="viewParentTaskAttachments(task)" class="px-2 py-0.5 bg-indigo-100 hover:bg-indigo-200 text-indigo-800 rounded font-black text-[10px] flex items-center space-x-1">
+                      <span>📎</span>
+                      <span>家长附件 ({{ task.parentAttachments.length }}个文件，点击查看)</span>
+                    </button>
                   </div>
                 </div>
               </div>
@@ -449,7 +445,6 @@
 
         <!-- 【视图 2：打卡月历】 -->
         <div v-if="activeTab === 'records'" class="h-full flex flex-col flex-1 glass-light rounded-2xl p-4 overflow-hidden shadow-sm border border-slate-200/80 space-y-3">
-          
           <div class="flex flex-wrap items-center justify-between gap-3 pb-2 border-b border-slate-200/80 flex-shrink-0">
             <div class="flex items-center space-x-2">
               <button @click="prevCalendarMonth" class="px-2.5 py-1 bg-white hover:bg-slate-100 border border-slate-200 rounded-lg text-xs font-black text-slate-700 transition">
@@ -565,28 +560,41 @@
           </div>
         </div>
 
-        <!-- 【视图 5：学生个人中心】 -->
+        <!-- 【视图 5：学生个人中心 (自选真实新闻与海量知识库)】 -->
         <div v-if="activeTab === 'profile'" class="h-full flex flex-col flex-1 glass-light rounded-2xl p-4 overflow-hidden shadow-sm border border-slate-200/80 space-y-3">
           
-          <!-- 每日自选新知 -->
+          <!-- 真实新闻与前沿知识黄金卡片 -->
           <div class="bg-gradient-to-r from-amber-50 via-indigo-50 to-purple-50 border border-indigo-100 rounded-2xl p-3.5 flex-shrink-0 shadow-xs space-y-2">
             <div class="flex flex-wrap items-center justify-between gap-2">
               <div class="flex items-center space-x-2">
-                <span class="text-xl">💡</span>
-                <span class="text-sm font-black text-slate-800">今日探索新知 · 每日科学小锦囊</span>
+                <span class="text-xl">🛰️</span>
+                <span class="text-sm font-black text-slate-900">真实时事新闻与硬核新知</span>
                 <span class="text-[11px] bg-white text-indigo-700 font-bold px-2 py-0.5 rounded-full border border-indigo-200">
-                  当前探索：{{ currentTopicMeta.name }}
+                  当前领域：{{ currentTopicMeta.name }}
                 </span>
               </div>
 
-              <button @click="nextKnowledgeFact" class="px-2.5 py-1 bg-white hover:bg-slate-50 border border-indigo-200 rounded-lg text-xs font-black text-indigo-700 transition flex items-center space-x-1 shadow-2xs">
-                <span>🎲</span>
-                <span>换一条新知</span>
-              </button>
+              <!-- 操作按钮：AI 实时抓取真实新闻 + 本地词库随机轮换 -->
+              <div class="flex items-center space-x-2">
+                <button 
+                  :disabled="isFetchingAINews"
+                  @click="fetchAINewsFact" 
+                  class="px-2.5 py-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-black transition flex items-center space-x-1 shadow-xs disabled:opacity-50"
+                  title="调用硅基流动AI大模型生成最新真实新闻"
+                >
+                  <span>{{ isFetchingAINews ? '📡 抓取中...' : '📡 实时获取真实新闻' }}</span>
+                </button>
+
+                <button @click="nextKnowledgeFact" class="px-2.5 py-1 bg-white hover:bg-slate-50 border border-indigo-200 rounded-lg text-xs font-black text-indigo-700 transition flex items-center space-x-1 shadow-2xs">
+                  <span>🎲</span>
+                  <span>换一条</span>
+                </button>
+              </div>
             </div>
 
+            <!-- 9 大自选领域选择胶囊 -->
             <div class="flex flex-wrap items-center gap-1.5 pt-1">
-              <span class="text-xs text-slate-500 font-bold mr-1">感兴趣的领域：</span>
+              <span class="text-xs text-slate-500 font-bold mr-1">选择兴趣领域：</span>
               <button 
                 v-for="topic in knowledgeTopics" 
                 :key="topic.id" 
@@ -598,15 +606,17 @@
               </button>
             </div>
 
-            <div class="p-3 bg-white/90 rounded-xl border border-indigo-100/80 text-xs md:text-sm text-slate-800 font-bold leading-relaxed flex items-start space-x-2">
-              <span class="text-base text-amber-500 flex-shrink-0">✨</span>
-              <span>{{ currentDailyKnowledgeFact }}</span>
+            <!-- 详细新闻与知识正文 -->
+            <div class="p-3 bg-white/95 rounded-xl border border-indigo-100 text-xs md:text-sm text-slate-800 font-bold leading-relaxed flex items-start space-x-2">
+              <span class="text-base text-amber-500 flex-shrink-0">📰</span>
+              <span class="whitespace-pre-line">{{ currentDailyKnowledgeFact }}</span>
             </div>
           </div>
 
-          <!-- 成长记录双栏 -->
+          <!-- 成长记录双栏排盘 -->
           <div class="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-3.5 overflow-hidden">
             
+            <!-- 左侧：小测成绩单 -->
             <div class="flex flex-col border border-slate-200 rounded-xl p-3 bg-white overflow-hidden shadow-2xs">
               <div class="flex justify-between items-center mb-2 flex-shrink-0">
                 <span class="text-xs font-black text-slate-700 flex items-center space-x-1">
@@ -654,6 +664,7 @@
               </div>
             </div>
 
+            <!-- 右侧：积分流水明细 -->
             <div class="flex flex-col border border-slate-200 rounded-xl p-3 bg-white overflow-hidden shadow-2xs">
               <div class="flex justify-between items-center mb-2 flex-shrink-0">
                 <span class="text-xs font-black text-slate-700 flex items-center space-x-1">
@@ -694,6 +705,67 @@
     <!-- ========================================================================= -->
     <!-- 模态弹窗系统 -->
     <!-- ========================================================================= -->
+
+    <!-- 【弹窗：家长布置临时任务 (支持上传照片/录音/视频/文档附件)】 -->
+    <div v-if="showAssignModal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+      <div class="bg-white rounded-3xl max-w-md w-full p-5 space-y-3.5 shadow-2xl border border-slate-200">
+        <div class="flex justify-between items-center border-b border-slate-100 pb-2">
+          <h3 class="text-sm font-black text-slate-800">➕ 布置今日临时任务 (支持附带参考资料)</h3>
+          <button @click="showAssignModal = false" class="text-slate-400 hover:text-slate-600 font-bold">✕</button>
+        </div>
+
+        <div class="space-y-2.5 text-xs">
+          <div>
+            <label class="block font-bold text-slate-600 mb-1">指派给：</label>
+            <select v-model="newTask.targetStudentId" class="w-full border rounded-lg p-2 font-black text-slate-800 outline-none">
+              <option value="ALL">📢 全体学生 (诺、威、奕、黛)</option>
+              <option v-for="st in students" :key="st.id" :value="st.id">{{ st.avatar }} {{ st.name }}</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-bold text-slate-600 mb-1">任务名称：</label>
+            <input v-model="newTask.title" placeholder="如：背诵古诗、跳绳800次、完成附带试卷第2页" class="w-full border rounded-lg p-2 font-bold outline-none">
+          </div>
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="block font-bold text-slate-600 mb-1">建议用时：</label>
+              <input v-model="newTask.duration" class="w-full border rounded-lg p-2 font-bold outline-none">
+            </div>
+            <div>
+              <label class="block font-bold text-slate-600 mb-1">奖励积分：</label>
+              <input v-model.number="newTask.points" type="number" class="w-full border rounded-lg p-2 font-black text-amber-700 outline-none">
+            </div>
+          </div>
+          <div>
+            <label class="block font-bold text-slate-600 mb-1">验收标准：</label>
+            <input v-model="newTask.criteria" class="w-full border rounded-lg p-2 font-bold outline-none">
+          </div>
+
+          <!-- 家长上传附件入口 -->
+          <div>
+            <label class="block font-bold text-slate-600 mb-1">附加资料文件 (题目照片/示范录音/视频等，可多选)：</label>
+            <label class="block p-3 border-2 border-dashed border-slate-300 hover:border-indigo-500 rounded-xl text-center cursor-pointer bg-slate-50 transition">
+              <span class="text-xl">📎</span>
+              <div class="text-xs font-black text-slate-700 mt-0.5">点击多选上传任务附件</div>
+              <input type="file" multiple @change="handleParentTaskFiles" class="hidden">
+            </label>
+
+            <!-- 已选家长附件列表 -->
+            <div v-if="parentTaskFiles.length > 0" class="mt-2 max-h-28 overflow-y-auto space-y-1.5 custom-scrollbar">
+              <div v-for="(file, idx) in parentTaskFiles" :key="idx" class="p-1.5 bg-slate-50 border rounded-lg flex items-center justify-between text-[11px]">
+                <span class="truncate flex-1 font-bold">{{ file.name }}</span>
+                <button @click="parentTaskFiles.splice(idx, 1)" class="text-rose-500 font-black ml-2">✕</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex space-x-2 pt-2">
+          <button @click="showAssignModal = false" class="flex-1 py-2 border rounded-xl text-xs font-bold text-slate-500">取消</button>
+          <button @click="confirmAssignTask" class="flex-1 py-2 bg-slate-900 text-white rounded-xl text-xs font-black">立即下发任务</button>
+        </div>
+      </div>
+    </div>
 
     <!-- 【弹窗：小测成绩与心得登记】 -->
     <div v-if="showQuizModal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 z-50">
@@ -893,13 +965,13 @@
       </div>
     </div>
 
-    <!-- 【弹窗：家长审阅多附件】 -->
+    <!-- 【弹窗：附件审阅 (支持查看学生打卡附件及家长派发的任务附件)】 -->
     <div v-if="showAttachmentViewer" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 z-50">
       <div class="bg-white rounded-3xl max-w-xl w-full p-6 space-y-4 shadow-2xl border border-slate-200 max-h-[85vh] flex flex-col">
         <div class="flex justify-between items-center border-b border-slate-100 pb-2 flex-shrink-0">
           <div>
             <h3 class="text-base font-black text-slate-900">📁 附件审阅：{{ viewingTaskTitle }}</h3>
-            <p class="text-xs text-slate-500">学生：{{ viewingStudentName }} (按 ESC 退出)</p>
+            <p class="text-xs text-slate-500">{{ viewingStudentName }}</p>
           </div>
           <button @click="showAttachmentViewer = false" class="text-slate-400 hover:text-slate-600 font-bold text-lg">✕</button>
         </div>
@@ -921,51 +993,13 @@
               <video :src="att.dataUrl" controls class="max-h-72 w-full rounded-lg bg-black"></video>
             </div>
             <div v-else class="text-center py-2">
-              <a :href="att.dataUrl" :download="att.name" class="text-xs text-indigo-600 font-black hover:underline">点击下载附件</a>
+              <a :href="att.dataUrl" :download="att.name" class="text-xs text-indigo-600 font-black hover:underline">点击下载查看附件</a>
             </div>
           </div>
         </div>
 
         <div class="pt-2 text-right flex-shrink-0">
           <button @click="showAttachmentViewer = false" class="px-5 py-2 bg-slate-900 text-white rounded-xl text-xs font-bold">关闭</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- 【弹窗：布置临时任务】 -->
-    <div v-if="showAssignModal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-      <div class="bg-white rounded-3xl max-w-sm w-full p-5 space-y-3 shadow-2xl border border-slate-200">
-        <h3 class="text-sm font-black text-slate-800">➕ 布置今日临时任务</h3>
-        <div class="space-y-2.5 text-xs">
-          <div>
-            <label class="block font-bold text-slate-600 mb-1">指派给：</label>
-            <select v-model="newTask.targetStudentId" class="w-full border rounded-lg p-2 font-black text-slate-800">
-              <option value="ALL">📢 全体学生 (诺、威、奕、黛)</option>
-              <option v-for="st in students" :key="st.id" :value="st.id">{{ st.avatar }} {{ st.name }}</option>
-            </select>
-          </div>
-          <div>
-            <label class="block font-bold text-slate-600 mb-1">任务名称：</label>
-            <input v-model="newTask.title" placeholder="如：背诵古诗、整理房间、跳绳打卡" class="w-full border rounded-lg p-2 font-bold">
-          </div>
-          <div class="grid grid-cols-2 gap-2">
-            <div>
-              <label class="block font-bold text-slate-600 mb-1">用时：</label>
-              <input v-model="newTask.duration" class="w-full border rounded-lg p-2 font-bold">
-            </div>
-            <div>
-              <label class="block font-bold text-slate-600 mb-1">奖励积分：</label>
-              <input v-model.number="newTask.points" type="number" class="w-full border rounded-lg p-2 font-black text-amber-700">
-            </div>
-          </div>
-          <div>
-            <label class="block font-bold text-slate-600 mb-1">验收标准：</label>
-            <input v-model="newTask.criteria" class="w-full border rounded-lg p-2 font-bold">
-          </div>
-        </div>
-        <div class="flex space-x-2 pt-2">
-          <button @click="showAssignModal = false" class="flex-1 py-2 border rounded-xl text-xs font-bold text-slate-500">取消</button>
-          <button @click="confirmAssignTask" class="flex-1 py-2 bg-slate-900 text-white rounded-xl text-xs font-black">立即下发</button>
         </div>
       </div>
     </div>
@@ -1048,63 +1082,81 @@
         const viewingTaskTitle = ref('');
         const viewingStudentName = ref('');
 
+        const isFetchingAINews = ref(false);
+        const dynamicAINewsText = ref('');
+
         // 月历状态
         const selectedCalYear = ref(2026);
         const selectedCalMonth = ref(9);
 
-        // 7 大趣味知识库
+        // 9 大真实新闻与权威科学知识领域
         const knowledgeTopics = [
-          { id: 'astronomy', name: '宇宙天文', icon: '🌌' },
-          { id: 'dinosaurs', name: '恐龙史前', icon: '🦖' },
-          { id: 'nature', name: '神奇动植物', icon: '🌿' },
-          { id: 'tech', name: '未来黑科技', icon: '🤖' },
-          { id: 'history', name: '趣味历史', icon: '📜' },
-          { id: 'body', name: '人体大冒险', icon: '🧠' },
-          { id: 'geography', name: '地理奇观', icon: '🌋' }
+          { id: 'news', name: '真实新闻', icon: '📰' },
+          { id: 'military', name: '国防军事', icon: '🪖' },
+          { id: 'tech', name: '前沿科技', icon: '🔬' },
+          { id: 'history', name: '华夏历史', icon: '📜' },
+          { id: 'lego', name: '机械积木', icon: '🧱' },
+          { id: 'literature', name: '经典文学', icon: '📚' },
+          { id: 'astronomy', name: '宇宙太空', icon: '🌌' },
+          { id: 'dinosaurs', name: '史前恐龙', icon: '🦖' },
+          { id: 'nature', name: '神奇自然', icon: '🌿' }
         ];
 
+        // 真实硬核知识与大事件库
         const knowledgeFacts = {
-          astronomy: [
-            "太阳系里最大的火山在火星上，叫奥林匹斯山，高约21公里，比珠穆朗玛峰还要高出两倍多！",
-            "金星上的一天比金星上的一年还要漫长！它自转一周需要243个地球日，但公转只要225天。",
-            "宇宙中有一颗完全由钻石构成的星球，代号巨蟹座55e，表面覆盖着厚厚的石墨与钻石！",
-            "光从太阳表面出发，到达地球需要大约8分20秒。我们看到的阳光其实是8分钟前的！"
+          news: [
+            "【国产大飞机突破】我国自主研制的国产C919大型客机已投入规模化商业航线运行，突破了反推装置、复合材料机翼等多项核心航空工业卡脖子难题！",
+            "【跨海世纪工程】深中通道全线通车！拥有世界上最长、最宽的海底钢壳混凝土沉管隧道，把深圳到中山的车程从2小时彻底压缩到30分钟以内。",
+            "【南极新科考站】我国第5个南极考察站——秦岭站正式建成开站，位于罗斯海区域，能顶住零下40摄氏度与17级以上极地超强暴风雪的极端考验！",
+            "【月背采样壮举】嫦娥六号探测器在月球背面艾特肯盆地成功挖取人类历史上第一份月背土壤样品并安全送回地球，开创了世界深空探测新纪录！"
           ],
-          dinosaurs: [
-            "霸王龙的咬合力高达将近6吨，相当于两只成年大象同时踩在猎物身上！",
-            "其实现代的鸟类是恐龙的直系后代！鸡和麻雀在演化树上都是小型兽脚类恐龙的亲戚。",
-            "腕龙的鼻孔长在头顶正上方，它的脖子长达9米以上，能轻松吃到高树顶端的树叶。",
-            "恐龙家族统治了地球长达1.6亿年，而人类的文明史至今只有几千年。"
-          ],
-          nature: [
-            "雨燕几乎一生都在天空中飞翔，它们甚至可以在空中滑翔睡觉、进食和喝水！",
-            "水母没有心脏、没有大脑、也没有骨头，身体的95%以上都是由水组成的！",
-            "树木之间会通过地下的菌丝网络互相传递养分和危险警报，就像大自然的'地下互联网'一样。",
-            "北极熊的毛其实不是白色的，而是无色透明的中空管子，通过折射光线看起来像雪一样白！"
+          military: [
+            "【国之重刃福建舰】我国第三艘航母福建舰采用世界领先的电磁弹射系统，战机可在数秒内加速离舰升空，弹射效率与出动频次超越传统蒸汽弹射数倍！",
+            "【空中幽灵歼-20】歼-20威龙战斗机具备卓越的超音速巡航与隐身能力，其DSI超音速进气道与鸭翼气动布局是世界空气动力学顶级工程杰作。",
+            "【战略胖钮运-20】运-20大型运输机拥有66吨的最大载重能力，能在恶劣野战简易跑道起降，是我国陆空联合作战与人道主义救援的战略投送中坚。",
+            "【深蓝利剑055大驱】055型万吨导弹驱逐舰配备112单元大型通用垂直发射系统和双波段相控阵雷达，防空、反潜、反导综合战力位居世界一流。"
           ],
           tech: [
-            "计算机术语里的'Bug'（程序缺陷），最初真的是一只飞进早期大型计算机电路里导致短路的飞蛾！",
-            "如果把一块方糖大小的中子星物质带到地球上，它的重量会超过10亿吨！",
-            "光纤通信之所以极快，是因为信息被编码成激光脉冲，以光速在极细的玻璃纤维里不断全反射传输。",
-            "第一台现代电子计算机ENIAC重达30吨，占地170平方米，但算力还不如你现在手里的一块智能手表！"
+            "【量子算力奇迹】我国科学家研制的'祖冲之号'超导量子计算原型机与'九章'光量子计算原型机，处理特定复杂算法的速度比世界最强的经典超级计算机快数万倍！",
+            "【深海极限挑战】'奋斗者号'全海深载人潜水器在马里亚纳海沟坐底深度达10909米，承受的深海压强超过1100个大气压，相当于一头成年大象踩在指甲盖上！",
+            "【人形机器人新进化】现代双足人形机器人已融合端到端大模型大脑，具备毫米级触觉感知与动态平衡控制，能自主在工厂分拣工件并在崎岖路面跑步翻滚。",
+            "【核聚变人造太阳】中国环流三号全超导托卡马克装置（EAST）成功实现高约束模式等离子体运行，正在探索模仿太阳内部核聚变反应，为人类寻找无限清洁能源。"
           ],
           history: [
-            "中国古代长城城墙使用的灰浆里加入了熟糯米汁，这种'糯米砂浆'非常坚固，历经千年风雨不倒！",
-            "古罗马人曾经用尿液洗衣服，因为尿液中的氨水具有天然的强力去污和漂白作用！",
-            "指南针最早在中国被称为'司南'，它是用天然磁石打磨成勺子的形状，底盘刻有八卦与天干地支。",
-            "造纸术发明前，古人写字主要写在厚重的竹简上，所谓'学富五车'最初形容竹简拉了满满五车。"
+            "【三星堆青铜奇迹】三星堆遗址出土的高达3.96米的青铜神树与轻如蝉翼的黄金面具，实证了3000多年前古蜀文明与中原商王朝密切交融的多元一体格局。",
+            "【长城千年不倒之谜】中国古代筑造万里长城和大型古城墙时，在石灰砂浆中特意加入了熟糯米汁，形成的复合凝胶具有极强的韧性与抗震防水力！",
+            "【活字印刷术】北宋毕昇发明的泥活字印刷术，将每个汉字做成独立的胶泥字模烧硬，排版灵活快捷，比欧洲古登堡金属活字印刷早了整整400多年。",
+            "【良渚古城水利系统】5000多年前的良渚先民就建造了世界上最早的大型水坝系统，利用山谷高低落差防洪蓄水灌溉，其工程土方量超过1000万立方米。"
           ],
-          body: [
-            "人类的大脑只占体重的约2%，但在思考时却要消耗全身将近20%的氧气与热量！",
-            "如果你把人体全身的血管连接起来，总长度能绕地球赤道两圈半还要多！",
-            "人的胃黏膜每隔3到4天就会全套自我更新一次，否则胃酸连胃壁自己都会腐蚀掉！",
-            "打喷嚏时，从鼻腔喷出的气流速度最高可以达到每小时160公里，相当于高铁的速度！"
+          lego: [
+            "【齿轮传动比奥秘】在机械积木中，大齿轮带动小齿轮叫'增速'（转得快但力气小），小齿轮带动大齿轮叫'减速'（转得慢但扭矩力气巨大），汽车变速箱正是这一原理！",
+            "【差速器的神级机械】汽车转弯时外侧车轮路程长、内侧短。积木机械组里的差速器齿轮箱巧妙地允许左右车轮以不同转速旋转，否则汽车拐弯时轮胎会直接严重打滑！",
+            "【平行四边形悬挂】利用四连杆机构的几何不变性，在机械臂和汽车独立悬挂中，能确保车轮或夹爪在剧烈颠簸中始终与地面保持垂直贴合！",
+            "【榫卯与乐高抓力】乐高积木凸起与管道公差严格控制在0.002毫米以内，其形成的'离合力'与我国古代木结构古建的榫卯受力有异曲同工之妙。"
           ],
-          geography: [
-            "死海的含盐量高达30%以上，因为浮力巨大，任何人躺在水面上都会自然浮起，根本不会下沉！",
-            "南极洲虽然被冰雪覆盖，但其实它是地球上降水最少、空气最干燥的'白色沙漠'！",
-            "世界上最深的马里亚纳海沟深达11034米，如果把珠穆朗玛峰放进去，峰顶距离海面还有2000多米！",
-            "贝加尔湖是世界上最古老、最深的淡水湖，它储藏了全球地表未冻结淡水总量的五分之一！"
+          literature: [
+            "【李白的地理漫游】诗仙李白一生足迹踏遍大半个中国，走过今天的18个省份、206座州县，著名的《早发白帝城》是他获赦后顺江而下一日行千里时写下的狂喜之作。",
+            "【四大名著原名探微】《红楼梦》最初的名字叫做《石头记》，曹雪芹以一块通灵宝玉的下凡历劫为线索，写尽了世态炎凉与人间真情。",
+            "【空城计的历史真相】《三国演义》中诸葛亮城楼抚琴退司马懿是罗贯中的艺术渲染，历史上真正的空城计原型主角其实是常胜将军赵云（汉水之战）！",
+            "【古人怎么形容颜色】古人不说天蓝色，而叫'天青'（雨过天青云破处）；不说浅绿色，而叫'东方既白'；不说深红色，而叫'胭脂'或'朱砂'。"
+          ],
+          astronomy: [
+            "【旅行者1号星际远征】1977年发射的旅行者1号探测器已飞出太阳系日球层顶，距离地球超过240亿公里，成为人类制造的第一个飞入星际空间的人造物体！",
+            "【韦伯太空望远镜】部署在距离地球150万公里拉格朗日L2点的韦伯望远镜，能捕捉到宇宙大爆炸后第一批形成的星系微弱红外光芒！",
+            "【黑洞的第一张照片】人类通过全球8台射电望远镜组成的'事件视界望远镜'，成功拍摄到了M87星系中心超大质量黑洞的真实光环照片！",
+            "【土星光环的寿命】土星壮观的光环主要由冰块和岩石碎片组成，由于引力作用，光环物质正在以每秒数百吨的速度掉入土星大气层，几亿年后光环将彻底消失。"
+          ],
+          dinosaurs: [
+            "【恐龙真正的叫声】古生物学家通过对副栉龙骨质头冠的CT扫描与流体力学模拟发现，它们发出的不是怒吼，而是类似管乐器般低沉、能传数十里的低频共鸣！",
+            "【带羽毛的霸王龙近亲】我国辽西热河生物群发现了世界第一只带羽毛的恐龙化石中华龙鸟，以及巨大的华丽羽王龙，彻底颠覆了恐龙是光秃秃爬行动物的认知！",
+            "【棘龙是水上霸主】棘龙是已知最长的大型肉食恐龙，其尾巴像鳄鱼一样扁平，骨骼密度极高，主要生活在远古河流中捕捉巨型硬骨鱼类。",
+            "【陨石撞击的一天】6600万年前，一颗直径约10公里的巨型小行星撞击墨西哥尤卡坦半岛，引发全球性海啸、森林大火与尘埃遮天蔽日的核冬天，导致非鸟恐龙全部灭绝。"
+          ],
+          nature: [
+            "【鸟类的地磁导航】候鸟在长途迁徙中不会迷路，是因为它们的眼睛视网膜中拥有一种叫做'隐花色素'的量子受体蛋白，可以直接'看'到地球磁场的磁力线！",
+            "【蘑菇的地下互联网】森林地下的真菌菌丝网络延伸数十公里，大树可以通过这套网络向幼苗输送糖分养料，甚至在遭受害虫袭击时发出化学预警信号。",
+            "【大王乌贼的巨眼】深海大王乌贼的眼睛直径可达30厘米，如篮球般巨大，能在幽暗无光的千米深海中感知抹香鲸游动扰动发光水母所产生的微弱荧光！",
+            "【仿生学壁虎脚】壁虎之所以能倒挂在光滑玻璃上跑步，是因为脚趾长着数百万根微纳米级刚毛，利用微观分子间的'范德华力'产生牢不可破的吸附。"
           ]
         };
 
@@ -1125,9 +1177,9 @@
         });
 
         const students = ref([
-          { id: 'nuo', name: '诺', grade: '小学5年级', points: 8, avatar: '🐱', pin: '1234', favoriteTopic: 'astronomy' },
-          { id: 'wei', name: '威', grade: '小学4年级', points: 24, avatar: '🦁', pin: '1234', favoriteTopic: 'dinosaurs' },
-          { id: 'yi',  name: '奕', grade: '小学2年级', points: 15, avatar: '🐼', pin: '1234', favoriteTopic: 'nature' },
+          { id: 'nuo', name: '诺', grade: '小学5年级', points: 8, avatar: '🐱', pin: '1234', favoriteTopic: 'military' },
+          { id: 'wei', name: '威', grade: '小学4年级', points: 24, avatar: '🦁', pin: '1234', favoriteTopic: 'news' },
+          { id: 'yi',  name: '奕', grade: '小学2年级', points: 15, avatar: '🐼', pin: '1234', favoriteTopic: 'lego' },
           { id: 'dai', name: '黛', grade: '小学6年级', points: 42, avatar: '🔭', pin: '1234', favoriteTopic: 'tech' }
         ]);
         const currentStudentId = ref('nuo');
@@ -1144,7 +1196,7 @@
           reflection: ''
         });
 
-        // 基础 15 项任务：全面装配小学生超爱的大号趣味图标
+        // 基础 15 项任务
         const baseTasks = ref([
           { id: 1, code: '01', category: '第一优先', icon: '🎒', title: '登记并完成学校家庭作业', duration: '35分钟', points: 3, criteria: '语数英要求 + 困难处理记录' },
           { id: 2, code: '02', category: '语文', icon: '🔍', title: '每日新闻阅读与综合题', duration: '30分钟', points: 3, criteria: '真实计时≥30分钟 + 问答' },
@@ -1164,7 +1216,8 @@
         ]);
 
         const customTasks = ref([]);
-        const newTask = ref({ targetStudentId: 'ALL', title: '', duration: '15分钟', points: 3, criteria: '家长抽查 / 拍照确认' });
+        const parentTaskFiles = ref([]);
+        const newTask = ref({ targetStudentId: 'ALL', title: '', duration: '15分钟', points: 3, criteria: '家长抽查 / 拍照录像' });
 
         const checkins = ref({});
         const errors = ref([]);
@@ -1175,7 +1228,6 @@
           { name: '自选图书/心愿盲盒', desc: '50元以内自选物品', cost: 80 }
         ];
 
-        // 写入积分流水账
         const logPointTransaction = (studentId, title, change, newBalance) => {
           pointLogs.value.unshift({
             id: 'log_' + Date.now(),
@@ -1183,7 +1235,7 @@
             title,
             change,
             balance: newBalance,
-            time: '2026-09-04 13:01'
+            time: '2026-09-04 13:05'
           });
         };
 
@@ -1191,27 +1243,105 @@
           syncToCloud();
         };
 
+        // 兴趣领域选择
         const selectStudentTopic = (topicId) => {
           currentStudent.value.favoriteTopic = topicId;
           currentKnowledgeIndex.value = 0;
+          dynamicAINewsText.value = '';
           syncToCloud();
         };
 
         const currentTopicMeta = computed(() => {
-          const tId = currentStudent.value.favoriteTopic || 'astronomy';
+          const tId = currentStudent.value.favoriteTopic || 'news';
           return knowledgeTopics.find(t => t.id === tId) || knowledgeTopics[0];
         });
 
+        // 每日新闻与知识展示 (优先展示 AI 抓取的最新真实新闻，若无则轮换真实事实池)
         const currentDailyKnowledgeFact = computed(() => {
-          const tId = currentStudent.value.favoriteTopic || 'astronomy';
-          const list = knowledgeFacts[tId] || knowledgeFacts.astronomy;
+          if (dynamicAINewsText.value) return dynamicAINewsText.value;
+          const tId = currentStudent.value.favoriteTopic || 'news';
+          const list = knowledgeFacts[tId] || knowledgeFacts.news;
           return list[currentKnowledgeIndex.value % list.length];
         });
 
         const nextKnowledgeFact = () => {
+          dynamicAINewsText.value = '';
           currentKnowledgeIndex.value++;
         };
 
+        // 通过 AI 实时抓取真实时事/科普
+        const fetchAINewsFact = async () => {
+          if (!config.value.siliconKey) {
+            alert('请先在右上角系统设置 ⚙️ 中填入硅基流动 AI 密钥！');
+            showSettings.value = true;
+            return;
+          }
+          isFetchingAINews.value = true;
+          try {
+            const res = await window.StudyAI.fetchRealTopicNews(config.value.siliconKey, currentTopicMeta.value.name);
+            dynamicAINewsText.value = res;
+          } catch (e) {
+            alert('AI 联网获取新闻超时，已切换至本地权威真实知识库！');
+            nextKnowledgeFact();
+          } finally {
+            isFetchingAINews.value = false;
+          }
+        };
+
+        // 家长上传临时任务附件
+        const handleParentTaskFiles = (e) => {
+          const files = Array.from(e.target.files);
+          files.forEach(file => {
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+              parentTaskFiles.value.push({
+                name: file.name,
+                type: file.type,
+                size: file.size,
+                dataUrl: ev.target.result
+              });
+            };
+            reader.readAsDataURL(file);
+          });
+        };
+
+        // 家长确认派发临时任务
+        const openAssignModal = () => {
+          newTask.value.title = '';
+          parentTaskFiles.value = [];
+          showAssignModal.value = true;
+        };
+
+        const confirmAssignTask = () => {
+          if (!newTask.value.title.trim()) return alert('请输入任务名称！');
+          customTasks.value.push({
+            id: 'ct_' + Date.now(),
+            code: '加',
+            category: '临时任务',
+            icon: '⚡',
+            title: newTask.value.title.trim(),
+            duration: newTask.value.duration || '15分钟',
+            points: newTask.value.points || 3,
+            criteria: newTask.value.criteria || '家长抽查 / 拍照录像',
+            targetStudentId: newTask.value.targetStudentId,
+            isCustom: true,
+            parentAttachments: [...parentTaskFiles.value]
+          });
+          showAssignModal.value = false;
+          parentTaskFiles.value = [];
+          syncToCloud();
+          alert('临时任务（附带资料文件）已成功下发，各终端实时同步！');
+        };
+
+        // 学生查看家长附件
+        const viewParentTaskAttachments = (task) => {
+          viewingAttachments.value = task.parentAttachments || [];
+          viewingTaskTitle.value = task.title;
+          viewingStudentName.value = '家长派发的参考资料/题目';
+          showAttachmentViewer.value = true;
+        };
+
+        // 小测登记
         const openQuizModal = () => {
           newQuiz.value.title = '';
           newQuiz.value.score = null;
@@ -1288,7 +1418,7 @@
           const obj = getStudentCheckinObj(st.id);
           viewingAttachments.value = obj.attachments?.[tId] || [];
           viewingTaskTitle.value = getTaskTitle(tId);
-          viewingStudentName.value = st.name;
+          viewingStudentName.value = st.name + ' 提交的打卡凭据';
           showAttachmentViewer.value = true;
         };
 
@@ -1526,30 +1656,6 @@
           alert(`已为 ${targetPointStudent.value.name} ${delta > 0 ? '增加' : '扣除'} ${Math.abs(delta)} 积分！`);
         };
 
-        const openAssignModal = () => {
-          newTask.value.title = '';
-          showAssignModal.value = true;
-        };
-
-        const confirmAssignTask = () => {
-          if (!newTask.value.title.trim()) return alert('请输入任务名称！');
-          customTasks.value.push({
-            id: 'ct_' + Date.now(),
-            code: '加',
-            category: '临时加练',
-            icon: '⚡',
-            title: newTask.value.title.trim(),
-            duration: newTask.value.duration || '15分钟',
-            points: newTask.value.points || 3,
-            criteria: newTask.value.criteria || '家长抽查 / 拍照录像',
-            targetStudentId: newTask.value.targetStudentId,
-            isCustom: true
-          });
-          showAssignModal.value = false;
-          syncToCloud();
-          alert('任务下发成功，支持上传各类多媒体附件打卡！');
-        };
-
         const mathProblems = ref([]);
         const startMathDrill = () => {
           mathProblems.value = window.StudyMath.generateDrill(currentStudent.value.grade);
@@ -1660,7 +1766,6 @@
           return c;
         });
 
-        // 云同步
         const syncToCloud = async () => {
           await window.StudyDB.save(config.value.upstashUrl, config.value.upstashToken, {
             students: students.value,
@@ -1711,11 +1816,12 @@
           calMonthTotalDays, calMonthStartOffset, isToday, isPastDay,
           getSpecificDayDoneCount, isSpecificDayChecked, isSpecificDayPassed, calMonthFlowerCount,
           knowledgeTopics, selectStudentTopic, currentTopicMeta, currentDailyKnowledgeFact, nextKnowledgeFact,
+          isFetchingAINews, fetchAINewsFact,
           showSettings, showHomeworkModal, showMathModal, showAssignModal, showTaskSubmitModal, showPointModal, showAttachmentViewer, showQuizModal,
           currentActiveTask, targetPointStudent, customPointAmount, customPointReason, openPointAdjustModal, confirmCustomPointAdjust,
-          viewingAttachments, viewingTaskTitle, viewingStudentName,
+          viewingAttachments, viewingTaskTitle, viewingStudentName, viewParentTaskAttachments,
           config, students, currentStudentId, currentStudent,
-          baseTasks, customTasks, newTask, allTodayTasks, totalTaskCount,
+          baseTasks, customTasks, parentTaskFiles, handleParentTaskFiles, newTask, allTodayTasks, totalTaskCount,
           checkins, errors, shopItems, isHomeworkDone, todayDoneCount, todayPoints, isDone,
           studentErrors, getPendingErrorCount, getStudentDoneCount, isStudentHwDone, getStudentCheckinObj,
           hasAttachments, getTaskAttachmentCount, getStudentTotalAttachmentCount, viewTaskAttachments, getTaskTitle, getFileIcon,
