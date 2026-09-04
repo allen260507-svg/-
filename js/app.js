@@ -1,4 +1,4 @@
-// 家庭研学中枢 - Vue 3 主控制器 (集成所有任务交互与防白屏容错)
+// 家庭研学中枢 - Vue 3 主控制器 (完整收录14个任务弹窗、计时器、转盘、历史名次统计与防白屏)
 const { createApp, ref, computed, onMounted, onUnmounted } = Vue;
 
 const AudioEngine = {
@@ -57,6 +57,7 @@ try {
       const selectedAuthUser = ref(null);
       const enteredPin = ref('');
 
+      // 弹窗状态
       const showSettings = ref(false);
       const showAssignModal = ref(false);
       const showPointModal = ref(false);
@@ -140,15 +141,19 @@ try {
 
       const parentProfile = { id: 'parent', name: '家长总控', avatar: '🛡️', grade: '总控管理员', pin: '8888' };
       const currentStudent = computed(() => students.value.find(s => s.id === currentStudentId.value) || students.value[0]);
-      const rankedStudents = computed(() => [...students.value].sort((a, b) => b.points - a.points));
+      
+      // 奥运领奖台排序与历史名次统计
+      const rankedStudents = computed(() => {
+        return [...students.value].sort((a, b) => b.points - a.points);
+      });
 
-      // 任务 1
+      // 任务 1 表单
       const hwForm = ref({ yuwen: '', shuxue: '', yingyu: '', durationMinutes: 35, mode: 'direct' });
       const hwPhotos = ref([]);
       const hwGradingStatus = ref('');
       const isHwGrading = ref(false);
 
-      // 任务 2
+      // 任务 2 阅读
       const currentReadingArticle = computed(() => {
         const g = currentStudent.value.grade || '';
         const isJunior = g.includes('1年级') || g.includes('2年级');
@@ -160,17 +165,17 @@ try {
       const readingSubmitted = ref(false);
       const readingResultMsg = ref('');
 
-      // 任务 3
+      // 任务 3 练字
       const calligraphyData = computed(() => window.StudyData?.calligraphySets?.[0] || { chars: [] });
       const calligraphyPhotos = ref([]);
 
-      // 任务 4
+      // 任务 4 口算
       const mathProblems = ref([]);
       const mathSubmitted = ref(false);
       const mathPassed = ref(false);
       const mathScoreSummary = ref('');
 
-      // 任务 5
+      // 任务 5 奥数
       const currentOlympiadData = computed(() => {
         const g = currentStudent.value.grade || '';
         const bank = window.StudyData?.olympiadBank || {};
@@ -182,23 +187,23 @@ try {
       const olympiadStage = ref('problem');
       const olympiadPhotos = ref([]);
 
-      // 任务 6
+      // 任务 6 单词
       const todayWordPack = computed(() => window.StudyData?.englishWordPack || { words: [] });
       const dictationStep = ref(0);
       const dictationCountdown = ref(20);
       const dictationTimer = ref(null);
       const dictationPhotos = ref([]);
 
-      // 任务 9
+      // 任务 9 翻译
       const userTranslationInput = ref('');
       const translationSubmitted = ref(false);
 
-      // 任务 10
+      // 任务 10 阅读
       const englishReadingUserChoices = ref({});
       const englishReadingSubmitted = ref(false);
       const englishReadingScore = ref(0);
 
-      // 任务 11
+      // 任务 11 完形
       const clozeUserChoices = ref({});
       const clozeSubmitted = ref(false);
       const clozeScore = ref(0);
@@ -220,7 +225,7 @@ try {
       };
 
       const logPointTransaction = (studentId, title, change, newBalance) => {
-        pointLogs.value.unshift({ id: 'log_' + Date.now(), studentId, title, change, balance: newBalance, time: '2026-09-04 15:30' });
+        pointLogs.value.unshift({ id: 'log_' + Date.now(), studentId, title, change, balance: newBalance, time: '2026-09-04 15:45' });
       };
 
       const recordTaskDone = (taskId, files = [], extraMinutes = 0) => {
@@ -302,6 +307,7 @@ try {
         if (wheelTargetTask.value) openTaskInteractive(wheelTargetTask.value);
       };
 
+      // 任务点击路由分发
       const openTaskInteractive = (task) => {
         if (task.id === 1) openHomeworkModal();
         else if (task.id === 2) openReadingModal();
