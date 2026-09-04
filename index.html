@@ -143,7 +143,7 @@
               <span class="text-lg font-black text-slate-900">家长督导指挥中心</span>
               <span class="text-xs px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-800 font-black">总控模式</span>
             </div>
-            <p class="text-xs text-slate-500 font-bold mt-0.5">监控诺、威、奕、黛 4 位学生、查看密码、派发带附件的任务、自定义奖惩积分</p>
+            <p class="text-xs text-slate-500 font-bold mt-0.5">监控 4 位学生、查看密码、派发附带材料的任务、奖惩积分</p>
           </div>
         </div>
 
@@ -315,17 +315,13 @@
         </div>
       </header>
 
-      <!-- 主视图区域 -->
       <main class="flex-1 flex flex-col overflow-hidden">
         
         <!-- 【视图 1：今日任务】 -->
         <div v-if="activeTab === 'today'" class="h-full flex flex-col flex-1 overflow-hidden space-y-2.5">
           <div class="glass-light rounded-xl px-4 py-2.5 flex flex-wrap items-center justify-between gap-3 shadow-sm flex-shrink-0">
             <div class="flex items-center space-x-3 text-sm font-bold">
-              <span class="text-slate-900 font-black flex items-center space-x-1">
-                <span>🎯</span>
-                <span>今日研学任务</span>
-              </span>
+              <span class="text-slate-900 font-black">🎯 今日研学任务</span>
               <span class="text-slate-300">|</span>
               <span class="text-slate-700">
                 已达标 <strong class="text-slate-900 font-black text-base">{{ todayDoneCount }}</strong> / {{ totalTaskCount }} 项
@@ -335,7 +331,7 @@
             </div>
 
             <div 
-              class="px-3 py-1 rounded-full text-xs font-black flex items-center space-x-1.5 border transition"
+              class="px-3 py-1 rounded-full text-xs font-black border transition"
               :class="isHomeworkDone ? 'bg-emerald-50 text-emerald-800 border-emerald-300' : 'bg-amber-50 text-amber-900 border-amber-300 animate-pulse'"
             >
               <span>{{ isHomeworkDone ? '● 学校作业已过审 · 其余任务自由开放' : '🔒 强制铁律：学校作业必须先通过，其余科目锁定' }}</span>
@@ -445,6 +441,10 @@
               <button @click="nextCalendarMonth" class="px-2.5 py-1 bg-white hover:bg-slate-100 border border-slate-200 rounded-lg text-xs font-black text-slate-700 transition">
                 下个月 ▶
               </button>
+
+              <select v-model="selectedCalMonth" class="bg-white border border-slate-200 rounded-lg px-2 py-1 text-xs font-black text-slate-700 outline-none cursor-pointer">
+                <option v-for="m in 12" :key="m" :value="m">{{ m }}月</option>
+              </select>
             </div>
 
             <div class="flex items-center space-x-2 text-xs font-black">
@@ -529,12 +529,12 @@
           </div>
         </div>
 
-        <!-- 【视图 4：特权商城 (支持自由上架与删除商品)】 -->
+        <!-- 【视图 4：特权商城 (支持自由上架新商品、删除下架、云同步)】 -->
         <div v-if="activeTab === 'rewards'" class="h-full flex flex-col flex-1 glass-light rounded-2xl p-4 overflow-hidden shadow-sm border border-slate-200/80 space-y-3">
           <div class="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-slate-200/80 flex-shrink-0">
             <div>
               <h3 class="text-base font-black text-slate-900">🎁 现实特权兑换商店</h3>
-              <p class="text-xs text-slate-500 mt-0.5">认真赚取积分兑换属于你的专属特权！支持自主上架与下架商品。</p>
+              <p class="text-xs text-slate-500 mt-0.5">认真赚取积分兑换属于你的专属特权！支持家长与学生自定义上架新商品。</p>
             </div>
 
             <button 
@@ -547,6 +547,9 @@
           </div>
 
           <div class="flex-1 overflow-y-auto custom-scrollbar pr-1">
+            <div v-if="shopItems.length === 0" class="h-full flex items-center justify-center text-xs text-slate-400 font-bold py-10">
+              当前暂无特权商品，快点击右上角上架第一个奖励吧！
+            </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3.5">
               <div 
                 v-for="item in shopItems" 
@@ -591,7 +594,10 @@
                   {{ currentDailyArticle.category }}
                 </span>
               </div>
-              <div class="text-xs font-bold text-indigo-700">📅 2026年9月4日 权威发布</div>
+
+              <div class="text-xs font-bold text-indigo-700 flex items-center space-x-1">
+                <span>📅 2026年9月4日 权威发布</span>
+              </div>
             </div>
 
             <div class="flex flex-wrap items-center gap-1.5 pt-1">
@@ -705,99 +711,8 @@
     </div>
 
     <!-- ========================================================================= -->
-    <!-- 模态弹窗系统 (全量稳妥绑定，绝对零模板错误) -->
+    <!-- 模态弹窗系统 (全量稳妥绑定) -->
     <!-- ========================================================================= -->
-
-    <!-- 【弹窗：单日任务执行全景明细 (点击日历进入)】 -->
-    <div v-if="showDayDetailModal" class="fixed inset-0 bg-slate-950/75 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-      <div class="bg-white rounded-3xl max-w-2xl w-full p-6 space-y-4 shadow-2xl border border-slate-200 max-h-[85vh] flex flex-col">
-        <div class="flex justify-between items-center border-b border-slate-100 pb-3 flex-shrink-0">
-          <div>
-            <h3 class="text-base font-black text-slate-900">
-              {{ selectedDetailDateStr }} · {{ currentStudent.name }} 的研学全景明细
-            </h3>
-            <div class="flex items-center space-x-3 text-xs mt-1">
-              <span class="text-emerald-700 font-black">✓ 已完成：{{ currentDayDetailDoneTasks.length }} 项</span>
-              <span class="text-slate-300">|</span>
-              <span class="text-rose-600 font-black">✕ 未完成：{{ currentDayDetailUndoneTasks.length }} 项</span>
-            </div>
-          </div>
-          <button @click="showDayDetailModal = false" class="text-slate-400 hover:text-slate-600 font-bold text-lg">✕</button>
-        </div>
-
-        <div class="flex-1 overflow-y-auto space-y-2.5 custom-scrollbar pr-1">
-          <div 
-            v-for="task in allTodayTasks" 
-            :key="task.id"
-            :class="isDayTaskDone(task.id) ? 'bg-emerald-50/70 border-emerald-200' : 'bg-rose-50/40 border-rose-100'"
-            class="p-3 rounded-xl border flex items-center justify-between text-xs"
-          >
-            <div class="flex items-center space-x-2.5 min-w-0 flex-1 mr-2">
-              <span class="text-xl">{{ task.icon }}</span>
-              <div class="min-w-0 flex-1">
-                <div class="font-black text-slate-900 truncate">{{ task.title }}</div>
-                <div class="text-[11px] text-slate-400 truncate">{{ task.criteria }}</div>
-              </div>
-            </div>
-
-            <span v-if="isDayTaskDone(task.id)" class="px-2.5 py-1 bg-emerald-600 text-white rounded-lg font-black text-[11px]">
-              ✓ 已达标
-            </span>
-            <span v-else class="px-2.5 py-1 bg-rose-100 text-rose-700 rounded-lg font-black text-[11px]">
-              ✕ 未完成
-            </span>
-          </div>
-        </div>
-
-        <div class="pt-2 text-right flex-shrink-0 border-t border-slate-100">
-          <button @click="showDayDetailModal = false" class="px-5 py-2 bg-slate-900 text-white rounded-xl text-xs font-bold">关闭</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- 【弹窗：真实新闻深度图文研读大屏】 -->
-    <div v-if="showNewsDetailModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 z-50">
-      <div class="bg-white rounded-3xl max-w-2xl w-full p-6 space-y-4 shadow-2xl border border-slate-200 max-h-[85vh] flex flex-col">
-        <div class="flex justify-between items-start border-b border-slate-100 pb-3 flex-shrink-0">
-          <div class="space-y-1">
-            <span class="px-2 py-0.5 bg-indigo-100 text-indigo-800 text-xs font-black rounded">{{ currentSelectedNewsArticle.category }}</span>
-            <h3 class="text-lg md:text-xl font-black text-slate-900 leading-tight">
-              {{ currentSelectedNewsArticle.title }}
-            </h3>
-          </div>
-          <button @click="showNewsDetailModal = false" class="text-slate-400 hover:text-slate-600 font-bold text-xl ml-2">✕</button>
-        </div>
-
-        <div class="flex-1 overflow-y-auto space-y-3.5 text-xs md:text-sm text-slate-800 leading-relaxed custom-scrollbar pr-1">
-          <div class="p-3.5 bg-indigo-50/60 rounded-2xl border border-indigo-100 space-y-1">
-            <div class="font-black text-indigo-950 flex items-center space-x-1.5 text-sm">
-              <span>📰</span><span>核心事实背景与全貌</span>
-            </div>
-            <p class="text-slate-700 font-medium">{{ currentSelectedNewsArticle.fullContent.background }}</p>
-          </div>
-
-          <div class="p-3.5 bg-amber-50/60 rounded-2xl border border-amber-100 space-y-1">
-            <div class="font-black text-amber-950 flex items-center space-x-1.5 text-sm">
-              <span>🔬</span><span>硬核力学与科技原理探秘</span>
-            </div>
-            <p class="text-slate-700 font-medium">{{ currentSelectedNewsArticle.fullContent.principle }}</p>
-          </div>
-
-          <div class="p-3.5 bg-emerald-50/60 rounded-2xl border border-emerald-100 space-y-1">
-            <div class="font-black text-emerald-950 flex items-center space-x-1.5 text-sm">
-              <span>💡</span><span>小探险家思考题</span>
-            </div>
-            <p class="text-slate-700 font-medium">{{ currentSelectedNewsArticle.fullContent.thinking }}</p>
-          </div>
-        </div>
-
-        <div class="pt-2 text-right flex-shrink-0 border-t border-slate-100">
-          <button @click="showNewsDetailModal = false" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-black shadow-sm">
-            我已读懂，收获新知
-          </button>
-        </div>
-      </div>
-    </div>
 
     <!-- 【弹窗：上架新特权商品】 -->
     <div v-if="showAddShopItemModal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 z-50">
@@ -844,6 +759,97 @@
           <button @click="showAddShopItemModal = false" class="flex-1 py-2.5 border rounded-xl text-xs font-bold text-slate-600">取消</button>
           <button @click="confirmAddShopItem" class="flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-black shadow-md">
             确定上架商品
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 【弹窗：日历单日明细】 -->
+    <div v-if="showDayDetailModal" class="fixed inset-0 bg-slate-950/75 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+      <div class="bg-white rounded-3xl max-w-2xl w-full p-6 space-y-4 shadow-2xl border border-slate-200 max-h-[85vh] flex flex-col">
+        <div class="flex justify-between items-center border-b border-slate-100 pb-3 flex-shrink-0">
+          <div>
+            <h3 class="text-base font-black text-slate-900">
+              {{ selectedDetailDateStr }} · {{ currentStudent.name }} 的研学全景明细
+            </h3>
+            <div class="flex items-center space-x-3 text-xs mt-1">
+              <span class="text-emerald-700 font-black">✓ 已完成：{{ currentDayDetailDoneTasks.length }} 项</span>
+              <span class="text-slate-300">|</span>
+              <span class="text-rose-600 font-black">✕ 未完成：{{ currentDayDetailUndoneTasks.length }} 项</span>
+            </div>
+          </div>
+          <button @click="showDayDetailModal = false" class="text-slate-400 hover:text-slate-600 font-bold text-lg">✕</button>
+        </div>
+
+        <div class="flex-1 overflow-y-auto space-y-2.5 custom-scrollbar pr-1">
+          <div 
+            v-for="task in allTodayTasks" 
+            :key="task.id"
+            :class="isDayTaskDone(task.id) ? 'bg-emerald-50/70 border-emerald-200' : 'bg-rose-50/40 border-rose-100'"
+            class="p-3 rounded-xl border flex items-center justify-between text-xs"
+          >
+            <div class="flex items-center space-x-2.5 min-w-0 flex-1 mr-2">
+              <span class="text-xl">{{ task.icon }}</span>
+              <div class="min-w-0 flex-1">
+                <div class="font-black text-slate-900 truncate">{{ task.title }}</div>
+                <div class="text-[11px] text-slate-400 truncate">{{ task.criteria }}</div>
+              </div>
+            </div>
+
+            <span v-if="isDayTaskDone(task.id)" class="px-2.5 py-1 bg-emerald-600 text-white rounded-lg font-black text-[11px]">
+              ✓ 已达标
+            </span>
+            <span v-else class="px-2.5 py-1 bg-rose-100 text-rose-700 rounded-lg font-black text-[11px]">
+              ✕ 未完成
+            </span>
+          </div>
+        </div>
+
+        <div class="pt-2 text-right flex-shrink-0 border-t border-slate-100">
+          <button @click="showDayDetailModal = false" class="px-5 py-2 bg-slate-900 text-white rounded-xl text-xs font-bold">关闭</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 【弹窗：真实新闻深度研读大屏】 -->
+    <div v-if="showNewsDetailModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 z-50">
+      <div class="bg-white rounded-3xl max-w-2xl w-full p-6 space-y-4 shadow-2xl border border-slate-200 max-h-[85vh] flex flex-col">
+        <div class="flex justify-between items-start border-b border-slate-100 pb-3 flex-shrink-0">
+          <div class="space-y-1">
+            <span class="px-2 py-0.5 bg-indigo-100 text-indigo-800 text-xs font-black rounded">{{ currentSelectedNewsArticle.category }}</span>
+            <h3 class="text-lg md:text-xl font-black text-slate-900 leading-tight">
+              {{ currentSelectedNewsArticle.title }}
+            </h3>
+          </div>
+          <button @click="showNewsDetailModal = false" class="text-slate-400 hover:text-slate-600 font-bold text-xl ml-2">✕</button>
+        </div>
+
+        <div class="flex-1 overflow-y-auto space-y-3.5 text-xs md:text-sm text-slate-800 leading-relaxed custom-scrollbar pr-1">
+          <div class="p-3.5 bg-indigo-50/60 rounded-2xl border border-indigo-100 space-y-1">
+            <div class="font-black text-indigo-950 flex items-center space-x-1.5 text-sm">
+              <span>📰</span><span>核心事实背景与全貌</span>
+            </div>
+            <p class="text-slate-700 font-medium">{{ currentSelectedNewsArticle.fullContent.background }}</p>
+          </div>
+
+          <div class="p-3.5 bg-amber-50/60 rounded-2xl border border-amber-100 space-y-1">
+            <div class="font-black text-amber-950 flex items-center space-x-1.5 text-sm">
+              <span>🔬</span><span>硬核力学与科技原理探秘</span>
+            </div>
+            <p class="text-slate-700 font-medium">{{ currentSelectedNewsArticle.fullContent.principle }}</p>
+          </div>
+
+          <div class="p-3.5 bg-emerald-50/60 rounded-2xl border border-emerald-100 space-y-1">
+            <div class="font-black text-emerald-950 flex items-center space-x-1.5 text-sm">
+              <span>💡</span><span>小探险家思考题</span>
+            </div>
+            <p class="text-slate-700 font-medium">{{ currentSelectedNewsArticle.fullContent.thinking }}</p>
+          </div>
+        </div>
+
+        <div class="pt-2 text-right flex-shrink-0 border-t border-slate-100">
+          <button @click="showNewsDetailModal = false" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-black shadow-sm">
+            我已读懂，收获新知
           </button>
         </div>
       </div>
@@ -1019,13 +1025,13 @@
 
   </div>
 
-  <!-- 本地安全引入辅助模块 -->
+  <!-- 本地安全引入辅助模块 (带自动容错) -->
   <script src="js/db.js"></script>
   <script src="js/ai.js"></script>
   <script src="js/math.js"></script>
 
   <script>
-    // 容错兜底：如果本地 js 文件因为协议未加载，提供默认安全对象防止崩溃
+    // 容错兜底：如果本地 js 文件因为离线协议未加载，提供默认安全对象防止报错
     if (!window.StudyDB) {
       window.StudyDB = { save: async () => {}, load: async () => null };
     }
