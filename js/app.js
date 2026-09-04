@@ -1,4 +1,4 @@
-// 家庭研学中枢 - Vue 3 主控制器 (完整收录14个任务弹窗、计时器、转盘、历史名次统计与防白屏)
+// 家庭研学中枢 - Vue 主控制器 (口算单行严谨排版、练字一句/诗、奥数分步解析)
 const { createApp, ref, computed, onMounted, onUnmounted } = Vue;
 
 const AudioEngine = {
@@ -57,7 +57,6 @@ try {
       const selectedAuthUser = ref(null);
       const enteredPin = ref('');
 
-      // 弹窗状态
       const showSettings = ref(false);
       const showAssignModal = ref(false);
       const showPointModal = ref(false);
@@ -141,35 +140,30 @@ try {
 
       const parentProfile = { id: 'parent', name: '家长总控', avatar: '🛡️', grade: '总控管理员', pin: '8888' };
       const currentStudent = computed(() => students.value.find(s => s.id === currentStudentId.value) || students.value[0]);
-      
-      // 奥运领奖台排序与历史名次统计
-      const rankedStudents = computed(() => {
-        return [...students.value].sort((a, b) => b.points - a.points);
-      });
+      const rankedStudents = computed(() => [...students.value].sort((a, b) => b.points - a.points));
 
-      // 任务 1 表单
+      // 任务 1
       const hwForm = ref({ yuwen: '', shuxue: '', yingyu: '', durationMinutes: 35, mode: 'direct' });
       const hwPhotos = ref([]);
       const hwGradingStatus = ref('');
       const isHwGrading = ref(false);
 
-      // 任务 2 阅读
+      // 任务 2 阅读 (至少3个题目)
       const currentReadingArticle = computed(() => {
         const g = currentStudent.value.grade || '';
         const isJunior = g.includes('1年级') || g.includes('2年级');
         const articles = window.StudyData?.readingArticles || [];
         return articles.find(a => a.forJunior === isJunior) || articles[0];
       });
-      const readingSelectedChoice = ref('');
-      const readingFillAnswer = ref('');
+      const readingUserChoices = ref({});
       const readingSubmitted = ref(false);
-      const readingResultMsg = ref('');
+      const readingScore = ref(0);
 
-      // 任务 3 练字
-      const calligraphyData = computed(() => window.StudyData?.calligraphySets?.[0] || { chars: [] });
+      // 任务 3 练字 (一屏一句诗)
+      const calligraphySentenceObj = computed(() => window.StudyData?.calligraphySentences?.[0] || { sentence: '' });
       const calligraphyPhotos = ref([]);
 
-      // 任务 4 口算
+      // 任务 4 口算 (单行规整排版)
       const mathProblems = ref([]);
       const mathSubmitted = ref(false);
       const mathPassed = ref(false);
@@ -225,7 +219,7 @@ try {
       };
 
       const logPointTransaction = (studentId, title, change, newBalance) => {
-        pointLogs.value.unshift({ id: 'log_' + Date.now(), studentId, title, change, balance: newBalance, time: '2026-09-04 15:45' });
+        pointLogs.value.unshift({ id: 'log_' + Date.now(), studentId, title, change, balance: newBalance, time: '2026-09-04 15:50' });
       };
 
       const recordTaskDone = (taskId, files = [], extraMinutes = 0) => {
@@ -307,7 +301,6 @@ try {
         if (wheelTargetTask.value) openTaskInteractive(wheelTargetTask.value);
       };
 
-      // 任务点击路由分发
       const openTaskInteractive = (task) => {
         if (task.id === 1) openHomeworkModal();
         else if (task.id === 2) openReadingModal();
@@ -364,15 +357,20 @@ try {
         }
       };
 
-      // 任务 2
-      const openReadingModal = () => { startTaskTimer(2); readingSelectedChoice.value = ''; readingFillAnswer.value = ''; readingSubmitted.value = false; showReadingModal.value = true; };
+      // 任务 2 阅读 (3道题判分)
+      const openReadingModal = () => { startTaskTimer(2); readingUserChoices.value = {}; readingSubmitted.value = false; showReadingModal.value = true; };
+      const selectReadingChoice = (qId, optKey) => { if (!readingSubmitted.value) readingUserChoices.value[qId] = optKey; };
       const submitReadingQuiz = () => {
-        if (!readingSelectedChoice.value) return alert('请先选择答案！');
+        const qs = currentReadingArticle.value.questions;
+        if (Object.keys(readingUserChoices.value).length < qs.length) return alert('请答完所有 3 道题目！');
         readingSubmitted.value = true;
+        let right = 0;
+        qs.forEach(q => { if (readingUserChoices.value[q.id] === q.ans) right++; });
+        readingScore.value = right;
         recordTaskDone(2, [], 20);
       };
 
-      // 任务 3
+      // 任务 3 练字
       const openCalligraphyModal = () => { startTaskTimer(3); calligraphyPhotos.value = []; showCalligraphyModal.value = true; };
       const handleCalligraphyPhotos = (e) => {
         Array.from(e.target.files).forEach(f => {
@@ -383,7 +381,7 @@ try {
       };
       const submitCalligraphy = () => { recordTaskDone(3, calligraphyPhotos.value, 10); showCalligraphyModal.value = false; alert('练字打卡成功！'); };
 
-      // 任务 4
+      // 任务 4 口算
       const startMathDrill = () => {
         startTaskTimer(4);
         mathProblems.value = window.StudyMath.generateDrill(currentStudent.value.grade);
@@ -409,7 +407,7 @@ try {
         }
       };
 
-      // 任务 5
+      // 任务 5 奥数
       const openOlympiadModal = () => { startTaskTimer(5); olympiadStage.value = 'problem'; olympiadPhotos.value = []; showOlympiadModal.value = true; };
       const handleOlympiadPhotos = (e) => {
         Array.from(e.target.files).forEach(f => {
@@ -421,7 +419,7 @@ try {
       const nextOlympiadStage = (s) => { olympiadStage.value = s; };
       const completeOlympiad = () => { recordTaskDone(5, olympiadPhotos.value, 15); showOlympiadModal.value = false; alert('奥数打卡成功！'); };
 
-      // 任务 6
+      // 任务 6 单词
       const openWordModal = () => { startTaskTimer(6); showWordModal.value = true; };
       const startDictationMode = () => {
         showWordModal.value = false;
@@ -455,14 +453,14 @@ try {
         alert('记单词达标！');
       };
 
-      // 任务 9
+      // 任务 9 翻译
       const submitTranslation = () => {
         if (!userTranslationInput.value.trim()) return alert('请输入翻译！');
         translationSubmitted.value = true;
         recordTaskDone(9, [], 5);
       };
 
-      // 任务 10
+      // 任务 10 阅读
       const selectEnglishReadingChoice = (qId, optKey) => { if (!englishReadingSubmitted.value) englishReadingUserChoices.value[qId] = optKey; };
       const submitEnglishReading = () => {
         const qs = todayWordPack.value.readingComprehension.questions;
@@ -474,7 +472,7 @@ try {
         recordTaskDone(10, [], 10);
       };
 
-      // 任务 11
+      // 任务 11 完形
       const selectClozeChoice = (bNum, optKey) => { if (!clozeSubmitted.value) clozeUserChoices.value[bNum] = optKey; };
       const submitClozeTest = () => {
         const blanks = todayWordPack.value.clozeTest.blanks;
@@ -502,7 +500,7 @@ try {
         alert('伴读打卡成功！');
       };
 
-      // 家长总控
+      // 家长控制
       const openParentResetPin = (st) => { parentTargetStudent.value = st; parentNewPinInput.value = ''; showParentResetPinModal.value = true; };
       const confirmParentResetPin = () => {
         if (!parentNewPinInput.value || parentNewPinInput.value.length !== 4) return alert('请输入4位密码！');
@@ -633,7 +631,7 @@ try {
         activeTimingTaskId, taskTimerSeconds, isTimerRunning, startTaskTimer, pauseTaskTimer, formatSeconds,
         showWheelModal, wheelRotation, isWheelSpinning, wheelTargetTask, openWheelModal, spinLuckyWheel, jumpToWheelTask,
         showHomeworkModal, hwForm, hwPhotos, hwGradingStatus, isHwGrading, openHomeworkModal, handleHwMultiPhotos, submitSchoolHomework,
-        showReadingModal, currentReadingArticle, readingSelectedChoice, readingFillAnswer, readingSubmitted, readingResultMsg, openReadingModal, submitReadingQuiz,
+        showReadingModal, currentReadingArticle, readingUserChoices, readingSubmitted, readingScore, openReadingModal, selectReadingChoice, submitReadingQuiz,
         showCalligraphyModal, calligraphyData, calligraphyPhotos, openCalligraphyModal, handleCalligraphyPhotos, submitCalligraphy,
         showMathModal, mathProblems, mathSubmitted, mathPassed, mathScoreSummary, startMathDrill, submitMathDrill,
         showOlympiadModal, currentOlympiadData, olympiadStage, olympiadPhotos, openOlympiadModal, handleOlympiadPhotos, nextOlympiadStage, completeOlympiad,
@@ -643,9 +641,9 @@ try {
         englishReadingUserChoices, englishReadingSubmitted, englishReadingScore, selectEnglishReadingChoice, submitEnglishReading,
         clozeUserChoices, clozeSubmitted, clozeScore, selectClozeChoice, submitClozeTest,
         showSchoolErrorModal, newSchoolError, submitSchoolError, errors,
-        showBookReadingModal, bookForm, submitBookReading,
+        showBookReadingModal, bookBookForm: bookForm, submitBookReading,
         showParentResetPinModal, parentTargetStudent, parentNewPinInput, openParentResetPin, confirmParentResetPin,
-        handleAvatarChange, checkins, recordTaskDone, openTaskInteractive
+        handleAvatarChange, checkins, recordTaskDone, openTaskInteractive, calligraphySentenceObj
       };
     }
   });
