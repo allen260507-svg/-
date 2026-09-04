@@ -42,14 +42,39 @@
     }
     .custom-scrollbar::-webkit-scrollbar { width: 5px; height: 5px; }
     .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 6px; }
+
+    .tianzige-box {
+      width: 130px;
+      height: 130px;
+      position: relative;
+      border: 2px solid #ef4444;
+      background-color: #fff;
+    }
+    .tianzige-box::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 0;
+      right: 0;
+      border-top: 1px dashed #f87171;
+    }
+    .tianzige-box::after {
+      content: '';
+      position: absolute;
+      left: 50%;
+      top: 0;
+      bottom: 0;
+      border-left: 1px dashed #f87171;
+    }
+    .kaiti-font {
+      font-family: "KaiTi", "楷体", "STKaiti", serif;
+    }
   </style>
 </head>
 <body class="h-screen w-screen overflow-hidden flex flex-col antialiased select-none bright-kids-bg bright-grid">
   <div id="app" class="h-full flex flex-col flex-1 overflow-hidden">
 
-    <!-- ========================================================================= -->
-    <!-- 场景一：明亮阳光研学首屏 -->
-    <!-- ========================================================================= -->
+    <!-- 场景一：开机首屏 -->
     <div v-if="!currentLoggedInUser" class="h-full w-full flex flex-col items-center justify-between p-6 md:p-10 relative overflow-hidden">
       <div class="absolute top-12 left-16 text-4xl opacity-75 float-item-1 pointer-events-none">☀️</div>
       <div class="absolute top-16 right-24 text-4xl opacity-75 float-item-2 pointer-events-none">🌈</div>
@@ -65,7 +90,7 @@
           </div>
           <div>
             <h1 class="text-xl font-black tracking-wider text-slate-800">STUDY OS · 家庭研学中枢</h1>
-            <p class="text-[11px] text-indigo-600 font-bold tracking-widest">每日自律规划 · 探索真实世界</p>
+            <p class="text-[11px] text-indigo-600 font-bold tracking-widest">规范自律研学 · 田字格楷体 · 奥数精读</p>
           </div>
         </div>
 
@@ -80,7 +105,7 @@
             开启今日研学空间
           </h2>
           <p class="text-sm md:text-base text-slate-600 mt-2 font-bold tracking-wide">
-            四人独立档案 · 真实军事/科技新闻 · 严谨打卡月历 · 特权商城自主管理
+            四人独立档案 · 田字格练字范本 · 奥数答案解析 · 口算自动判定
           </p>
         </div>
 
@@ -130,12 +155,8 @@
       </div>
     </div>
 
-
-    <!-- ========================================================================= -->
-    <!-- 场景二：【家长总控专属主页】 -->
-    <!-- ========================================================================= -->
+    <!-- 场景二：家长总控专属主页 -->
     <div v-else-if="currentLoggedInUser.id === 'parent'" class="h-full flex flex-col flex-1 overflow-hidden p-3 md:p-5 space-y-3 bg-slate-900/10 backdrop-blur-xs">
-      
       <header class="glass-light rounded-2xl px-5 py-3 flex items-center justify-between shadow-sm flex-shrink-0">
         <div class="flex items-center space-x-3">
           <div class="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center text-2xl shadow-sm">
@@ -146,7 +167,7 @@
               <span class="text-lg font-black text-slate-900">家长督导指挥中心</span>
               <span class="text-xs px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-800 font-black">总控模式</span>
             </div>
-            <p class="text-xs text-slate-500 font-bold mt-0.5">实时监控 4 位学生、查看密码、派发附带材料的任务、奖惩积分</p>
+            <p class="text-xs text-slate-500 font-bold mt-0.5">监控诺、威、奕、黛 4 位学生的任务、错题、小测，派发附带材料的任务、奖惩积分</p>
           </div>
         </div>
 
@@ -187,7 +208,6 @@
               </div>
             </div>
 
-            <!-- 家长端显示密码 -->
             <div class="p-2 rounded-xl bg-indigo-50/80 border border-indigo-200/80 flex justify-between items-center text-xs">
               <span class="text-indigo-950 font-black flex items-center space-x-1">
                 <span>🔑</span>
@@ -198,7 +218,6 @@
               </span>
             </div>
 
-            <!-- 进度条 -->
             <div class="p-3 rounded-xl bg-slate-50 border border-slate-200/80 space-y-1.5">
               <div class="flex justify-between text-xs font-black">
                 <span class="text-slate-600">今日任务进度</span>
@@ -220,7 +239,6 @@
               </div>
             </div>
 
-            <!-- 今日打卡记录与附件 -->
             <div>
               <div class="text-xs font-black text-slate-700 mb-1.5 flex justify-between items-center">
                 <span>今日打卡记录 ({{ (getStudentCheckinObj(st.id).doneTaskIds || []).length }}条)</span>
@@ -263,12 +281,8 @@
       </div>
     </div>
 
-
-    <!-- ========================================================================= -->
-    <!-- 场景三：【学生专属研学工作台】 -->
-    <!-- ========================================================================= -->
+    <!-- 场景三：学生专属研学工作台 -->
     <div v-else class="h-full flex flex-col flex-1 overflow-hidden p-3 md:p-4 space-y-2.5 bg-slate-900/5 backdrop-blur-xs">
-      
       <header class="glass-light rounded-2xl px-5 py-2.5 flex items-center justify-between shadow-sm flex-shrink-0">
         <div class="flex items-center space-x-3">
           <div class="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center text-2xl shadow-sm">
@@ -277,7 +291,6 @@
           <div>
             <div class="flex items-center space-x-2">
               <span class="text-base md:text-lg font-black text-slate-900">{{ currentLoggedInUser.name }}</span>
-              
               <select 
                 v-model="currentStudent.grade" 
                 @change="onStudentGradeChange" 
@@ -285,7 +298,6 @@
               >
                 <option v-for="g in gradeList" :key="g" :value="g">{{ g }}</option>
               </select>
-
               <span class="text-xs px-2.5 py-0.5 rounded-full bg-indigo-100 text-indigo-900 font-black border border-indigo-200">人教版</span>
             </div>
           </div>
@@ -324,10 +336,8 @@
         </div>
       </header>
 
-      <!-- 主视图区域 -->
       <main class="flex-1 flex flex-col overflow-hidden">
-        
-        <!-- 【视图 1：今日任务】 -->
+        <!-- 视图 1：今日任务 -->
         <div v-if="activeTab === 'today'" class="h-full flex flex-col flex-1 overflow-hidden space-y-2.5">
           <div class="glass-light rounded-xl px-4 py-2.5 flex flex-wrap items-center justify-between gap-3 shadow-sm flex-shrink-0">
             <div class="flex items-center space-x-3 text-sm font-bold">
@@ -354,7 +364,6 @@
             </div>
           </div>
 
-          <!-- 任务矩阵 -->
           <div class="flex-1 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2.5 overflow-y-auto custom-scrollbar pr-1">
             <div 
               v-for="task in allTodayTasks" 
@@ -406,35 +415,27 @@
                   <span>已达标</span>
                 </span>
 
-                <button 
-                  v-else-if="!isHomeworkDone && task.id !== 1" 
-                  disabled 
-                  class="px-3 py-2 text-xs font-black text-slate-400 bg-slate-100 rounded-xl cursor-not-allowed border border-slate-200"
-                >
+                <button v-else-if="!isHomeworkDone && task.id !== 1" disabled class="px-3 py-2 text-xs font-black text-slate-400 bg-slate-100 rounded-xl cursor-not-allowed border border-slate-200">
                   先做作业
                 </button>
 
-                <button 
-                  v-else-if="task.id === 1" 
-                  @click="openHomeworkModal" 
-                  class="px-3.5 py-2 text-xs font-black text-white bg-slate-900 hover:bg-black rounded-xl shadow-md active:scale-95 transition"
-                >
+                <button v-else-if="task.id === 1" @click="openHomeworkModal" class="px-3.5 py-2 text-xs font-black text-white bg-slate-900 hover:bg-black rounded-xl shadow-md active:scale-95 transition">
                   📸 拍照交作业
                 </button>
 
-                <button 
-                  v-else-if="task.id === 4" 
-                  @click="startMathDrill" 
-                  class="px-3.5 py-2 text-xs font-black text-white bg-slate-800 hover:bg-slate-900 rounded-xl shadow-md active:scale-95 transition"
-                >
+                <button v-else-if="task.id === 3" @click="openCalligraphyModal" class="px-3.5 py-2 text-xs font-black text-white bg-rose-600 hover:bg-rose-700 rounded-xl shadow-md active:scale-95 transition">
+                  ✍️ 田字格练字
+                </button>
+
+                <button v-else-if="task.id === 4" @click="startMathDrill" class="px-3.5 py-2 text-xs font-black text-white bg-slate-800 hover:bg-slate-900 rounded-xl shadow-md active:scale-95 transition">
                   ⚡ 开始口算
                 </button>
 
-                <button 
-                  v-else 
-                  @click="openTaskSubmitModal(task)" 
-                  class="px-3 py-2 text-xs font-black text-slate-700 bg-slate-100 hover:bg-emerald-600 hover:text-white rounded-xl border border-slate-200 active:scale-95 transition"
-                >
+                <button v-else-if="task.id === 5" @click="openOlympiadModal" class="px-3.5 py-2 text-xs font-black text-white bg-purple-700 hover:bg-purple-800 rounded-xl shadow-md active:scale-95 transition">
+                  🧩 奥数挑战
+                </button>
+
+                <button v-else @click="openTaskSubmitModal(task)" class="px-3 py-2 text-xs font-black text-slate-700 bg-slate-100 hover:bg-emerald-600 hover:text-white rounded-xl border border-slate-200 active:scale-95 transition">
                   完成打卡
                 </button>
               </div>
@@ -442,34 +443,23 @@
           </div>
         </div>
 
-        <!-- 【视图 2：打卡月历】 -->
+        <!-- 视图 2：打卡月历 -->
         <div v-if="activeTab === 'records'" class="h-full flex flex-col flex-1 glass-light rounded-2xl p-4 overflow-hidden shadow-sm border border-slate-200/80 space-y-3">
           <div class="flex flex-wrap items-center justify-between gap-3 pb-2 border-b border-slate-200/80 flex-shrink-0">
             <div class="flex items-center space-x-2">
-              <button @click="prevCalendarMonth" class="px-2.5 py-1 bg-white hover:bg-slate-100 border border-slate-200 rounded-lg text-xs font-black text-slate-700 transition">
-                ◀ 上个月
-              </button>
-              
+              <button @click="prevCalendarMonth" class="px-2.5 py-1 bg-white hover:bg-slate-100 border border-slate-200 rounded-lg text-xs font-black text-slate-700 transition">◀ 上个月</button>
               <div class="flex items-center space-x-1.5 px-3 py-1 bg-indigo-50 border border-indigo-200 rounded-lg">
                 <span class="text-sm font-black text-indigo-950">{{ selectedCalYear }}年 {{ selectedCalMonth }}月</span>
               </div>
-
-              <button @click="nextCalendarMonth" class="px-2.5 py-1 bg-white hover:bg-slate-100 border border-slate-200 rounded-lg text-xs font-black text-slate-700 transition">
-                下个月 ▶
-              </button>
-
+              <button @click="nextCalendarMonth" class="px-2.5 py-1 bg-white hover:bg-slate-100 border border-slate-200 rounded-lg text-xs font-black text-slate-700 transition">下个月 ▶</button>
               <select v-model="selectedCalMonth" class="bg-white border border-slate-200 rounded-lg px-2 py-1 text-xs font-black text-slate-700 outline-none cursor-pointer">
                 <option v-for="m in 12" :key="m" :value="m">{{ m }}月</option>
               </select>
             </div>
 
             <div class="flex items-center space-x-2 text-xs font-black">
-              <span class="bg-emerald-50 text-emerald-800 border border-emerald-200 px-3 py-1 rounded-lg">
-                🌸 本月达标全勤：{{ calMonthFlowerCount }} 天
-              </span>
-              <span class="bg-indigo-50 text-indigo-800 border border-indigo-200 px-3 py-1 rounded-lg">
-                共 {{ calMonthTotalDays }} 天 (点击日期看详细)
-              </span>
+              <span class="bg-emerald-50 text-emerald-800 border border-emerald-200 px-3 py-1 rounded-lg">🌸 本月达标全勤：{{ calMonthFlowerCount }} 天</span>
+              <span class="bg-indigo-50 text-indigo-800 border border-indigo-200 px-3 py-1 rounded-lg">共 {{ calMonthTotalDays }} 天 (点击日期看详细)</span>
             </div>
           </div>
 
@@ -503,18 +493,14 @@
                   </span>
                 </div>
               </div>
-              <div v-else class="text-center my-auto text-slate-300 text-xs font-bold">
-                未来
-              </div>
+              <div v-else class="text-center my-auto text-slate-300 text-xs font-bold">未来</div>
 
-              <div class="text-[9px] text-indigo-500 text-center font-bold group-hover:underline">
-                点击查明细 →
-              </div>
+              <div class="text-[9px] text-indigo-500 text-center font-bold group-hover:underline">点击查明细 →</div>
             </div>
           </div>
         </div>
 
-        <!-- 【视图 3：错题复仇】 -->
+        <!-- 视图 3：错题复仇 -->
         <div v-if="activeTab === 'errors'" class="h-full flex flex-col flex-1 glass-light rounded-2xl p-4 overflow-hidden shadow-sm border border-slate-200/80">
           <div class="pb-3 border-b border-slate-100 flex-shrink-0">
             <h3 class="text-base font-black text-slate-800">⚔️ {{ currentStudent.name }} 的错题复仇本</h3>
@@ -545,26 +531,19 @@
           </div>
         </div>
 
-        <!-- 【视图 4：特权商城 (支持自由上架新商品、删除下架、云同步)】 -->
+        <!-- 视图 4：特权商城 -->
         <div v-if="activeTab === 'rewards'" class="h-full flex flex-col flex-1 glass-light rounded-2xl p-4 overflow-hidden shadow-sm border border-slate-200/80 space-y-3">
-          <!-- 商城顶部栏 -->
           <div class="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-slate-200/80 flex-shrink-0">
             <div>
               <h3 class="text-base font-black text-slate-900">🎁 现实特权兑换商店</h3>
-              <p class="text-xs text-slate-500 mt-0.5">认真赚取积分兑换属于你的专属特权！支持家长与学生自定义上架新商品。</p>
+              <p class="text-xs text-slate-500 mt-0.5">认真赚取积分兑换属于你的专属特权！支持自主上架新商品。</p>
             </div>
-
-            <!-- 上架新特权按钮 -->
-            <button 
-              @click="openAddShopItemModal" 
-              class="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-black transition flex items-center space-x-1.5 shadow-sm"
-            >
+            <button @click="openAddShopItemModal" class="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-black transition flex items-center space-x-1.5 shadow-sm">
               <span>➕</span>
               <span>上架新特权商品</span>
             </button>
           </div>
 
-          <!-- 商品矩阵 -->
           <div class="flex-1 overflow-y-auto custom-scrollbar pr-1">
             <div v-if="shopItems.length === 0" class="h-full flex items-center justify-center text-xs text-slate-400 font-bold py-10">
               当前暂无特权商品，快点击右上角上架第一个奖励吧！
@@ -575,53 +554,35 @@
                 :key="item.id || item.name" 
                 class="p-4 border border-slate-200 rounded-2xl bg-white flex flex-col justify-between shadow-2xs hover:shadow-md transition relative group"
               >
-                <!-- 删除商品按钮 -->
-                <button 
-                  @click.stop="deleteShopItem(item)" 
-                  class="absolute top-3 right-3 w-6 h-6 rounded-lg bg-rose-50 hover:bg-rose-500 text-rose-500 hover:text-white flex items-center justify-center text-xs font-black transition shadow-2xs"
-                  title="下架并删除该商品"
-                >
+                <button @click.stop="deleteShopItem(item)" class="absolute top-3 right-3 w-6 h-6 rounded-lg bg-rose-50 hover:bg-rose-500 text-rose-500 hover:text-white flex items-center justify-center text-xs font-black transition shadow-2xs" title="下架并删除该商品">
                   ✕
                 </button>
-
                 <div>
-                  <div class="w-12 h-12 rounded-xl bg-amber-50 border border-amber-100 flex items-center justify-center text-2xl shadow-inner mb-2.5">
-                    {{ item.icon || '🎁' }}
-                  </div>
+                  <div class="w-12 h-12 rounded-xl bg-amber-50 border border-amber-100 flex items-center justify-center text-2xl shadow-inner mb-2.5">{{ item.icon || '🎁' }}</div>
                   <div class="font-black text-sm text-slate-900 pr-5">{{ item.name }}</div>
                   <div class="text-xs text-slate-500 mt-1 font-medium leading-relaxed">{{ item.desc }}</div>
                 </div>
-
                 <div class="mt-4 pt-3 border-t border-slate-100 flex justify-between items-center">
                   <span class="text-sm font-black text-amber-600">⚡ {{ item.cost }} 积分</span>
-                  <button @click="redeem(item)" class="px-3.5 py-1.5 bg-slate-900 hover:bg-black text-white text-xs font-black rounded-lg shadow-sm active:scale-95 transition">
-                    立即兑换
-                  </button>
+                  <button @click="redeem(item)" class="px-3.5 py-1.5 bg-slate-900 hover:bg-black text-white text-xs font-black rounded-lg shadow-sm active:scale-95 transition">立即兑换</button>
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- 【视图 5：学生个人中心】 -->
+        <!-- 视图 5：学生个人中心 -->
         <div v-if="activeTab === 'profile'" class="h-full flex flex-col flex-1 glass-light rounded-2xl p-4 overflow-hidden shadow-sm border border-slate-200/80 space-y-3">
-          <!-- 真实新闻卡片 -->
           <div class="bg-gradient-to-r from-amber-50 via-indigo-50 to-purple-50 border border-indigo-100 rounded-2xl p-3.5 flex-shrink-0 shadow-xs space-y-2">
             <div class="flex flex-wrap items-center justify-between gap-2">
               <div class="flex items-center space-x-2">
                 <span class="text-xl">🛰️</span>
                 <span class="text-sm font-black text-slate-900">今日精选真实新闻 · 每日一期</span>
-                <span class="text-[11px] bg-white text-indigo-700 font-bold px-2 py-0.5 rounded-full border border-indigo-200">
-                  {{ currentDailyArticle.category }}
-                </span>
+                <span class="text-[11px] bg-white text-indigo-700 font-bold px-2 py-0.5 rounded-full border border-indigo-200">{{ currentDailyArticle.category }}</span>
               </div>
-
-              <div class="text-xs font-bold text-indigo-700 flex items-center space-x-1">
-                <span>📅 2026年9月4日 权威发布</span>
-              </div>
+              <div class="text-xs font-bold text-indigo-700">📅 2026年9月4日 权威发布</div>
             </div>
 
-            <!-- 领域切换胶囊 -->
             <div class="flex flex-wrap items-center gap-1.5 pt-1">
               <span class="text-xs text-slate-500 font-bold mr-1">选择兴趣领域：</span>
               <button 
@@ -635,7 +596,6 @@
               </button>
             </div>
 
-            <!-- 真实新闻摘要卡片 -->
             <div 
               @click="openNewsDetailModal(currentDailyArticle)"
               class="p-3.5 bg-white rounded-xl border border-indigo-200/80 hover:border-indigo-400 hover:shadow-md cursor-pointer transition flex flex-col md:flex-row items-start md:items-center justify-between gap-3 group"
@@ -643,23 +603,16 @@
               <div class="space-y-1 min-w-0 flex-1">
                 <div class="flex items-center space-x-2">
                   <span class="px-2 py-0.5 bg-indigo-100 text-indigo-800 text-[10px] font-black rounded">每日权威特稿</span>
-                  <h4 class="text-sm md:text-base font-black text-slate-900 group-hover:text-indigo-600 transition truncate">
-                    {{ currentDailyArticle.title }}
-                  </h4>
+                  <h4 class="text-sm md:text-base font-black text-slate-900 group-hover:text-indigo-600 transition truncate">{{ currentDailyArticle.title }}</h4>
                 </div>
-                <p class="text-xs text-slate-600 line-clamp-2 leading-relaxed font-medium">
-                  {{ currentDailyArticle.summary }}
-                </p>
+                <p class="text-xs text-slate-600 line-clamp-2 leading-relaxed font-medium">{{ currentDailyArticle.summary }}</p>
               </div>
-
               <div class="flex items-center space-x-1 text-xs font-black text-indigo-600 bg-indigo-50 px-3 py-1.5 rounded-lg flex-shrink-0 group-hover:bg-indigo-600 group-hover:text-white transition">
-                <span>阅读深度全文</span>
-                <span>→</span>
+                <span>阅读深度全文</span><span>→</span>
               </div>
             </div>
           </div>
 
-          <!-- 成长记录双栏排盘 -->
           <div class="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-3.5 overflow-hidden">
             <div class="flex flex-col border border-slate-200 rounded-xl p-3 bg-white overflow-hidden shadow-2xs">
               <div class="flex justify-between items-center mb-2 flex-shrink-0">
@@ -667,20 +620,14 @@
                   <span>📝</span>
                   <span>历次小测与反思心得 ({{ currentStudentQuizzes.length }} 次)</span>
                 </span>
-                <button @click="openQuizModal" class="px-2.5 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 rounded-lg text-xs font-black transition">
-                  ➕ 登记小测
-                </button>
+                <button @click="openQuizModal" class="px-2.5 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 rounded-lg text-xs font-black transition">➕ 登记小测</button>
               </div>
 
               <div class="flex-1 overflow-y-auto space-y-2.5 custom-scrollbar pr-1">
                 <div v-if="currentStudentQuizzes.length === 0" class="h-full flex items-center justify-center text-xs text-slate-400 font-bold py-10">
                   暂未录入小测成绩，点击右上角开始第一次复盘！
                 </div>
-                <div 
-                  v-for="q in currentStudentQuizzes" 
-                  :key="q.id" 
-                  class="p-3 bg-slate-50/70 rounded-xl border border-slate-200 shadow-2xs space-y-2"
-                >
+                <div v-for="q in currentStudentQuizzes" :key="q.id" class="p-3 bg-slate-50/70 rounded-xl border border-slate-200 shadow-2xs space-y-2">
                   <div class="flex justify-between items-start">
                     <div>
                       <div class="flex items-center space-x-2">
@@ -690,67 +637,203 @@
                       <div class="text-[10px] text-slate-400 mt-0.5">{{ q.date }} 测试</div>
                     </div>
                     <div class="text-right">
-                      <span class="text-lg font-black" :class="q.score >= (q.maxScore * 0.9) ? 'text-emerald-700' : (q.score >= (q.maxScore * 0.6) ? 'text-amber-600' : 'text-rose-600')">
-                        {{ q.score }}
-                      </span>
+                      <span class="text-lg font-black" :class="q.score >= (q.maxScore * 0.9) ? 'text-emerald-700' : (q.score >= (q.maxScore * 0.6) ? 'text-amber-600' : 'text-rose-600')">{{ q.score }}</span>
                       <span class="text-xs text-slate-400 font-bold"> / {{ q.maxScore }}分</span>
                     </div>
                   </div>
-
                   <div class="p-2.5 rounded-lg bg-white border border-indigo-100 text-xs space-y-1">
-                    <div class="font-black text-indigo-900 flex items-center space-x-1">
-                      <span>💡</span>
-                      <span>本次小测心得与错因反思：</span>
-                    </div>
+                    <div class="font-black text-indigo-900 flex items-center space-x-1"><span>💡</span><span>本次小测心得与错因反思：</span></div>
                     <p class="text-slate-700 font-medium leading-relaxed">{{ q.reflection }}</p>
                   </div>
                 </div>
               </div>
             </div>
 
-            <!-- 积分明细 -->
             <div class="flex flex-col border border-slate-200 rounded-xl p-3 bg-white overflow-hidden shadow-2xs">
               <div class="flex justify-between items-center mb-2 flex-shrink-0">
-                <span class="text-xs font-black text-slate-700 flex items-center space-x-1">
-                  <span>⚡</span>
-                  <span>积分流水明细 (当前可用: {{ currentStudent.points }} 分)</span>
-                </span>
+                <span class="text-xs font-black text-slate-700 flex items-center space-x-1"><span>⚡</span><span>积分流水明细 (当前可用: {{ currentStudent.points }} 分)</span></span>
               </div>
-
               <div class="flex-1 overflow-y-auto space-y-2 custom-scrollbar pr-1">
-                <div v-if="currentStudentPointLogs.length === 0" class="h-full flex items-center justify-center text-xs text-slate-400 font-bold py-10">
-                  暂无积分明细流水
-                </div>
-                <div 
-                  v-for="log in currentStudentPointLogs" 
-                  :key="log.id" 
-                  class="p-2.5 bg-slate-50/70 rounded-xl border border-slate-200 shadow-2xs flex justify-between items-center text-xs"
-                >
+                <div v-if="currentStudentPointLogs.length === 0" class="h-full flex items-center justify-center text-xs text-slate-400 font-bold py-10">暂无积分明细流水</div>
+                <div v-for="log in currentStudentPointLogs" :key="log.id" class="p-2.5 bg-slate-50/70 rounded-xl border border-slate-200 shadow-2xs flex justify-between items-center text-xs">
                   <div class="space-y-0.5">
                     <div class="font-black text-slate-800">{{ log.title }}</div>
                     <div class="text-[10px] text-slate-400">{{ log.time }}</div>
                   </div>
                   <div class="text-right">
-                    <div class="font-black text-sm" :class="log.change >= 0 ? 'text-emerald-700' : 'text-rose-600'">
-                      {{ log.change >= 0 ? '+' : '' }}{{ log.change }}
-                    </div>
+                    <div class="font-black text-sm" :class="log.change >= 0 ? 'text-emerald-700' : 'text-rose-600'">{{ log.change >= 0 ? '+' : '' }}{{ log.change }}</div>
                     <div class="text-[10px] text-slate-400">余额 {{ log.balance }}</div>
                   </div>
                 </div>
               </div>
             </div>
-
           </div>
         </div>
       </main>
     </div>
 
+    <!-- 全局弹窗系统 -->
 
-    <!-- ========================================================================= -->
-    <!-- 模态弹窗系统 (全键盘输入支持、按 ESC 退出) -->
-    <!-- ========================================================================= -->
+    <!-- 田字格楷体练字打卡弹窗 -->
+    <div v-if="showCalligraphyModal" class="fixed inset-0 bg-slate-950/75 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+      <div class="bg-white rounded-3xl max-w-lg w-full p-6 space-y-4 shadow-2xl border border-slate-200">
+        <div class="flex justify-between items-center border-b border-slate-100 pb-2">
+          <div>
+            <h3 class="text-base font-black text-slate-900">✍️ 每日练字打卡 · 标准田字格楷体</h3>
+            <p class="text-xs text-slate-500">认真临摹范字，练习完毕必须拍照上传手写照片打卡</p>
+          </div>
+          <button @click="showCalligraphyModal = false" class="text-slate-400 hover:text-slate-600 font-bold text-lg">✕</button>
+        </div>
 
-    <!-- 【新增弹窗：上架新特权商品】 -->
+        <div class="p-4 bg-amber-50/50 border border-amber-200/80 rounded-2xl flex flex-col md:flex-row items-center gap-4">
+          <div class="tianzige-box rounded-lg flex items-center justify-center shadow-xs flex-shrink-0">
+            <span class="kaiti-font text-8xl text-slate-900 z-10 select-none pb-2">{{ todayCalligraphyChar.char }}</span>
+          </div>
+
+          <div class="space-y-1.5 text-xs text-slate-700 flex-1">
+            <div class="flex items-center space-x-2">
+              <span class="text-base font-black text-rose-600">{{ todayCalligraphyChar.pinyin }}</span>
+              <span class="px-2 py-0.5 bg-white border border-slate-200 rounded font-bold text-[10px]">部首：{{ todayCalligraphyChar.radical }}</span>
+              <span class="px-2 py-0.5 bg-white border border-slate-200 rounded font-bold text-[10px]">笔画：{{ todayCalligraphyChar.strokes }}画</span>
+            </div>
+            <div class="font-black text-slate-900 text-sm">范字释义：{{ todayCalligraphyChar.words }}</div>
+            <div class="text-slate-500 text-[11px] leading-relaxed bg-white/80 p-2 rounded-lg border border-amber-100">
+              💡 <strong>书写要领：</strong>{{ todayCalligraphyChar.tips }}
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <label class="block p-3 border-2 border-dashed border-slate-300 hover:border-rose-500 rounded-2xl text-center cursor-pointer bg-slate-50 transition">
+            <span class="text-2xl">📸</span>
+            <div class="text-xs font-black text-slate-800 mt-0.5">拍照上传手写练字作业照片 (必须上传)</div>
+            <input type="file" accept="image/*" @change="handleCalligraphyPhoto" class="hidden">
+          </label>
+        </div>
+
+        <div v-if="calligraphyPhotoUrl" class="p-2 bg-slate-50 rounded-xl border flex items-center justify-between text-xs">
+          <div class="flex items-center space-x-2">
+            <img :src="calligraphyPhotoUrl" class="w-10 h-10 rounded object-cover border">
+            <span class="font-bold text-slate-800">练字照片已拍照就绪</span>
+          </div>
+          <button @click="calligraphyPhotoUrl = ''" class="text-rose-500 font-bold">重拍 ✕</button>
+        </div>
+
+        <div class="flex space-x-3 pt-2">
+          <button @click="showCalligraphyModal = false" class="flex-1 py-2.5 border rounded-xl text-xs font-bold text-slate-600">取消</button>
+          <button @click="submitCalligraphy" class="flex-1 py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-black shadow-md">提交手写照片并打卡 (+2分)</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 每日奥数题弹窗 -->
+    <div v-if="showOlympiadModal" class="fixed inset-0 bg-slate-950/75 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+      <div class="bg-white rounded-3xl max-w-xl w-full p-6 space-y-4 shadow-2xl border border-slate-200 max-h-[90vh] flex flex-col">
+        <div class="flex justify-between items-start border-b border-slate-100 pb-2 flex-shrink-0">
+          <div>
+            <div class="flex items-center space-x-2">
+              <span class="px-2 py-0.5 bg-purple-100 text-purple-800 text-[10px] font-black rounded">{{ currentStudent.grade }} 精选题</span>
+              <h3 class="text-base font-black text-slate-900">🧩 每日奥数思维闯关</h3>
+            </div>
+            <p class="text-xs text-slate-500 mt-0.5">请在草稿纸上独立演算，拍照上传演算过程后解锁答案与名师解析</p>
+          </div>
+          <button @click="showOlympiadModal = false" class="text-slate-400 hover:text-slate-600 font-bold text-lg">✕</button>
+        </div>
+
+        <div class="flex-1 overflow-y-auto space-y-3 custom-scrollbar pr-1 text-xs">
+          <div class="p-3.5 bg-purple-50/60 border border-purple-200/80 rounded-2xl space-y-1.5">
+            <div class="font-black text-purple-950 text-sm flex items-center space-x-1">
+              <span>📌</span><span>今日思考题：{{ currentGradeOlympiadProblem.title }}</span>
+            </div>
+            <p class="text-slate-800 text-xs md:text-sm font-bold leading-relaxed bg-white p-3 rounded-xl border border-purple-100">
+              {{ currentGradeOlympiadProblem.question }}
+            </p>
+          </div>
+
+          <div>
+            <label class="block p-3 border-2 border-dashed border-slate-300 hover:border-purple-500 rounded-xl text-center cursor-pointer bg-slate-50 transition">
+              <span class="text-xl">📸</span>
+              <div class="text-xs font-black text-slate-800 mt-0.5">拍照上传草稿纸演算过程 (必须上传)</div>
+              <input type="file" accept="image/*" @change="handleOlympiadPhoto" class="hidden">
+            </label>
+          </div>
+
+          <div v-if="olympiadPhotoUrl" class="p-2 bg-slate-50 rounded-xl border flex items-center justify-between text-xs">
+            <div class="flex items-center space-x-2">
+              <img :src="olympiadPhotoUrl" class="w-10 h-10 rounded object-cover border">
+              <span class="font-bold text-slate-800">演算草稿已拍照就绪</span>
+            </div>
+            <button @click="olympiadPhotoUrl = ''" class="text-rose-500 font-bold">重拍 ✕</button>
+          </div>
+
+          <div v-if="olympiadUnlocked" class="space-y-2 pt-1">
+            <div class="p-3 bg-emerald-50 rounded-xl border border-emerald-200 text-xs space-y-1">
+              <div class="font-black text-emerald-900 flex items-center space-x-1"><span>🎯</span><span>官方标准答案与详细步骤：</span></div>
+              <p class="text-slate-800 font-bold leading-relaxed whitespace-pre-line">{{ currentGradeOlympiadProblem.solution }}</p>
+            </div>
+            <div class="p-3 bg-amber-50 rounded-xl border border-amber-200 text-xs space-y-1">
+              <div class="font-black text-amber-900 flex items-center space-x-1"><span>💡</span><span>常见错因归因与思维避坑剖析：</span></div>
+              <p class="text-slate-800 font-medium leading-relaxed">{{ currentGradeOlympiadProblem.analysis }}</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex space-x-3 pt-2 border-t border-slate-100 flex-shrink-0">
+          <button @click="showOlympiadModal = false" class="flex-1 py-2.5 border rounded-xl text-xs font-bold text-slate-600">取消</button>
+          <button v-if="!olympiadUnlocked" @click="submitOlympiad" class="flex-1 py-2.5 bg-purple-700 hover:bg-purple-800 text-white rounded-xl text-xs font-black shadow-md">
+            上传草稿并核对官方答案 (+3分)
+          </button>
+          <button v-else @click="showOlympiadModal = false" class="flex-1 py-2.5 bg-slate-900 text-white rounded-xl text-xs font-black shadow-md">
+            我已弄懂，完成打卡 (ESC)
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 口算快练弹窗 -->
+    <div v-if="showMathModal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+      <div class="bg-white rounded-3xl max-w-sm w-full p-5 space-y-3 shadow-2xl border border-slate-200">
+        <div class="flex justify-between items-center border-b border-slate-100 pb-2">
+          <h3 class="text-sm font-black text-slate-800">⚡ {{ currentStudent.grade }} · 10道口算快练</h3>
+          <button @click="showMathModal = false" class="text-slate-400 hover:text-slate-600 font-bold">✕</button>
+        </div>
+
+        <div class="space-y-2 max-h-64 overflow-y-auto pr-1 custom-scrollbar">
+          <div 
+            v-for="(p, i) in mathProblems" 
+            :key="i" 
+            class="flex items-center justify-between text-xs py-1.5 px-2 rounded-lg border"
+            :class="mathSubmitted ? (parseFloat(p.userAns) === p.ans ? 'bg-emerald-50 border-emerald-200' : 'bg-rose-50 border-rose-200') : 'border-slate-100 bg-slate-50/50'"
+          >
+            <span class="font-black text-slate-800 text-sm">{{ p.expr }}</span>
+            <div class="flex items-center space-x-1.5">
+              <input 
+                :disabled="mathSubmitted" 
+                v-model.number="p.userAns" 
+                type="number" 
+                step="0.1" 
+                class="w-20 border border-slate-200 rounded-lg p-1 text-center font-black text-sm outline-none bg-white"
+              >
+              <span v-if="mathSubmitted && parseFloat(p.userAns) === p.ans" class="text-emerald-700 font-black text-xs">✓ 正确</span>
+              <span v-else-if="mathSubmitted" class="text-rose-600 font-bold text-[10px]">✕ 答: {{ p.ans }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div v-if="mathScoreSummary" class="p-2.5 rounded-xl text-center text-xs font-black" :class="mathPassed ? 'bg-emerald-100 text-emerald-900' : 'bg-rose-100 text-rose-900'">
+          {{ mathScoreSummary }}
+        </div>
+
+        <div class="flex space-x-2 pt-2">
+          <button @click="showMathModal = false" class="flex-1 py-2 border rounded-xl text-xs font-bold text-slate-500">退出</button>
+          <button v-if="!mathSubmitted" @click="submitMathDrill" class="flex-1 py-2 bg-slate-900 text-white rounded-xl text-xs font-black shadow-md">提交系统判分</button>
+          <button v-else-if="!mathPassed" @click="startMathDrill" class="flex-1 py-2 bg-rose-600 text-white rounded-xl text-xs font-black shadow-md">重测一次</button>
+          <button v-else @click="showMathModal = false" class="flex-1 py-2 bg-emerald-700 text-white rounded-xl text-xs font-black shadow-md">已达标通过 (ESC)</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 上架新特权商品弹窗 -->
     <div v-if="showAddShopItemModal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 z-50">
       <div class="bg-white rounded-3xl max-w-sm w-full p-6 space-y-3.5 shadow-2xl border border-slate-200">
         <div class="flex justify-between items-center border-b border-slate-100 pb-2">
@@ -759,7 +842,6 @@
         </div>
 
         <div class="space-y-3 text-xs">
-          <!-- 快捷图标选择 -->
           <div>
             <label class="block font-bold text-slate-600 mb-1">选择图标：</label>
             <div class="flex flex-wrap gap-1.5 p-2 bg-slate-50 border rounded-xl">
@@ -775,17 +857,14 @@
               </button>
             </div>
           </div>
-
           <div>
             <label class="block font-bold text-slate-600 mb-1">特权名称：</label>
-            <input v-model="newShopItem.name" placeholder="如：玩半小时平板、自选周末电影、免洗碗券" class="w-full border rounded-lg p-2 font-black text-slate-900 outline-none">
+            <input v-model="newShopItem.name" placeholder="如：玩半小时平板、自选周末电影" class="w-full border rounded-lg p-2 font-black text-slate-900 outline-none">
           </div>
-
           <div>
             <label class="block font-bold text-slate-600 mb-1">兑换所需积分：</label>
             <input v-model.number="newShopItem.cost" type="number" placeholder="如 20" class="w-full border rounded-lg p-2 font-black text-amber-600 outline-none">
           </div>
-
           <div>
             <label class="block font-bold text-slate-600 mb-1">特权规则与说明：</label>
             <input v-model="newShopItem.desc" placeholder="如：需提前与家长沟通、仅限周末兑换" class="w-full border rounded-lg p-2 font-medium text-slate-700 outline-none">
@@ -794,23 +873,19 @@
 
         <div class="flex space-x-3 pt-2">
           <button @click="showAddShopItemModal = false" class="flex-1 py-2.5 border rounded-xl text-xs font-bold text-slate-600">取消</button>
-          <button @click="confirmAddShopItem" class="flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-black shadow-md">
-            确定上架商品
-          </button>
+          <button @click="confirmAddShopItem" class="flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-black shadow-md">确定上架商品</button>
         </div>
       </div>
     </div>
 
-    <!-- 【弹窗：日历单日任务执行全景明细】 -->
+    <!-- 日历单日明细下钻弹窗 -->
     <div v-if="showDayDetailModal" class="fixed inset-0 bg-slate-950/75 backdrop-blur-sm flex items-center justify-center p-4 z-50">
       <div class="bg-white rounded-3xl max-w-2xl w-full p-6 space-y-4 shadow-2xl border border-slate-200 max-h-[85vh] flex flex-col">
         <div class="flex justify-between items-center border-b border-slate-100 pb-3 flex-shrink-0">
           <div>
             <div class="flex items-center space-x-2">
               <span class="text-xl">📅</span>
-              <h3 class="text-base font-black text-slate-900">
-                {{ selectedDetailDateStr }} · {{ currentStudent.name }} 的研学全景明细
-              </h3>
+              <h3 class="text-base font-black text-slate-900">{{ selectedDetailDateStr }} · {{ currentStudent.name }} 的研学全景明细</h3>
             </div>
             <div class="flex items-center space-x-3 text-xs mt-1">
               <span class="text-emerald-700 font-black">✓ 已完成：{{ currentDayDetailDoneTasks.length }} 项</span>
@@ -848,16 +923,10 @@
                 @click="viewDayTaskAttachments(task)"
                 class="px-2.5 py-1 bg-amber-100 hover:bg-amber-200 text-amber-900 rounded-lg font-black text-[11px] flex items-center space-x-1"
               >
-                <span>📎</span>
-                <span>查看提交附件</span>
+                <span>📎</span><span>查看提交附件</span>
               </button>
-
-              <span v-if="isDayTaskDone(task.id)" class="px-2.5 py-1 bg-emerald-600 text-white rounded-lg font-black text-[11px]">
-                ✓ 已达标
-              </span>
-              <span v-else class="px-2.5 py-1 bg-rose-100 text-rose-700 rounded-lg font-black text-[11px]">
-                ✕ 未完成
-              </span>
+              <span v-if="isDayTaskDone(task.id)" class="px-2.5 py-1 bg-emerald-600 text-white rounded-lg font-black text-[11px]">✓ 已达标</span>
+              <span v-else class="px-2.5 py-1 bg-rose-100 text-rose-700 rounded-lg font-black text-[11px]">✕ 未完成</span>
             </div>
           </div>
         </div>
@@ -868,7 +937,7 @@
       </div>
     </div>
 
-    <!-- 【弹窗：真实新闻深度图文研读大屏】 -->
+    <!-- 真实新闻深度大屏弹窗 -->
     <div v-if="showNewsDetailModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 z-50">
       <div class="bg-white rounded-3xl max-w-2xl w-full p-6 space-y-4 shadow-2xl border border-slate-200 max-h-[85vh] flex flex-col">
         <div class="flex justify-between items-start border-b border-slate-100 pb-3 flex-shrink-0">
@@ -877,55 +946,39 @@
               <span class="px-2 py-0.5 bg-indigo-100 text-indigo-800 text-xs font-black rounded">{{ currentSelectedNewsArticle?.category }}</span>
               <span class="text-xs text-slate-400 font-bold">2026年9月权威特稿</span>
             </div>
-            <h3 class="text-lg md:text-xl font-black text-slate-900 leading-tight">
-              {{ currentSelectedNewsArticle?.title }}
-            </h3>
+            <h3 class="text-lg md:text-xl font-black text-slate-900 leading-tight">{{ currentSelectedNewsArticle?.title }}</h3>
           </div>
           <button @click="showNewsDetailModal = false" class="text-slate-400 hover:text-slate-600 font-bold text-xl ml-2">✕</button>
         </div>
 
         <div class="flex-1 overflow-y-auto space-y-3.5 text-xs md:text-sm text-slate-800 leading-relaxed custom-scrollbar pr-1">
           <div class="p-3.5 bg-indigo-50/60 rounded-2xl border border-indigo-100 space-y-1">
-            <div class="font-black text-indigo-950 flex items-center space-x-1.5 text-sm">
-              <span>📰</span>
-              <span>核心事实背景与全貌</span>
-            </div>
+            <div class="font-black text-indigo-950 flex items-center space-x-1.5 text-sm"><span>📰</span><span>核心事实背景与全貌</span></div>
             <p class="text-slate-700 font-medium">{{ currentSelectedNewsArticle?.fullContent?.background }}</p>
           </div>
-
           <div class="p-3.5 bg-amber-50/60 rounded-2xl border border-amber-100 space-y-1">
-            <div class="font-black text-amber-950 flex items-center space-x-1.5 text-sm">
-              <span>🔬</span>
-              <span>硬核力学与科技原理探秘</span>
-            </div>
+            <div class="font-black text-amber-950 flex items-center space-x-1.5 text-sm"><span>🔬</span><span>硬核力学与科技原理探秘</span></div>
             <p class="text-slate-700 font-medium">{{ currentSelectedNewsArticle?.fullContent?.principle }}</p>
           </div>
-
           <div class="p-3.5 bg-emerald-50/60 rounded-2xl border border-emerald-100 space-y-1">
-            <div class="font-black text-emerald-950 flex items-center space-x-1.5 text-sm">
-              <span>💡</span>
-              <span>小探险家思考题</span>
-            </div>
+            <div class="font-black text-emerald-950 flex items-center space-x-1.5 text-sm"><span>💡</span><span>小探险家思考题</span></div>
             <p class="text-slate-700 font-medium">{{ currentSelectedNewsArticle?.fullContent?.thinking }}</p>
           </div>
         </div>
 
         <div class="pt-2 text-right flex-shrink-0 border-t border-slate-100">
-          <button @click="showNewsDetailModal = false" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-black shadow-sm">
-            我已读懂，收获新知 (ESC)
-          </button>
+          <button @click="showNewsDetailModal = false" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-black shadow-sm">我已读懂，收获新知 (ESC)</button>
         </div>
       </div>
     </div>
 
-    <!-- 【弹窗：家长布置临时任务】 -->
+    <!-- 家长派发任务弹窗 -->
     <div v-if="showAssignModal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 z-50">
       <div class="bg-white rounded-3xl max-w-md w-full p-5 space-y-3.5 shadow-2xl border border-slate-200">
         <div class="flex justify-between items-center border-b border-slate-100 pb-2">
           <h3 class="text-sm font-black text-slate-800">➕ 布置今日临时任务 (支持附带资料)</h3>
           <button @click="showAssignModal = false" class="text-slate-400 hover:text-slate-600 font-bold">✕</button>
         </div>
-
         <div class="space-y-2.5 text-xs">
           <div>
             <label class="block font-bold text-slate-600 mb-1">指派给：</label>
@@ -952,7 +1005,6 @@
             <label class="block font-bold text-slate-600 mb-1">验收标准：</label>
             <input v-model="newTask.criteria" class="w-full border rounded-lg p-2 font-bold outline-none">
           </div>
-
           <div>
             <label class="block font-bold text-slate-600 mb-1">附加资料文件 (题目照片/示范录音/视频，可多选)：</label>
             <label class="block p-3 border-2 border-dashed border-slate-300 hover:border-indigo-500 rounded-xl text-center cursor-pointer bg-slate-50 transition">
@@ -960,7 +1012,6 @@
               <div class="text-xs font-black text-slate-700 mt-0.5">点击多选上传任务附件</div>
               <input type="file" multiple @change="handleParentTaskFiles" class="hidden">
             </label>
-
             <div v-if="parentTaskFiles.length > 0" class="mt-2 max-h-28 overflow-y-auto space-y-1.5 custom-scrollbar">
               <div v-for="(file, idx) in parentTaskFiles" :key="idx" class="p-1.5 bg-slate-50 border rounded-lg flex items-center justify-between text-[11px]">
                 <span class="truncate flex-1 font-bold">{{ file.name }}</span>
@@ -969,7 +1020,6 @@
             </div>
           </div>
         </div>
-
         <div class="flex space-x-2 pt-2">
           <button @click="showAssignModal = false" class="flex-1 py-2 border rounded-xl text-xs font-bold text-slate-500">取消</button>
           <button @click="confirmAssignTask" class="flex-1 py-2 bg-slate-900 text-white rounded-xl text-xs font-black">立即下发任务</button>
@@ -977,23 +1027,19 @@
       </div>
     </div>
 
-    <!-- 【弹窗：小测成绩与心得登记】 -->
+    <!-- 小测成绩与心得登记弹窗 -->
     <div v-if="showQuizModal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 z-50">
       <div class="bg-white rounded-3xl max-w-md w-full p-6 space-y-4 shadow-2xl border border-slate-200">
         <div class="flex justify-between items-center border-b border-slate-100 pb-2">
           <h3 class="text-base font-black text-slate-900">📝 登记小测成绩与反思心得</h3>
           <button @click="showQuizModal = false" class="text-slate-400 hover:text-slate-600 font-bold">✕</button>
         </div>
-
         <div class="space-y-3 text-xs">
           <div class="grid grid-cols-2 gap-2">
             <div>
               <label class="block font-bold text-slate-600 mb-1">测验科目：</label>
               <select v-model="newQuiz.subject" class="w-full border rounded-lg p-2 font-black text-slate-800 outline-none">
-                <option value="数学">📐 数学</option>
-                <option value="语文">📖 语文</option>
-                <option value="英语">🔤 英语</option>
-                <option value="科学">🔬 科学/综合</option>
+                <option value="数学">📐 数学</option><option value="语文">📖 语文</option><option value="英语">🔤 英语</option><option value="科学">🔬 科学/综合</option>
               </select>
             </div>
             <div>
@@ -1001,12 +1047,10 @@
               <input v-model="newQuiz.date" type="date" class="w-full border rounded-lg p-2 font-bold text-slate-800 outline-none">
             </div>
           </div>
-
           <div>
             <label class="block font-bold text-slate-600 mb-1">测验名称：</label>
             <input v-model="newQuiz.title" placeholder="如：第三单元乘除法阶段测、期中模拟" class="w-full border rounded-lg p-2 font-bold outline-none">
           </div>
-
           <div class="grid grid-cols-2 gap-2">
             <div>
               <label class="block font-bold text-slate-600 mb-1">实际得分：</label>
@@ -1017,75 +1061,59 @@
               <input v-model.number="newQuiz.maxScore" type="number" placeholder="如 100" class="w-full border rounded-lg p-2 font-bold outline-none">
             </div>
           </div>
-
           <div>
             <label class="block font-bold text-slate-600 mb-1">小测心得与错因分析 (必填)：</label>
             <textarea v-model="newQuiz.reflection" rows="3" placeholder="写下本次做错题目的错因、粗心教训以及下次改进的具体策略..." class="w-full border rounded-lg p-2 font-medium outline-none"></textarea>
           </div>
         </div>
-
         <div class="flex space-x-3 pt-2">
           <button @click="showQuizModal = false" class="flex-1 py-2.5 border rounded-xl text-xs font-bold text-slate-600">取消</button>
-          <button @click="confirmAddQuiz" class="flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-black shadow-md">
-            保存成绩与心得 (+5积分)
-          </button>
+          <button @click="confirmAddQuiz" class="flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-black shadow-md">保存成绩与心得 (+5积分)</button>
         </div>
       </div>
     </div>
 
-    <!-- 【弹窗：家长自定义加减积分】 -->
+    <!-- 家长自定义加减积分弹窗 -->
     <div v-if="showPointModal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 z-50">
       <div class="bg-white rounded-3xl max-w-sm w-full p-6 space-y-4 shadow-2xl border border-slate-200">
         <div class="flex justify-between items-center border-b border-slate-100 pb-2">
           <h3 class="text-base font-black text-slate-900">✏️ 家长自定义奖惩：{{ targetPointStudent?.name }}</h3>
           <button @click="showPointModal = false" class="text-slate-400 hover:text-slate-600 font-bold">✕</button>
         </div>
-
         <div class="space-y-3 text-xs">
           <div>
             <label class="block font-bold text-slate-600 mb-1">当前可用积分：</label>
             <span class="text-base font-black text-amber-600">⚡ {{ targetPointStudent?.points }} 分</span>
           </div>
-
           <div>
             <label class="block font-bold text-slate-600 mb-1">积分增减数值 (正数奖励，负数扣除)：</label>
             <input v-model.number="customPointAmount" type="number" placeholder="输入 +10 或 -5" class="w-full border rounded-lg p-2 text-base font-black text-slate-900 outline-none">
           </div>
-
           <div>
             <label class="block font-bold text-slate-600 mb-1">奖惩原因说明：</label>
             <input v-model="customPointReason" placeholder="如：字迹工整、自觉复盘错题、拖拉未按时作息" class="w-full border rounded-lg p-2 font-bold text-slate-800 outline-none">
           </div>
         </div>
-
         <div class="flex space-x-3 pt-2">
           <button @click="showPointModal = false" class="flex-1 py-2.5 border rounded-xl text-xs font-bold text-slate-600">取消</button>
-          <button @click="confirmCustomPointAdjust" class="flex-1 py-2.5 bg-slate-900 hover:bg-black text-white rounded-xl text-xs font-black shadow-md">
-            确定调整积分
-          </button>
+          <button @click="confirmCustomPointAdjust" class="flex-1 py-2.5 bg-slate-900 hover:bg-black text-white rounded-xl text-xs font-black shadow-md">确定调整积分</button>
         </div>
       </div>
     </div>
 
-    <!-- 【弹窗：PIN 密码键盘】 -->
+    <!-- PIN 密码键盘弹窗 -->
     <div v-if="showPinModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 z-50">
       <div class="bg-white rounded-3xl max-w-xs w-full p-6 text-center space-y-4 shadow-2xl border border-slate-200">
-        <div class="w-16 h-16 rounded-2xl bg-amber-50 flex items-center justify-center text-4xl mx-auto shadow-inner border border-amber-200">
-          {{ selectedAuthUser?.avatar }}
-        </div>
+        <div class="w-16 h-16 rounded-2xl bg-amber-50 flex items-center justify-center text-4xl mx-auto shadow-inner border border-amber-200">{{ selectedAuthUser?.avatar }}</div>
         <div>
           <h3 class="text-lg font-black text-slate-900">解锁 {{ selectedAuthUser?.name }} 的档案</h3>
           <p class="text-xs text-slate-500 mt-1 font-medium">请输入 4 位通行密码 (支持键盘输入，ESC 退出)</p>
         </div>
-
         <div class="flex justify-center space-x-3 py-2">
           <div v-for="i in 4" :key="i" class="w-3.5 h-3.5 rounded-full transition-all duration-200" :class="enteredPin.length >= i ? 'bg-indigo-600 scale-110 shadow-md shadow-indigo-600/50' : 'bg-slate-200'"></div>
         </div>
-
         <div class="grid grid-cols-3 gap-2 text-slate-800 font-black text-lg pt-2">
-          <button v-for="n in [1,2,3,4,5,6,7,8,9]" :key="n" @click="pressPin(n)" class="h-12 rounded-xl bg-slate-100 hover:bg-slate-200 active:scale-95 transition">
-            {{ n }}
-          </button>
+          <button v-for="n in [1,2,3,4,5,6,7,8,9]" :key="n" @click="pressPin(n)" class="h-12 rounded-xl bg-slate-100 hover:bg-slate-200 active:scale-95 transition">{{ n }}</button>
           <button @click="clearPin" class="h-12 rounded-xl bg-slate-100 hover:bg-slate-200 text-xs font-bold active:scale-95 transition text-slate-500">清空</button>
           <button @click="pressPin(0)" class="h-12 rounded-xl bg-slate-100 hover:bg-slate-200 active:scale-95 transition">0</button>
           <button @click="showPinModal = false; enteredPin = ''" class="h-12 rounded-xl bg-slate-100 hover:bg-slate-200 text-xs font-bold active:scale-95 transition text-rose-500">取消</button>
@@ -1093,7 +1121,7 @@
       </div>
     </div>
 
-    <!-- 【弹窗：作业批改与多附件上传】 -->
+    <!-- 作业批改与多附件上传弹窗 -->
     <div v-if="showHomeworkModal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 z-50">
       <div class="bg-white rounded-3xl max-w-lg w-full p-6 space-y-4 shadow-2xl border border-slate-200">
         <div class="flex justify-between items-center border-b border-slate-100 pb-2">
@@ -1103,7 +1131,6 @@
           </div>
           <button @click="showHomeworkModal = false" class="text-slate-400 hover:text-slate-600 font-bold">✕</button>
         </div>
-
         <div>
           <label class="block p-4 border-2 border-dashed border-slate-300 hover:border-indigo-500 rounded-2xl text-center cursor-pointer bg-slate-50 hover:bg-indigo-50/50 transition">
             <span class="text-2xl">📁</span>
@@ -1111,7 +1138,6 @@
             <input type="file" multiple @change="handleHomeworkMultiFiles" class="hidden">
           </label>
         </div>
-
         <div v-if="uploadedHomeworkFiles.length > 0" class="max-h-48 overflow-y-auto space-y-2 pr-1 custom-scrollbar">
           <div v-for="(file, idx) in uploadedHomeworkFiles" :key="idx" class="p-2.5 rounded-xl border border-slate-200 bg-white flex items-center justify-between text-xs">
             <div class="flex items-center space-x-2 min-w-0 flex-1 mr-2">
@@ -1126,11 +1152,7 @@
             <button @click="removeHomeworkFile(idx)" class="ml-2 text-rose-500 hover:text-rose-700 font-black">✕</button>
           </div>
         </div>
-
-        <div v-if="gradingStatus" class="p-3 rounded-xl bg-amber-50 text-amber-900 text-xs font-black text-center animate-pulse">
-          {{ gradingStatus }}
-        </div>
-
+        <div v-if="gradingStatus" class="p-3 rounded-xl bg-amber-50 text-amber-900 text-xs font-black text-center animate-pulse">{{ gradingStatus }}</div>
         <div class="flex space-x-3 pt-2">
           <button @click="showHomeworkModal = false" class="flex-1 py-2.5 border rounded-xl text-xs font-bold text-slate-600">取消</button>
           <button :disabled="uploadedHomeworkFiles.length === 0 || isGrading" @click="submitHomeworkToAI" class="flex-1 py-2.5 bg-slate-900 hover:bg-black text-white rounded-xl text-xs font-black disabled:opacity-40 shadow-md">
@@ -1140,7 +1162,7 @@
       </div>
     </div>
 
-    <!-- 【弹窗：通用任务与临时任务打卡】 -->
+    <!-- 通用任务打卡弹窗 -->
     <div v-if="showTaskSubmitModal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 z-50">
       <div class="bg-white rounded-3xl max-w-md w-full p-6 space-y-4 shadow-2xl border border-slate-200">
         <div class="flex justify-between items-center border-b border-slate-100 pb-2">
@@ -1150,7 +1172,6 @@
           </div>
           <button @click="showTaskSubmitModal = false" class="text-slate-400 hover:text-slate-600 font-bold">✕</button>
         </div>
-
         <div>
           <label class="block p-3 border-2 border-dashed border-slate-300 hover:border-emerald-500 rounded-xl text-center cursor-pointer bg-slate-50 transition">
             <span class="text-xl">📎</span>
@@ -1158,14 +1179,12 @@
             <input type="file" multiple @change="handleGenericTaskFiles" class="hidden">
           </label>
         </div>
-
         <div v-if="genericTaskFiles.length > 0" class="max-h-40 overflow-y-auto space-y-2 pr-1 custom-scrollbar">
           <div v-for="(file, idx) in genericTaskFiles" :key="idx" class="p-2 rounded-lg border bg-white flex items-center justify-between text-xs">
             <span class="truncate flex-1 mr-2 font-bold">{{ file.name }}</span>
             <button @click="genericTaskFiles.splice(idx, 1)" class="text-rose-500 font-black">✕</button>
           </div>
         </div>
-
         <div class="flex space-x-3 pt-2">
           <button @click="showTaskSubmitModal = false" class="flex-1 py-2.5 border rounded-xl text-xs font-bold text-slate-600">取消</button>
           <button @click="confirmTaskSubmission" class="flex-1 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-black shadow-md">
@@ -1175,7 +1194,7 @@
       </div>
     </div>
 
-    <!-- 【弹窗：通用附件审阅】 -->
+    <!-- 通用附件审阅弹窗 -->
     <div v-if="showAttachmentViewer" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 z-50">
       <div class="bg-white rounded-3xl max-w-xl w-full p-6 space-y-4 shadow-2xl border border-slate-200 max-h-[85vh] flex flex-col">
         <div class="flex justify-between items-center border-b border-slate-100 pb-2 flex-shrink-0">
@@ -1185,14 +1204,12 @@
           </div>
           <button @click="showAttachmentViewer = false" class="text-slate-400 hover:text-slate-600 font-bold text-lg">✕</button>
         </div>
-
         <div class="flex-1 overflow-y-auto space-y-3 pr-1 custom-scrollbar">
           <div v-for="(att, i) in viewingAttachments" :key="i" class="p-3 rounded-xl border border-slate-200 bg-slate-50 space-y-2">
             <div class="flex items-center justify-between text-xs font-bold text-slate-700">
               <span class="truncate flex-1">{{ att.name }}</span>
               <span class="text-slate-400 text-[10px]">{{ (att.size / 1024).toFixed(1) }} KB</span>
             </div>
-
             <div v-if="att.type.startsWith('image/')">
               <img :src="att.dataUrl" class="max-h-72 rounded-lg mx-auto border object-contain">
             </div>
@@ -1207,31 +1224,13 @@
             </div>
           </div>
         </div>
-
         <div class="pt-2 text-right flex-shrink-0">
           <button @click="showAttachmentViewer = false" class="px-5 py-2 bg-slate-900 text-white rounded-xl text-xs font-bold">关闭</button>
         </div>
       </div>
     </div>
 
-    <!-- 【弹窗：口算快练】 -->
-    <div v-if="showMathModal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-      <div class="bg-white rounded-3xl max-w-sm w-full p-5 space-y-3 shadow-2xl border border-slate-200">
-        <h3 class="text-sm font-black text-slate-800">⚡ {{ currentStudent.grade }} · 10道口算快练</h3>
-        <div class="space-y-2 max-h-60 overflow-y-auto pr-1 custom-scrollbar">
-          <div v-for="(p, i) in mathProblems" :key="i" class="flex items-center justify-between text-sm py-1.5 border-b border-slate-100">
-            <span class="font-black text-slate-800">{{ p.expr }}</span>
-            <input v-model.number="p.userAns" type="number" step="0.1" class="w-24 border border-slate-200 rounded-lg p-1.5 text-center font-black text-sm">
-          </div>
-        </div>
-        <div class="flex space-x-2 pt-2">
-          <button @click="showMathModal = false" class="flex-1 py-2 border rounded-xl text-xs font-bold text-slate-500">退出</button>
-          <button @click="submitMathDrill" class="flex-1 py-2 bg-slate-900 text-white rounded-xl text-xs font-black">提交判分</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- 【弹窗：设置密钥】 -->
+    <!-- 设置密钥弹窗 -->
     <div v-if="showSettings" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 z-50">
       <div class="bg-white rounded-3xl max-w-md w-full p-5 space-y-3 shadow-2xl border border-slate-200">
         <h3 class="text-sm font-black text-slate-800">⚙️ 核心密钥与同步配置</h3>
@@ -1258,899 +1257,11 @@
 
   </div>
 
-  <!-- 引入模块 -->
+  <!-- 真正干净的模块化引入链条 -->
+  <script src="js/data.js"></script>
   <script src="js/db.js"></script>
   <script src="js/ai.js"></script>
   <script src="js/math.js"></script>
-
-  <script>
-    const { createApp, ref, computed, onMounted, onUnmounted } = Vue;
-
-    createApp({
-      setup() {
-        const currentLoggedInUser = ref(null);
-        const activeTab = ref('today');
-        const showPinModal = ref(false);
-        const selectedAuthUser = ref(null);
-        const enteredPin = ref('');
-
-        const showSettings = ref(false);
-        const showHomeworkModal = ref(false);
-        const showMathModal = ref(false);
-        const showAssignModal = ref(false);
-        const showTaskSubmitModal = ref(false);
-        const showPointModal = ref(false);
-        const showAttachmentViewer = ref(false);
-        const showQuizModal = ref(false);
-
-        // 新增：单日明细、深度新闻与上架特权弹窗
-        const showDayDetailModal = ref(false);
-        const selectedDetailDateStr = ref('');
-        const selectedDetailDayKey = ref('');
-
-        const showNewsDetailModal = ref(false);
-        const currentSelectedNewsArticle = ref(null);
-
-        const showAddShopItemModal = ref(false);
-        const newShopItem = ref({
-          icon: '🎁',
-          name: '',
-          desc: '',
-          cost: 20
-        });
-
-        const currentActiveTask = ref(null);
-        const targetPointStudent = ref(null);
-        const customPointAmount = ref(10);
-        const customPointReason = ref('');
-
-        const viewingAttachments = ref([]);
-        const viewingTaskTitle = ref('');
-        const viewingStudentName = ref('');
-
-        // 月历状态
-        const selectedCalYear = ref(2026);
-        const selectedCalMonth = ref(9);
-
-        // 9 大真实新闻与权威知识领域
-        const knowledgeTopics = [
-          { id: 'news', name: '真实新闻', icon: '📰' },
-          { id: 'military', name: '国防军事', icon: '🪖' },
-          { id: 'tech', name: '前沿科技', icon: '🔬' },
-          { id: 'history', name: '华夏历史', icon: '📜' },
-          { id: 'lego', name: '机械积木', icon: '🧱' },
-          { id: 'literature', name: '经典文学', icon: '📚' },
-          { id: 'astronomy', name: '宇宙太空', icon: '🌌' },
-          { id: 'dinosaurs', name: '史前恐龙', icon: '🦖' },
-          { id: 'nature', name: '神奇自然', icon: '🌿' }
-        ];
-
-        // 每天每类一条权威真实新闻与硬核事实
-        const dailyRealNewsArticles = {
-          news: {
-            category: '📰 真实时事新闻',
-            title: '国产C919大型客机规模化商业运营突破千万人次',
-            summary: '我国自主研制的C919大飞机已在多条国内主流干线航线常态化运行，各项安全指标与燃油经济性经受住了高密度商业飞行的全方位考验。',
-            fullContent: {
-              background: '中国商飞C919飞机不仅是现代航空工业的集大成者，更标志着我国具备了按照国际适航标准研制大型干线客机的完整能力。从机翼尖端的超临界机翼设计，到先进机载航空电子系统集成，全部实现了自主可控。',
-              principle: '超临界机翼与传统机翼相比，能把巡航马赫数提高到0.78以上，大幅延缓激波产生，使飞机在万米高空飞行时阻力降低5%，单次航程能节约几吨昂贵的航空煤油！',
-              thinking: '为什么造一架大飞机能带动全国成百上千家高端装备制造企业共同进步？如果你是飞机总设计师，你会最优先攻克哪个零件？'
-            }
-          },
-          military: {
-            category: '🪖 国防军事特稿',
-            title: '电磁弹射利剑入阵：中国第三艘航母福建舰深蓝试航突破',
-            summary: '福建舰配备全球先进的电磁弹射与电磁拦阻装置，可使新型隐身舰载机和固定翼预警机在数秒内以极高频次升空作战，实现战略飞跃。',
-            fullContent: {
-              background: '传统航母大多依赖滑跃甲板或复杂高维护的蒸汽弹射。福建舰采用先进的综合电力推进和电磁弹射轨道，弹射力量大小可以线性精确调节，从几吨的无人侦察机到30多吨的重型歼击机均可平稳弹射。',
-              principle: '电磁弹射器利用强大的脉冲电磁洛伦兹力推动滑块高速前进，原理类似于磁悬浮列车的高推力线性感应电机，能在短短百米距离内将重达数十吨的战机瞬间加速到每小时250公里！',
-              thinking: '相比于冒热气的蒸汽弹射，电磁弹射为什么能够更保护战机寿命？这背后体现了中国电力电子技术的什么优势？'
-            }
-          },
-          tech: {
-            category: '🔬 前沿科技前哨',
-            title: '深海万米无声传奇：“奋斗者”号马里亚纳海沟深渊科考新发现',
-            summary: '中国全海深载人潜水器“奋斗者”号在世界最深海沟海底展开多批次连续潜航作业，带回大量未知深渊微生物和地质岩心样品。',
-            fullContent: {
-              background: '在万米深渊的马里亚纳海沟底部，水温仅有1至4摄氏度，且周围漆黑冰冷，海水静水压高达110兆帕，相当于一台重型卡车压在一个指甲盖大小的面积上。',
-              principle: '“奋斗者”号能抗住如此极压，核心在于中国科学家自主研制的新型高强高韧钛合金载人球舱，采用了极致精密的电子束焊接工艺，使得整个耐压球体没有一丝微观瑕疵。',
-              thinking: '在没有阳光的万米漆黑深海中，如果不能进行光合作用，那里的奇异生物究竟靠吃什么能量存活繁衍呢？'
-            }
-          },
-          history: {
-            category: '📜 华夏文明纪实',
-            title: '重见天日的吉光片羽：三星堆青铜神树与黄金面具跨千年对话',
-            summary: '三星堆遗址出土的3.96米青铜神树、金杖与太阳轮器具，实证了3000多年前古蜀文明与黄河流域中原殷商文明彼此紧密交流、交相辉映的恢宏篇章。',
-            fullContent: {
-              background: '三星堆遗址位于四川广汉。考古学家通过高科技碳14测年和超微痕迹分析，确认其祭祀坑埋藏于商代晚期。青铜神树分为三层九枝，每枝上伫立着神鸟，形象印证了古籍中十日神话与扶桑树的传说。',
-              principle: '商代蜀人掌握了先进的泥范分铸法和铜铅锡黄金配比合金技术，神树的底座、树干和枝头神鸟是先分别铸造，再用液态青铜焊接浇注成一体，技术极为高超。',
-              thinking: '古蜀人在没有现代吊车和电动工具的时代，是怎样把近4米高、沉重无比的青铜树精准树立在宗庙大殿之中的？'
-            }
-          },
-          lego: {
-            category: '🧱 机械与积木力学',
-            title: '乐高机械组核心密码：差速器如何拯救汽车拐弯时的打滑？',
-            summary: '通过机械积木拼装差速器齿轮箱，直观揭示为什么汽车在拐弯时外侧轮胎转速必须快于内侧轮胎，这是一项改变了人类交通史的机械天才发明。',
-            fullContent: {
-              background: '如果一辆四轮小车左右两个轮子用一根死轴刚性连在一起，小车直线跑很稳，但一拐弯外轮跑弧线长、内轮跑弧线短，就会造成一侧轮胎在地上剧烈摩擦打滑，无法顺利转弯。',
-              principle: '差速器内部由行星齿轮和太阳齿轮组成。直行时整个齿轮箱一体旋转；拐弯时行星齿轮开始自转，自动将多余的转速分配给阻力较小的外侧车轮，达成平滑转弯！',
-              thinking: '如果在冰雪路面上汽车有一个轮子悬空打滑了，传统的差速器反而会让悬空的轮子疯转，你知道越野车是用什么装置把差速器“锁住”的吗？'
-            }
-          },
-          literature: {
-            category: '📚 经典文学之美',
-            title: '两岸猿声啼不住：李白《早发白帝城》背后的地理险峰与快意人生',
-            summary: '重温诗仙李白逆境获赦顺江而下一日千里的壮丽画卷，读懂盛唐诗歌背后的三峡地质裂隙与中国文人豁达浪漫的胸襟。',
-            fullContent: {
-              background: '唐肃宗乾元二年，李白因受牵连被流放夜郎，行至巫山白帝城时突然收到朝廷大赦的公文。惊喜交加的李白立刻乘舟顺流返回江陵，在轻舟穿行于巫山高耸绝壁之间写下了这首千古绝唱。',
-              principle: '长江三峡是典型的喀斯特峡谷地貌，由于流水长年累月强烈侵蚀下切，两岸山势如斧劈刀削般陡峭险峻，水流落差极大，在丰水期行船如飞箭离弦，真真切切是“一日还”！',
-              thinking: '试着朗读这首诗，你能从急促欢快的平仄韵律里，体会出李白当时怎样如释重负、重新拥抱自由的豪迈心情吗？'
-            }
-          },
-          astronomy: {
-            category: '🌌 宇宙太空深空',
-            title: '穿透百亿光年的迷雾：韦伯太空望远镜窥见宇宙大爆炸后的黎明',
-            summary: '人类部署在日地拉格朗日L2点的詹姆斯·韦伯空间望远镜，利用红外超深空相机观测到了宇宙诞生仅仅3亿年时的原始婴儿星系。',
-            fullContent: {
-              background: '宇宙大爆炸发生在约138亿年前。最初的几亿年被称为“黑暗时代”，没有恒星照亮。韦伯望远镜配备了巨大的镀金铍金属折叠主镜和网球场大小的五层遮阳罩，能保持在零下233度的极寒环境下工作。',
-              principle: '因为宇宙在不断膨胀，早期星系发出的微弱可见光在百亿年的长途奔袭中，波长被拉长成了红外线（红移现象）。普通光学望远镜什么都看不见，唯有超高灵敏度的红外望远镜才能捕捉到它们。',
-              thinking: '当我们望向130亿光年外的星系时，我们看到的其实是它现在的样子，还是它130亿年前的样子？'
-            }
-          },
-          dinosaurs: {
-            category: '🦖 史前恐龙王国',
-            title: '披羽巨兽的震撼化石：中国辽宁发现9米体长“华丽羽王龙”',
-            summary: '我国辽宁热河生物群发掘出迄今为止体型最大的带羽毛恐龙化石，彻底改写了世界古生物界对暴龙超科家族演化史的科学认知。',
-            fullContent: {
-              background: '长期以来，人们以为只有像始祖鸟那样的小型恐龙才有羽毛，大型暴龙都是粗糙坚硬的蜥蜴鳞片。徐星院士团队在辽宁北票发现的三具华丽羽王龙骨骼化石上，清晰印证了全身密布的原始丝状羽毛痕迹。',
-              principle: '华丽羽王龙生活在早白垩世较为寒冷的高纬度森林环境中，这些羽毛并不是为了飞行，而是像我们冬天的羽绒服一样，用来锁住体温保持恒定代谢的保温装置！',
-              thinking: '既然霸王龙的祖先都长着羽毛，那现代在农家院里走来走去的小鸡和麻雀，到底算不算真正的“恐龙”呢？'
-            }
-          },
-          nature: {
-            category: '🌿 神奇大自然生态',
-            title: '森林地下的互联网：树木如何通过真菌菌丝网络悄悄说悄悄话？',
-            summary: '生态学家发现整座森林地表下方存在着一个由真菌构成的庞大互联网络（Wood Wide Web），大树不仅能互相借养料，还能在遭遇害虫时互相拉响警报！',
-            fullContent: {
-              background: '走在幽静的森林里，你以为每棵大树都是孤军奋战的竞争者？科学家用放射性碳同位素示踪实验证明，母树会通过土壤地下的菌根网络，给阳光不足被遮挡的幼苗主动输送葡萄糖养分！',
-              principle: '真菌需要树木光合作用制造的碳水化合物，而树木需要真菌从深层土壤里高效吸收的矿物质磷和水分。当某棵树被害虫咬噬时，会释放防御电信号与挥发物，通过菌丝通知方圆百米的其他同伴提前合成单宁酸抵御害虫！',
-              thinking: '大自然中的植物没有神经系统，却能通过化学与电信号互通有无，这种共生互助给人类社会带来了什么启迪？'
-            }
-          }
-        };
-
-        const gradeList = [
-          '小学1年级', '小学2年级', '小学3年级', '小学4年级', '小学5年级', '小学6年级',
-          '初中7年级', '初中8年级', '初中9年级',
-          '高中1年级', '高中2年级', '高中3年级'
-        ];
-
-        const parentProfile = { id: 'parent', name: '家长总控', avatar: '🛡️', grade: '总控管理员', pin: '8888' };
-
-        const config = ref({
-          siliconKey: localStorage.getItem('cfg_silicon') || '',
-          upstashUrl: localStorage.getItem('cfg_upstash_url') || '',
-          upstashToken: localStorage.getItem('cfg_upstash_token') || ''
-        });
-
-        const students = ref([
-          { id: 'nuo', name: '诺', grade: '小学5年级', points: 8, avatar: '🐱', pin: '1234', favoriteTopic: 'military' },
-          { id: 'wei', name: '威', grade: '小学4年级', points: 24, avatar: '🦁', pin: '1234', favoriteTopic: 'news' },
-          { id: 'yi',  name: '奕', grade: '小学2年级', points: 15, avatar: '🐼', pin: '1234', favoriteTopic: 'lego' },
-          { id: 'dai', name: '黛', grade: '小学6年级', points: 42, avatar: '🔭', pin: '1234', favoriteTopic: 'tech' }
-        ]);
-        const currentStudentId = ref('nuo');
-
-        const quizRecords = ref([]);
-        const pointLogs = ref([]);
-
-        const newQuiz = ref({
-          subject: '数学',
-          date: '2026-09-04',
-          title: '',
-          score: null,
-          maxScore: 100,
-          reflection: ''
-        });
-
-        // 基础 15 项任务
-        const baseTasks = ref([
-          { id: 1, code: '01', category: '第一优先', icon: '🎒', title: '登记并完成学校家庭作业', duration: '35分钟', points: 3, criteria: '语数英要求 + 困难处理记录' },
-          { id: 2, code: '02', category: '语文', icon: '🔍', title: '每日新闻阅读与综合题', duration: '30分钟', points: 3, criteria: '真实计时≥30分钟 + 问答' },
-          { id: 3, code: '03', category: '语文', icon: '✍️', title: '每日练字拍照打卡', duration: '10分钟', points: 2, criteria: '年级指定字帖 + 拍照上传' },
-          { id: 4, code: '04', category: '数学', icon: '⚡', title: '每日10道年级口算', duration: '8分钟', points: 2, criteria: '在线即时自动判分' },
-          { id: 5, code: '05', category: '数学', icon: '🧩', title: '每日一道年级奥数题', duration: '10分钟', points: 3, criteria: '逐级进阶 + 错因归因解析' },
-          { id: 6, code: '06', category: '英语', icon: '🔤', title: '画面记忆5词 + 造句 + 手写', duration: '18分钟', points: 3, criteria: '5造句 + 系统朗读 + 默写' },
-          { id: 7, code: '07', category: '英语', icon: '🎙️', title: '自己说5个英语句子', duration: '6分钟', points: 2, criteria: '5句文字 + 录音' },
-          { id: 8, code: '08', category: '英语', icon: '🌟', title: '每日一句：从结构到表达', duration: '5分钟', points: 2, criteria: '3分钟独立思考 + 自动判定' },
-          { id: 9, code: '09', category: '英语', icon: '🧭', title: '每日一句：英译中', duration: '5分钟', points: 2, criteria: '分级提示 + 提交译文' },
-          { id: 10, code: '10', category: '英语', icon: '📖', title: '年级小阅读理解', duration: '10分钟', points: 2, criteria: '短文 + 考试题3题' },
-          { id: 11, code: '11', category: '英语', icon: '🕵️', title: '每日英语完形填空', duration: '8分钟', points: 2, criteria: '语境及语法综合判断' },
-          { id: 12, code: '12', category: '综合', icon: '⚔️', title: '当日错题消化与复盘', duration: '15分钟', points: 2, criteria: '错因说明 + 红笔订正' },
-          { id: 13, code: '13', category: '阅读', icon: '🏰', title: '整本书伴读与思考', duration: '20分钟', points: 2, criteria: '阅读时长 + 情节复述' },
-          { id: 14, code: '14', category: '体能', icon: '🚀', title: '跳绳或户外体能运动', duration: '20分钟', points: 2, criteria: '跳绳500次或户外活动' },
-          { id: 15, code: '15', category: '习惯', icon: '🛸', title: '整理书包与明日准备', duration: '5分钟', points: 1, criteria: '书包整洁 + 削铅笔' }
-        ]);
-
-        const customTasks = ref([]);
-        const parentTaskFiles = ref([]);
-        const newTask = ref({ targetStudentId: 'ALL', title: '', duration: '15分钟', points: 3, criteria: '家长抽查 / 拍照录像' });
-
-        const checkins = ref({});
-        const errors = ref([]);
-
-        // 【可自由增删的特权商城商品列表 (响应式，接入云端同步)】
-        const shopItems = ref([
-          { id: 'item_1', icon: '🧹', name: '周六免做家务券', desc: '周末免洗碗或扫地一次', cost: 15 },
-          { id: 'item_2', icon: '🎬', name: '电影/游乐园门票', desc: '自选周末电影一场或游乐场畅玩', cost: 50 },
-          { id: 'item_3', icon: '📚', name: '自选图书/心愿盲盒', desc: '50元以内自选心愿物品或图书', cost: 80 },
-          { id: 'item_4', icon: '🎮', name: '周末畅玩游戏30分钟', desc: '自选安全益智主机或平板游戏', cost: 35 }
-        ]);
-
-        // 打开上架特权商品弹窗
-        const openAddShopItemModal = () => {
-          newShopItem.value = { icon: '🎁', name: '', desc: '', cost: 20 };
-          showAddShopItemModal.value = true;
-        };
-
-        // 确认上架商品
-        const confirmAddShopItem = () => {
-          if (!newShopItem.value.name.trim()) return alert('请输入商品特权名称！');
-          if (!newShopItem.value.cost || newShopItem.value.cost <= 0) return alert('请输入有效的兑换积分！');
-
-          shopItems.value.unshift({
-            id: 'item_' + Date.now(),
-            icon: newShopItem.value.icon || '🎁',
-            name: newShopItem.value.name.trim(),
-            desc: newShopItem.value.desc.trim() || '认真完成任务换取特权',
-            cost: parseInt(newShopItem.value.cost, 10)
-          });
-
-          showAddShopItemModal.value = false;
-          syncToCloud();
-          alert('🎉 新特权商品上架成功，已同步至全网所有设备！');
-        };
-
-        // 删除/下架商品
-        const deleteShopItem = (item) => {
-          if (confirm(`确定要下架并删除特权商品【${item.name}】吗？`)) {
-            shopItems.value = shopItems.value.filter(i => (i.id ? i.id !== item.id : i.name !== item.name));
-            syncToCloud();
-            alert('已成功下架该特权商品！');
-          }
-        };
-
-        const logPointTransaction = (studentId, title, change, newBalance) => {
-          pointLogs.value.unshift({
-            id: 'log_' + Date.now(),
-            studentId,
-            title,
-            change,
-            balance: newBalance,
-            time: '2026-09-04 13:15'
-          });
-        };
-
-        const onStudentGradeChange = () => {
-          syncToCloud();
-        };
-
-        const selectStudentTopic = (topicId) => {
-          currentStudent.value.favoriteTopic = topicId;
-          syncToCloud();
-        };
-
-        const currentDailyArticle = computed(() => {
-          const tId = currentStudent.value.favoriteTopic || 'news';
-          return dailyRealNewsArticles[tId] || dailyRealNewsArticles.news;
-        });
-
-        const openNewsDetailModal = (article) => {
-          currentSelectedNewsArticle.value = article;
-          showNewsDetailModal.value = true;
-        };
-
-        // 家长派发临时任务
-        const handleParentTaskFiles = (e) => {
-          const files = Array.from(e.target.files);
-          files.forEach(file => {
-            const reader = new FileReader();
-            reader.onload = (ev) => {
-              parentTaskFiles.value.push({
-                name: file.name,
-                type: file.type,
-                size: file.size,
-                dataUrl: ev.target.result
-              });
-            };
-            reader.readAsDataURL(file);
-          });
-        };
-
-        const openAssignModal = () => {
-          newTask.value.title = '';
-          parentTaskFiles.value = [];
-          showAssignModal.value = true;
-        };
-
-        const confirmAssignTask = () => {
-          if (!newTask.value.title.trim()) return alert('请输入任务名称！');
-          customTasks.value.push({
-            id: 'ct_' + Date.now(),
-            code: '加',
-            category: '临时任务',
-            icon: '⚡',
-            title: newTask.value.title.trim(),
-            duration: newTask.value.duration || '15分钟',
-            points: newTask.value.points || 3,
-            criteria: newTask.value.criteria || '家长抽查 / 拍照录像',
-            targetStudentId: newTask.value.targetStudentId,
-            isCustom: true,
-            parentAttachments: [...parentTaskFiles.value]
-          });
-          showAssignModal.value = false;
-          parentTaskFiles.value = [];
-          syncToCloud();
-          alert('临时任务（附带参考资料）下发成功！');
-        };
-
-        const viewParentTaskAttachments = (task) => {
-          viewingAttachments.value = task.parentAttachments || [];
-          viewingTaskTitle.value = task.title;
-          viewingStudentName.value = '家长下发的参考资料';
-          showAttachmentViewer.value = true;
-        };
-
-        // 打卡月历计算与单日下钻明细
-        const calMonthTotalDays = computed(() => {
-          return new Date(selectedCalYear.value, selectedCalMonth.value, 0).getDate();
-        });
-
-        const calMonthStartOffset = computed(() => {
-          const firstDay = new Date(selectedCalYear.value, selectedCalMonth.value - 1, 1).getDay();
-          return firstDay === 0 ? 6 : firstDay - 1;
-        });
-
-        const prevCalendarMonth = () => {
-          if (selectedCalMonth.value === 1) {
-            selectedCalYear.value--;
-            selectedCalMonth.value = 12;
-          } else {
-            selectedCalMonth.value--;
-          }
-        };
-
-        const nextCalendarMonth = () => {
-          if (selectedCalMonth.value === 12) {
-            selectedCalYear.value++;
-            selectedCalMonth.value = 1;
-          } else {
-            selectedCalMonth.value++;
-          }
-        };
-
-        const isToday = (day) => {
-          return selectedCalYear.value === 2026 && selectedCalMonth.value === 9 && day === 4;
-        };
-
-        const isPastDay = (day) => {
-          if (selectedCalYear.value < 2026) return true;
-          if (selectedCalYear.value === 2026 && selectedCalMonth.value < 9) return true;
-          if (selectedCalYear.value === 2026 && selectedCalMonth.value === 9) return day < 4;
-          return false;
-        };
-
-        const getFormattedDateKey = (year, month, day) => {
-          const mStr = String(month).padStart(2, '0');
-          const dStr = String(day).padStart(2, '0');
-          return `${currentStudentId.value}_${year}-${mStr}-${dStr}`;
-        };
-
-        const getSpecificDayDoneCount = (year, month, day) => {
-          const k = getFormattedDateKey(year, month, day);
-          const val = checkins.value[k];
-          if (!val) return 0;
-          return (Array.isArray(val) ? val : (val.doneTaskIds || [])).length;
-        };
-
-        const getSpecificDayUndoneCount = (year, month, day) => {
-          const doneCount = getSpecificDayDoneCount(year, month, day);
-          const total = allTodayTasks.value.length;
-          return Math.max(0, total - doneCount);
-        };
-
-        const isSpecificDayPassed = (year, month, day) => {
-          return getSpecificDayDoneCount(year, month, day) >= 8;
-        };
-
-        const calMonthFlowerCount = computed(() => {
-          let c = 0;
-          const totalDays = calMonthTotalDays.value;
-          for (let d = 1; d <= totalDays; d++) {
-            if (isSpecificDayPassed(selectedCalYear.value, selectedCalMonth.value, d)) {
-              c++;
-            }
-          }
-          return c;
-        });
-
-        const openDayDetailModal = (year, month, day) => {
-          selectedDetailDateStr.value = `${year}年${month}月${day}日`;
-          selectedDetailDayKey.value = getFormattedDateKey(year, month, day);
-          showDayDetailModal.value = true;
-        };
-
-        const getDayCheckinObj = (dayKey) => {
-          const val = checkins.value[dayKey];
-          if (!val) return { doneTaskIds: [], attachments: {} };
-          if (Array.isArray(val)) return { doneTaskIds: val, attachments: {} };
-          return val;
-        };
-
-        const currentDayDetailDoneTasks = computed(() => {
-          const obj = getDayCheckinObj(selectedDetailDayKey.value);
-          return allTodayTasks.value.filter(t => (obj.doneTaskIds || []).includes(t.id));
-        });
-
-        const currentDayDetailUndoneTasks = computed(() => {
-          const obj = getDayCheckinObj(selectedDetailDayKey.value);
-          return allTodayTasks.value.filter(t => !(obj.doneTaskIds || []).includes(t.id));
-        });
-
-        const currentDayDetailPoints = computed(() => {
-          return currentDayDetailDoneTasks.value.reduce((a, b) => a + b.points, 0);
-        });
-
-        const isDayTaskDone = (taskId) => {
-          const obj = getDayCheckinObj(selectedDetailDayKey.value);
-          return (obj.doneTaskIds || []).includes(taskId);
-        };
-
-        const hasDayTaskAttachment = (taskId) => {
-          const obj = getDayCheckinObj(selectedDetailDayKey.value);
-          return (obj.attachments?.[taskId] || []).length > 0;
-        };
-
-        const viewDayTaskAttachments = (task) => {
-          const obj = getDayCheckinObj(selectedDetailDayKey.value);
-          viewingAttachments.value = obj.attachments?.[task.id] || [];
-          viewingTaskTitle.value = `${selectedDetailDateStr.value} · ${task.title}`;
-          viewingStudentName.value = `${currentStudent.value.name} 提交的打卡凭据`;
-          showAttachmentViewer.value = true;
-        };
-
-        // 小测登记
-        const openQuizModal = () => {
-          newQuiz.value.title = '';
-          newQuiz.value.score = null;
-          newQuiz.value.reflection = '';
-          showQuizModal.value = true;
-        };
-
-        const confirmAddQuiz = () => {
-          if (!newQuiz.value.title.trim()) return alert('请输入测验名称！');
-          if (newQuiz.value.score === null) return alert('请输入实际得分！');
-          if (!newQuiz.value.reflection.trim()) return alert('请认真填写心得体会与错因复盘！');
-
-          quizRecords.value.unshift({
-            id: 'quiz_' + Date.now(),
-            studentId: currentStudentId.value,
-            subject: newQuiz.value.subject,
-            date: newQuiz.value.date || '2026-09-04',
-            title: newQuiz.value.title.trim(),
-            score: newQuiz.value.score,
-            maxScore: newQuiz.value.maxScore || 100,
-            reflection: newQuiz.value.reflection.trim()
-          });
-
-          currentStudent.value.points += 5;
-          logPointTransaction(currentStudentId.value, `登记小测复盘: ${newQuiz.value.title}`, 5, currentStudent.value.points);
-
-          showQuizModal.value = false;
-          syncToCloud();
-          alert('🎉 小测成绩与反思心得录入成功！');
-        };
-
-        const currentStudentQuizzes = computed(() => quizRecords.value.filter(q => q.studentId === currentStudentId.value));
-        const currentStudentPointLogs = computed(() => pointLogs.value.filter(l => l.studentId === currentStudentId.value));
-
-        const getStudentCheckinObj = (sId) => {
-          const k = `${sId}_2026-09-04`;
-          const val = checkins.value[k];
-          if (!val) return { doneTaskIds: [], attachments: {} };
-          if (Array.isArray(val)) return { doneTaskIds: val, attachments: {} };
-          return val;
-        };
-
-        const getStudentDoneCount = (sId) => (getStudentCheckinObj(sId).doneTaskIds || []).length;
-        const isStudentHwDone = (sId) => (getStudentCheckinObj(sId).doneTaskIds || []).includes(1);
-        const getPendingErrorCount = (sId) => errors.value.filter(e => e.studentId === sId && !e.resolved).length;
-
-        const getFileIcon = (mime = '') => {
-          if (mime.startsWith('image/')) return '🖼️';
-          if (mime.startsWith('audio/')) return '🎙️';
-          if (mime.startsWith('video/')) return '🎥';
-          return '📄';
-        };
-
-        const hasAttachments = (sId, tId) => {
-          const obj = getStudentCheckinObj(sId);
-          return (obj.attachments?.[tId] || []).length > 0;
-        };
-
-        const getTaskAttachmentCount = (sId, tId) => {
-          const obj = getStudentCheckinObj(sId);
-          return (obj.attachments?.[tId] || []).length;
-        };
-
-        const getStudentTotalAttachmentCount = (sId) => {
-          const obj = getStudentCheckinObj(sId);
-          let count = 0;
-          if (obj.attachments) {
-            Object.values(obj.attachments).forEach(arr => { count += (arr || []).length; });
-          }
-          return count;
-        };
-
-        const viewTaskAttachments = (st, tId) => {
-          const obj = getStudentCheckinObj(st.id);
-          viewingAttachments.value = obj.attachments?.[tId] || [];
-          viewingTaskTitle.value = getTaskTitle(tId);
-          viewingStudentName.value = st.name + ' 提交的打卡凭据';
-          showAttachmentViewer.value = true;
-        };
-
-        const getTaskTitle = (tId) => {
-          const all = [...baseTasks.value, ...customTasks.value];
-          const found = all.find(t => t.id === tId);
-          return found ? found.title : `任务 #${tId}`;
-        };
-
-        const openPinModal = (user) => {
-          selectedAuthUser.value = user;
-          enteredPin.value = '';
-          showPinModal.value = true;
-        };
-
-        const pressPin = (num) => {
-          if (enteredPin.value.length < 4) {
-            enteredPin.value += String(num);
-            if (enteredPin.value.length === 4) {
-              const expectedPin = selectedAuthUser.value.pin || '1234';
-              if (enteredPin.value === expectedPin) {
-                switchToUser(selectedAuthUser.value);
-                showPinModal.value = false;
-                enteredPin.value = '';
-              } else {
-                alert('密码错误，请重新输入！');
-                enteredPin.value = '';
-              }
-            }
-          }
-        };
-
-        const clearPin = () => { enteredPin.value = ''; };
-
-        const switchToUser = (user) => {
-          currentLoggedInUser.value = user;
-          if (user.id !== 'parent') {
-            currentStudentId.value = user.id;
-          }
-        };
-
-        const logout = () => {
-          currentLoggedInUser.value = null;
-        };
-
-        const closeAllModals = () => {
-          showPinModal.value = false;
-          showHomeworkModal.value = false;
-          showMathModal.value = false;
-          showAssignModal.value = false;
-          showTaskSubmitModal.value = false;
-          showPointModal.value = false;
-          showAttachmentViewer.value = false;
-          showQuizModal.value = false;
-          showDayDetailModal.value = false;
-          showNewsDetailModal.value = false;
-          showAddShopItemModal.value = false;
-          showSettings.value = false;
-          enteredPin.value = '';
-        };
-
-        const handleGlobalKeyDown = (e) => {
-          if (e.key === 'Escape') {
-            closeAllModals();
-            return;
-          }
-          if (showPinModal.value) {
-            if (e.key >= '0' && e.key <= '9') {
-              pressPin(e.key);
-            } else if (e.key === 'Backspace') {
-              enteredPin.value = enteredPin.value.slice(0, -1);
-            }
-          }
-        };
-
-        const currentStudent = computed(() => {
-          return students.value.find(s => s.id === currentStudentId.value) || students.value[0];
-        });
-
-        const todayKey = computed(() => `${currentStudentId.value}_2026-09-04`);
-        const currentStudentCheckin = computed(() => getStudentCheckinObj(currentStudentId.value));
-        const todayDoneIds = computed(() => currentStudentCheckin.value.doneTaskIds || []);
-        
-        const allTodayTasks = computed(() => {
-          const personalCustom = customTasks.value.filter(t => t.targetStudentId === 'ALL' || t.targetStudentId === currentStudentId.value);
-          return [...baseTasks.value, ...personalCustom];
-        });
-
-        const isHomeworkDone = computed(() => todayDoneIds.value.includes(1));
-        const totalTaskCount = computed(() => allTodayTasks.value.length);
-        const todayDoneCount = computed(() => allTodayTasks.value.filter(t => todayDoneIds.value.includes(t.id)).length);
-        const todayPoints = computed(() => allTodayTasks.value.filter(t => todayDoneIds.value.includes(t.id)).reduce((a, b) => a + b.points, 0));
-        const isDone = (id) => todayDoneIds.value.includes(id);
-
-        const studentErrors = computed(() => errors.value.filter(e => e.studentId === currentStudentId.value && !e.resolved));
-
-        const recordTaskDone = (taskId, files = []) => {
-          const k = todayKey.value;
-          let current = checkins.value[k];
-          if (!current || Array.isArray(current)) {
-            current = { doneTaskIds: Array.isArray(current) ? [...current] : [], attachments: {} };
-          }
-          if (!current.doneTaskIds.includes(taskId)) {
-            current.doneTaskIds.push(taskId);
-          }
-          if (files && files.length > 0) {
-            if (!current.attachments) current.attachments = {};
-            current.attachments[taskId] = files;
-          }
-          checkins.value[k] = current;
-
-          const allT = [...baseTasks.value, ...customTasks.value];
-          const taskObj = allT.find(t => t.id === taskId);
-          if (taskObj) {
-            currentStudent.value.points += taskObj.points;
-            logPointTransaction(currentStudentId.value, `打卡完成: ${taskObj.title}`, taskObj.points, currentStudent.value.points);
-          }
-          syncToCloud();
-        };
-
-        const genericTaskFiles = ref([]);
-        const openTaskSubmitModal = (task) => {
-          currentActiveTask.value = task;
-          genericTaskFiles.value = [];
-          showTaskSubmitModal.value = true;
-        };
-
-        const handleGenericTaskFiles = (e) => {
-          const files = Array.from(e.target.files);
-          files.forEach(file => {
-            const reader = new FileReader();
-            reader.onload = (ev) => {
-              genericTaskFiles.value.push({
-                name: file.name,
-                type: file.type,
-                size: file.size,
-                dataUrl: ev.target.result
-              });
-            };
-            reader.readAsDataURL(file);
-          });
-        };
-
-        const confirmTaskSubmission = () => {
-          if (!currentActiveTask.value) return;
-          recordTaskDone(currentActiveTask.value.id, genericTaskFiles.value);
-          showTaskSubmitModal.value = false;
-          alert('打卡达标成功！');
-        };
-
-        const uploadedHomeworkFiles = ref([]);
-        const gradingStatus = ref('');
-        const isGrading = ref(false);
-
-        const openHomeworkModal = () => {
-          if (!config.value.siliconKey) {
-            alert('请先在设置 ⚙️ 里填入硅基流动 AI 密钥！');
-            showSettings.value = true;
-            return;
-          }
-          uploadedHomeworkFiles.value = [];
-          gradingStatus.value = '';
-          showHomeworkModal.value = true;
-        };
-
-        const handleHomeworkMultiFiles = (e) => {
-          const files = Array.from(e.target.files);
-          files.forEach(file => {
-            const reader = new FileReader();
-            reader.onload = (ev) => {
-              uploadedHomeworkFiles.value.push({
-                name: file.name,
-                type: file.type,
-                size: file.size,
-                dataUrl: ev.target.result
-              });
-            };
-            reader.readAsDataURL(file);
-          });
-        };
-
-        const removeHomeworkFile = (idx) => {
-          uploadedHomeworkFiles.value.splice(idx, 1);
-        };
-
-        const submitHomeworkToAI = async () => {
-          isGrading.value = true;
-          gradingStatus.value = 'AI 逐题深度扫描分析中...';
-          try {
-            const imgFile = uploadedHomeworkFiles.value.find(f => f.type.startsWith('image/'));
-            const base64 = imgFile ? imgFile.dataUrl.split(',')[1] : null;
-
-            if (base64) {
-              const res = await window.StudyAI.gradeHomework(config.value.siliconKey, base64);
-              if (res.errors && res.errors.length > 0) {
-                res.errors.forEach(err => {
-                  errors.value.unshift({ id: Date.now() + Math.random(), studentId: currentStudentId.value, ...err, date: '2026-09-04', resolved: false });
-                });
-                alert(`批改完毕！共 ${res.total} 题，发现 ${res.errors.length} 处错题已入复仇本，作业打卡通过！`);
-              } else {
-                alert(`太棒了！全部 ${res.total} 题解答正确！满分通过！`);
-              }
-            } else {
-              alert('作业附件已妥善收录归档，审核通过！');
-            }
-
-            recordTaskDone(1, uploadedHomeworkFiles.value);
-            showHomeworkModal.value = false;
-          } catch (e) {
-            alert('AI 批改响应完成，已登记作业打卡及附件！');
-            recordTaskDone(1, uploadedHomeworkFiles.value);
-            showHomeworkModal.value = false;
-          } finally {
-            isGrading.value = false;
-          }
-        };
-
-        const openPointAdjustModal = (st) => {
-          targetPointStudent.value = st;
-          customPointAmount.value = 10;
-          customPointReason.value = '';
-          showPointModal.value = true;
-        };
-
-        const confirmCustomPointAdjust = () => {
-          if (!targetPointStudent.value) return;
-          const delta = parseInt(customPointAmount.value, 10);
-          if (isNaN(delta) || delta === 0) return alert('请输入有效的加减分数值 (非0)！');
-          
-          targetPointStudent.value.points += delta;
-          if (targetPointStudent.value.points < 0) targetPointStudent.value.points = 0;
-
-          const reasonText = customPointReason.value.trim() || (delta > 0 ? '家长特别奖励' : '家长批评扣除');
-          logPointTransaction(targetPointStudent.value.id, `家长奖惩: ${reasonText}`, delta, targetPointStudent.value.points);
-
-          showPointModal.value = false;
-          syncToCloud();
-          alert(`已为 ${targetPointStudent.value.name} ${delta > 0 ? '增加' : '扣除'} ${Math.abs(delta)} 积分！`);
-        };
-
-        const mathProblems = ref([]);
-        const startMathDrill = () => {
-          mathProblems.value = window.StudyMath.generateDrill(currentStudent.value.grade);
-          showMathModal.value = true;
-        };
-
-        const submitMathDrill = () => {
-          let right = 0;
-          mathProblems.value.forEach(p => { if (parseFloat(p.userAns) === p.ans) right++; });
-          alert(`做对 ${right}/10 题！`);
-          if (right >= 7) {
-            recordTaskDone(4);
-            showMathModal.value = false;
-          } else {
-            alert('答对7题以上才算达标哦！');
-          }
-        };
-
-        const resolveError = (errId) => {
-          const item = errors.value.find(e => e.id === errId);
-          if (item) {
-            item.resolved = true;
-            currentStudent.value.points += 4;
-            logPointTransaction(currentStudentId.value, `错题复仇攻克: ${item.question.slice(0, 10)}...`, 4, currentStudent.value.points);
-            alert('🎉 复仇成功，奖励 4 积分！');
-            syncToCloud();
-          }
-        };
-
-        const redeem = (item) => {
-          if (currentStudent.value.points >= item.cost) {
-            currentStudent.value.points -= item.cost;
-            logPointTransaction(currentStudentId.value, `特权商城兑换: ${item.name}`, -item.cost, currentStudent.value.points);
-            alert(`🎉 成功兑换【${item.name}】！`);
-            syncToCloud();
-          } else {
-            alert('积分不足，加油赚积分吧！');
-          }
-        };
-
-        // 云同步
-        const syncToCloud = async () => {
-          await window.StudyDB.save(config.value.upstashUrl, config.value.upstashToken, {
-            students: students.value,
-            checkins: checkins.value,
-            errors: errors.value,
-            customTasks: customTasks.value,
-            quizRecords: quizRecords.value,
-            pointLogs: pointLogs.value,
-            shopItems: shopItems.value
-          });
-        };
-
-        const loadFromCloud = async () => {
-          const data = await window.StudyDB.load(config.value.upstashUrl, config.value.upstashToken);
-          if (data) {
-            if (data.students) students.value = data.students;
-            if (data.checkins) checkins.value = data.checkins;
-            if (data.errors) errors.value = data.errors;
-            if (data.customTasks) customTasks.value = data.customTasks;
-            if (data.quizRecords) quizRecords.value = data.quizRecords;
-            if (data.pointLogs) pointLogs.value = data.pointLogs;
-            if (data.shopItems && data.shopItems.length > 0) shopItems.value = data.shopItems;
-          } else {
-            await syncToCloud();
-          }
-        };
-
-        const saveConfig = () => {
-          localStorage.setItem('cfg_silicon', config.value.siliconKey);
-          localStorage.setItem('cfg_upstash_url', config.value.upstashUrl);
-          localStorage.setItem('cfg_upstash_token', config.value.upstashToken);
-          showSettings.value = false;
-          loadFromCloud();
-        };
-
-        onMounted(() => {
-          window.addEventListener('keydown', handleGlobalKeyDown);
-          if (config.value.upstashUrl) loadFromCloud();
-        });
-
-        onUnmounted(() => {
-          window.removeEventListener('keydown', handleGlobalKeyDown);
-        });
-
-        return {
-          currentLoggedInUser, activeTab, showPinModal, selectedAuthUser, enteredPin,
-          parentProfile, openPinModal, pressPin, clearPin, switchToUser, logout,
-          gradeList, onStudentGradeChange,
-          selectedCalYear, selectedCalMonth, prevCalendarMonth, nextCalendarMonth,
-          calMonthTotalDays, calMonthStartOffset, isToday, isPastDay,
-          getSpecificDayDoneCount, getSpecificDayUndoneCount, isSpecificDayPassed, calMonthFlowerCount,
-          showDayDetailModal, selectedDetailDateStr, openDayDetailModal,
-          currentDayDetailDoneTasks, currentDayDetailUndoneTasks, currentDayDetailPoints,
-          isDayTaskDone, hasDayTaskAttachment, viewDayTaskAttachments,
-          knowledgeTopics, selectStudentTopic, currentDailyArticle,
-          showNewsDetailModal, currentSelectedNewsArticle, openNewsDetailModal,
-          showAddShopItemModal, newShopItem, openAddShopItemModal, confirmAddShopItem, deleteShopItem,
-          showSettings, showHomeworkModal, showMathModal, showAssignModal, showTaskSubmitModal, showPointModal, showAttachmentViewer, showQuizModal,
-          currentActiveTask, targetPointStudent, customPointAmount, customPointReason, openPointAdjustModal, confirmCustomPointAdjust,
-          viewingAttachments, viewingTaskTitle, viewingStudentName, viewParentTaskAttachments,
-          config, students, currentStudentId, currentStudent,
-          baseTasks, customTasks, parentTaskFiles, handleParentTaskFiles, newTask, allTodayTasks, totalTaskCount,
-          checkins, errors, shopItems, isHomeworkDone, todayDoneCount, todayPoints, isDone,
-          studentErrors, getPendingErrorCount, getStudentDoneCount, isStudentHwDone, getStudentCheckinObj,
-          hasAttachments, getTaskAttachmentCount, getStudentTotalAttachmentCount, viewTaskAttachments, getTaskTitle, getFileIcon,
-          openTaskSubmitModal, genericTaskFiles, handleGenericTaskFiles, confirmTaskSubmission,
-          uploadedHomeworkFiles, gradingStatus, isGrading, openHomeworkModal, handleHomeworkMultiFiles, removeHomeworkFile, submitHomeworkToAI,
-          openAssignModal, confirmAssignTask,
-          quizRecords, pointLogs, newQuiz, openQuizModal, confirmAddQuiz, currentStudentQuizzes, currentStudentPointLogs,
-          mathProblems, startMathDrill, submitMathDrill, resolveError, redeem, saveConfig, syncToCloud
-        };
-      }
-    }).mount('#app');
-  </script>
+  <script src="js/app.js"></script>
 </body>
 </html>
