@@ -80,7 +80,7 @@
             开启今日研学空间
           </h2>
           <p class="text-sm md:text-base text-slate-600 mt-2 font-bold tracking-wide">
-            四人独立档案 · 真实军事/科技新闻 · 严谨打卡月历 · 错题复仇
+            四人独立档案 · 真实军事/科技新闻 · 严谨打卡月历 · 特权商城自主管理
           </p>
         </div>
 
@@ -442,7 +442,7 @@
           </div>
         </div>
 
-        <!-- 【视图 2：打卡月历 (勾叉数量直观显示 + 点击任意一天看详细战报)】 -->
+        <!-- 【视图 2：打卡月历】 -->
         <div v-if="activeTab === 'records'" class="h-full flex flex-col flex-1 glass-light rounded-2xl p-4 overflow-hidden shadow-sm border border-slate-200/80 space-y-3">
           <div class="flex flex-wrap items-center justify-between gap-3 pb-2 border-b border-slate-200/80 flex-shrink-0">
             <div class="flex items-center space-x-2">
@@ -477,7 +477,6 @@
             <div class="text-rose-500">周一</div><div>周二</div><div>周三</div><div>周四</div><div>周五</div><div>周六</div><div class="text-rose-500">周日</div>
           </div>
 
-          <!-- 精装修日历格子：醒目显示 ✓做完数 和 ✕未做数，点击进入当天详细 -->
           <div class="grid grid-cols-7 gap-2 flex-1 overflow-y-auto custom-scrollbar pr-1">
             <div v-for="b in calMonthStartOffset" :key="'blank_'+b" class="h-21 bg-slate-50/40 rounded-xl border border-dashed border-slate-200/50"></div>
             
@@ -492,7 +491,6 @@
                 <span v-if="isToday(day)" class="text-[9px] bg-indigo-600 text-white px-1.5 py-0.2 rounded-full font-bold">今日</span>
               </div>
               
-              <!-- 勾叉与数量显示 -->
               <div v-if="isPastDay(day) || isToday(day)" class="my-auto space-y-1">
                 <div class="flex items-center justify-between text-[11px] font-black">
                   <span class="text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.2 rounded flex items-center space-x-0.5">
@@ -547,32 +545,67 @@
           </div>
         </div>
 
-        <!-- 【视图 4：特权商城】 -->
-        <div v-if="activeTab === 'rewards'" class="h-full flex flex-col flex-1 glass-light rounded-2xl p-4 overflow-hidden shadow-sm border border-slate-200/80">
-          <div class="pb-3 border-b border-slate-100 flex-shrink-0">
-            <h3 class="text-base font-black text-slate-800">🎁 现实特权兑换商店</h3>
-            <p class="text-xs text-slate-500 mt-0.5">积分不能凭空产生，认真做作业换取自主支配特权。</p>
+        <!-- 【视图 4：特权商城 (支持自由上架新商品、删除下架、云同步)】 -->
+        <div v-if="activeTab === 'rewards'" class="h-full flex flex-col flex-1 glass-light rounded-2xl p-4 overflow-hidden shadow-sm border border-slate-200/80 space-y-3">
+          <!-- 商城顶部栏 -->
+          <div class="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-slate-200/80 flex-shrink-0">
+            <div>
+              <h3 class="text-base font-black text-slate-900">🎁 现实特权兑换商店</h3>
+              <p class="text-xs text-slate-500 mt-0.5">认真赚取积分兑换属于你的专属特权！支持家长与学生自定义上架新商品。</p>
+            </div>
+
+            <!-- 上架新特权按钮 -->
+            <button 
+              @click="openAddShopItemModal" 
+              class="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-black transition flex items-center space-x-1.5 shadow-sm"
+            >
+              <span>➕</span>
+              <span>上架新特权商品</span>
+            </button>
           </div>
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4 flex-shrink-0">
-            <div v-for="item in shopItems" :key="item.name" class="p-4 border border-slate-200 rounded-xl bg-white flex flex-col justify-between shadow-xs">
-              <div>
-                <div class="font-black text-sm text-slate-900">{{ item.name }}</div>
-                <div class="text-xs text-slate-500 mt-1 font-medium">{{ item.desc }}</div>
-              </div>
-              <div class="mt-4 flex justify-between items-center">
-                <span class="text-sm font-black text-amber-600">⚡ {{ item.cost }} 积分</span>
-                <button @click="redeem(item)" class="px-4 py-1.5 bg-slate-900 hover:bg-black text-white text-xs font-black rounded-lg shadow-sm">
-                  立即兑换
+
+          <!-- 商品矩阵 -->
+          <div class="flex-1 overflow-y-auto custom-scrollbar pr-1">
+            <div v-if="shopItems.length === 0" class="h-full flex items-center justify-center text-xs text-slate-400 font-bold py-10">
+              当前暂无特权商品，快点击右上角上架第一个奖励吧！
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3.5">
+              <div 
+                v-for="item in shopItems" 
+                :key="item.id || item.name" 
+                class="p-4 border border-slate-200 rounded-2xl bg-white flex flex-col justify-between shadow-2xs hover:shadow-md transition relative group"
+              >
+                <!-- 删除商品按钮 -->
+                <button 
+                  @click.stop="deleteShopItem(item)" 
+                  class="absolute top-3 right-3 w-6 h-6 rounded-lg bg-rose-50 hover:bg-rose-500 text-rose-500 hover:text-white flex items-center justify-center text-xs font-black transition shadow-2xs"
+                  title="下架并删除该商品"
+                >
+                  ✕
                 </button>
+
+                <div>
+                  <div class="w-12 h-12 rounded-xl bg-amber-50 border border-amber-100 flex items-center justify-center text-2xl shadow-inner mb-2.5">
+                    {{ item.icon || '🎁' }}
+                  </div>
+                  <div class="font-black text-sm text-slate-900 pr-5">{{ item.name }}</div>
+                  <div class="text-xs text-slate-500 mt-1 font-medium leading-relaxed">{{ item.desc }}</div>
+                </div>
+
+                <div class="mt-4 pt-3 border-t border-slate-100 flex justify-between items-center">
+                  <span class="text-sm font-black text-amber-600">⚡ {{ item.cost }} 积分</span>
+                  <button @click="redeem(item)" class="px-3.5 py-1.5 bg-slate-900 hover:bg-black text-white text-xs font-black rounded-lg shadow-sm active:scale-95 transition">
+                    立即兑换
+                  </button>
+                </div>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- 【视图 5：学生个人中心 (每天每类一条真实新闻 + 点击展开详细剖析)】 -->
+        <!-- 【视图 5：学生个人中心】 -->
         <div v-if="activeTab === 'profile'" class="h-full flex flex-col flex-1 glass-light rounded-2xl p-4 overflow-hidden shadow-sm border border-slate-200/80 space-y-3">
-          
-          <!-- 真实新闻卡片 (每天每类一条，可点击阅读完整深度解读) -->
+          <!-- 真实新闻卡片 -->
           <div class="bg-gradient-to-r from-amber-50 via-indigo-50 to-purple-50 border border-indigo-100 rounded-2xl p-3.5 flex-shrink-0 shadow-xs space-y-2">
             <div class="flex flex-wrap items-center justify-between gap-2">
               <div class="flex items-center space-x-2">
@@ -602,7 +635,7 @@
               </button>
             </div>
 
-            <!-- 真实新闻摘要卡片 (点击打开系统内深度图文大屏) -->
+            <!-- 真实新闻摘要卡片 -->
             <div 
               @click="openNewsDetailModal(currentDailyArticle)"
               class="p-3.5 bg-white rounded-xl border border-indigo-200/80 hover:border-indigo-400 hover:shadow-md cursor-pointer transition flex flex-col md:flex-row items-start md:items-center justify-between gap-3 group"
@@ -717,7 +750,58 @@
     <!-- 模态弹窗系统 (全键盘输入支持、按 ESC 退出) -->
     <!-- ========================================================================= -->
 
-    <!-- 【新增弹窗 1：日历单日任务执行全景明细 (点击日历天数进入)】 -->
+    <!-- 【新增弹窗：上架新特权商品】 -->
+    <div v-if="showAddShopItemModal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+      <div class="bg-white rounded-3xl max-w-sm w-full p-6 space-y-3.5 shadow-2xl border border-slate-200">
+        <div class="flex justify-between items-center border-b border-slate-100 pb-2">
+          <h3 class="text-base font-black text-slate-900">🎁 上架新特权商品</h3>
+          <button @click="showAddShopItemModal = false" class="text-slate-400 hover:text-slate-600 font-bold">✕</button>
+        </div>
+
+        <div class="space-y-3 text-xs">
+          <!-- 快捷图标选择 -->
+          <div>
+            <label class="block font-bold text-slate-600 mb-1">选择图标：</label>
+            <div class="flex flex-wrap gap-1.5 p-2 bg-slate-50 border rounded-xl">
+              <button 
+                v-for="ic in ['🎁','🎮','🍦','🎡','📚','🎬','🍕','🧸','🚲','🎟️','🏊','🛏️']" 
+                :key="ic" 
+                type="button"
+                @click="newShopItem.icon = ic"
+                :class="newShopItem.icon === ic ? 'bg-indigo-600 text-white scale-110 shadow-xs' : 'bg-white hover:bg-slate-100 text-slate-700'"
+                class="w-7 h-7 rounded-lg text-sm flex items-center justify-center border border-slate-200 transition"
+              >
+                {{ ic }}
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <label class="block font-bold text-slate-600 mb-1">特权名称：</label>
+            <input v-model="newShopItem.name" placeholder="如：玩半小时平板、自选周末电影、免洗碗券" class="w-full border rounded-lg p-2 font-black text-slate-900 outline-none">
+          </div>
+
+          <div>
+            <label class="block font-bold text-slate-600 mb-1">兑换所需积分：</label>
+            <input v-model.number="newShopItem.cost" type="number" placeholder="如 20" class="w-full border rounded-lg p-2 font-black text-amber-600 outline-none">
+          </div>
+
+          <div>
+            <label class="block font-bold text-slate-600 mb-1">特权规则与说明：</label>
+            <input v-model="newShopItem.desc" placeholder="如：需提前与家长沟通、仅限周末兑换" class="w-full border rounded-lg p-2 font-medium text-slate-700 outline-none">
+          </div>
+        </div>
+
+        <div class="flex space-x-3 pt-2">
+          <button @click="showAddShopItemModal = false" class="flex-1 py-2.5 border rounded-xl text-xs font-bold text-slate-600">取消</button>
+          <button @click="confirmAddShopItem" class="flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-black shadow-md">
+            确定上架商品
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 【弹窗：日历单日任务执行全景明细】 -->
     <div v-if="showDayDetailModal" class="fixed inset-0 bg-slate-950/75 backdrop-blur-sm flex items-center justify-center p-4 z-50">
       <div class="bg-white rounded-3xl max-w-2xl w-full p-6 space-y-4 shadow-2xl border border-slate-200 max-h-[85vh] flex flex-col">
         <div class="flex justify-between items-center border-b border-slate-100 pb-3 flex-shrink-0">
@@ -739,7 +823,6 @@
           <button @click="showDayDetailModal = false" class="text-slate-400 hover:text-slate-600 font-bold text-lg">✕</button>
         </div>
 
-        <!-- 任务明细列表 -->
         <div class="flex-1 overflow-y-auto space-y-2.5 custom-scrollbar pr-1">
           <div 
             v-for="task in allTodayTasks" 
@@ -760,7 +843,6 @@
             </div>
 
             <div class="flex items-center space-x-2 flex-shrink-0">
-              <!-- 查看附件按钮 -->
               <button 
                 v-if="hasDayTaskAttachment(task.id)" 
                 @click="viewDayTaskAttachments(task)"
@@ -786,7 +868,7 @@
       </div>
     </div>
 
-    <!-- 【新增弹窗 2：真实新闻深度图文研读大屏 (点击新闻卡片进入)】 -->
+    <!-- 【弹窗：真实新闻深度图文研读大屏】 -->
     <div v-if="showNewsDetailModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 z-50">
       <div class="bg-white rounded-3xl max-w-2xl w-full p-6 space-y-4 shadow-2xl border border-slate-200 max-h-[85vh] flex flex-col">
         <div class="flex justify-between items-start border-b border-slate-100 pb-3 flex-shrink-0">
@@ -802,9 +884,7 @@
           <button @click="showNewsDetailModal = false" class="text-slate-400 hover:text-slate-600 font-bold text-xl ml-2">✕</button>
         </div>
 
-        <!-- 新闻与知识多模块深度排版 -->
         <div class="flex-1 overflow-y-auto space-y-3.5 text-xs md:text-sm text-slate-800 leading-relaxed custom-scrollbar pr-1">
-          <!-- 核心事件脉络 -->
           <div class="p-3.5 bg-indigo-50/60 rounded-2xl border border-indigo-100 space-y-1">
             <div class="font-black text-indigo-950 flex items-center space-x-1.5 text-sm">
               <span>📰</span>
@@ -813,7 +893,6 @@
             <p class="text-slate-700 font-medium">{{ currentSelectedNewsArticle?.fullContent?.background }}</p>
           </div>
 
-          <!-- 硬核科技/原理深度解读 -->
           <div class="p-3.5 bg-amber-50/60 rounded-2xl border border-amber-100 space-y-1">
             <div class="font-black text-amber-950 flex items-center space-x-1.5 text-sm">
               <span>🔬</span>
@@ -822,7 +901,6 @@
             <p class="text-slate-700 font-medium">{{ currentSelectedNewsArticle?.fullContent?.principle }}</p>
           </div>
 
-          <!-- 启发思考 -->
           <div class="p-3.5 bg-emerald-50/60 rounded-2xl border border-emerald-100 space-y-1">
             <div class="font-black text-emerald-950 flex items-center space-x-1.5 text-sm">
               <span>💡</span>
@@ -1205,13 +1283,21 @@
         const showAttachmentViewer = ref(false);
         const showQuizModal = ref(false);
 
-        // 新增：单日明细与深度新闻弹窗
+        // 新增：单日明细、深度新闻与上架特权弹窗
         const showDayDetailModal = ref(false);
         const selectedDetailDateStr = ref('');
         const selectedDetailDayKey = ref('');
 
         const showNewsDetailModal = ref(false);
         const currentSelectedNewsArticle = ref(null);
+
+        const showAddShopItemModal = ref(false);
+        const newShopItem = ref({
+          icon: '🎁',
+          name: '',
+          desc: '',
+          cost: 20
+        });
 
         const currentActiveTask = ref(null);
         const targetPointStudent = ref(null);
@@ -1239,7 +1325,7 @@
           { id: 'nature', name: '神奇自然', icon: '🌿' }
         ];
 
-        // 每天每类精编一条权威真实新闻与硬核事实
+        // 每天每类一条权威真实新闻与硬核事实
         const dailyRealNewsArticles = {
           news: {
             category: '📰 真实时事新闻',
@@ -1393,11 +1479,46 @@
         const checkins = ref({});
         const errors = ref([]);
 
-        const shopItems = [
-          { name: '周六免做家务券', desc: '免洗碗或扫地一次', cost: 15 },
-          { name: '电影/游乐园门票', desc: '自选周末电影一场', cost: 50 },
-          { name: '自选图书/心愿盲盒', desc: '50元以内自选物品', cost: 80 }
-        ];
+        // 【可自由增删的特权商城商品列表 (响应式，接入云端同步)】
+        const shopItems = ref([
+          { id: 'item_1', icon: '🧹', name: '周六免做家务券', desc: '周末免洗碗或扫地一次', cost: 15 },
+          { id: 'item_2', icon: '🎬', name: '电影/游乐园门票', desc: '自选周末电影一场或游乐场畅玩', cost: 50 },
+          { id: 'item_3', icon: '📚', name: '自选图书/心愿盲盒', desc: '50元以内自选心愿物品或图书', cost: 80 },
+          { id: 'item_4', icon: '🎮', name: '周末畅玩游戏30分钟', desc: '自选安全益智主机或平板游戏', cost: 35 }
+        ]);
+
+        // 打开上架特权商品弹窗
+        const openAddShopItemModal = () => {
+          newShopItem.value = { icon: '🎁', name: '', desc: '', cost: 20 };
+          showAddShopItemModal.value = true;
+        };
+
+        // 确认上架商品
+        const confirmAddShopItem = () => {
+          if (!newShopItem.value.name.trim()) return alert('请输入商品特权名称！');
+          if (!newShopItem.value.cost || newShopItem.value.cost <= 0) return alert('请输入有效的兑换积分！');
+
+          shopItems.value.unshift({
+            id: 'item_' + Date.now(),
+            icon: newShopItem.value.icon || '🎁',
+            name: newShopItem.value.name.trim(),
+            desc: newShopItem.value.desc.trim() || '认真完成任务换取特权',
+            cost: parseInt(newShopItem.value.cost, 10)
+          });
+
+          showAddShopItemModal.value = false;
+          syncToCloud();
+          alert('🎉 新特权商品上架成功，已同步至全网所有设备！');
+        };
+
+        // 删除/下架商品
+        const deleteShopItem = (item) => {
+          if (confirm(`确定要下架并删除特权商品【${item.name}】吗？`)) {
+            shopItems.value = shopItems.value.filter(i => (i.id ? i.id !== item.id : i.name !== item.name));
+            syncToCloud();
+            alert('已成功下架该特权商品！');
+          }
+        };
 
         const logPointTransaction = (studentId, title, change, newBalance) => {
           pointLogs.value.unshift({
@@ -1406,7 +1527,7 @@
             title,
             change,
             balance: newBalance,
-            time: '2026-09-04 13:10'
+            time: '2026-09-04 13:15'
           });
         };
 
@@ -1480,7 +1601,7 @@
           showAttachmentViewer.value = true;
         };
 
-        // 【打卡月历计算与单日下钻明细】
+        // 打卡月历计算与单日下钻明细
         const calMonthTotalDays = computed(() => {
           return new Date(selectedCalYear.value, selectedCalMonth.value, 0).getDate();
         });
@@ -1553,7 +1674,6 @@
           return c;
         });
 
-        // 点击日历某一天，打开当天执行全景明细
         const openDayDetailModal = (year, month, day) => {
           selectedDetailDateStr.value = `${year}年${month}月${day}日`;
           selectedDetailDayKey.value = getFormattedDateKey(year, month, day);
@@ -1733,6 +1853,7 @@
           showQuizModal.value = false;
           showDayDetailModal.value = false;
           showNewsDetailModal.value = false;
+          showAddShopItemModal.value = false;
           showSettings.value = false;
           enteredPin.value = '';
         };
@@ -1956,6 +2077,7 @@
           }
         };
 
+        // 云同步
         const syncToCloud = async () => {
           await window.StudyDB.save(config.value.upstashUrl, config.value.upstashToken, {
             students: students.value,
@@ -1963,7 +2085,8 @@
             errors: errors.value,
             customTasks: customTasks.value,
             quizRecords: quizRecords.value,
-            pointLogs: pointLogs.value
+            pointLogs: pointLogs.value,
+            shopItems: shopItems.value
           });
         };
 
@@ -1976,6 +2099,7 @@
             if (data.customTasks) customTasks.value = data.customTasks;
             if (data.quizRecords) quizRecords.value = data.quizRecords;
             if (data.pointLogs) pointLogs.value = data.pointLogs;
+            if (data.shopItems && data.shopItems.length > 0) shopItems.value = data.shopItems;
           } else {
             await syncToCloud();
           }
@@ -2010,6 +2134,7 @@
           isDayTaskDone, hasDayTaskAttachment, viewDayTaskAttachments,
           knowledgeTopics, selectStudentTopic, currentDailyArticle,
           showNewsDetailModal, currentSelectedNewsArticle, openNewsDetailModal,
+          showAddShopItemModal, newShopItem, openAddShopItemModal, confirmAddShopItem, deleteShopItem,
           showSettings, showHomeworkModal, showMathModal, showAssignModal, showTaskSubmitModal, showPointModal, showAttachmentViewer, showQuizModal,
           currentActiveTask, targetPointStudent, customPointAmount, customPointReason, openPointAdjustModal, confirmCustomPointAdjust,
           viewingAttachments, viewingTaskTitle, viewingStudentName, viewParentTaskAttachments,
